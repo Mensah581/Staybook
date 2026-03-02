@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -9,6 +9,11 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// PostgreSQL connection
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hotel_booking'
+});
 
 // Middleware
 app.use(bodyParser.json());
@@ -41,400 +46,365 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Database initialization
-const db = new sqlite3.Database('./hotel.db', (err) => {
-    if (err) {
-        console.error('Error opening database:', err);
-    } else {
-        console.log('Connected to SQLite database');
-        initializeDatabase();
+async function initializeDatabase() {
+    try {
+        // Create users table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create rooms table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS rooms (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                price DECIMAL(10, 2) NOT NULL,
+                amenities TEXT,
+                status VARCHAR(50) DEFAULT 'available',
+                image_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create room_images table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS room_images (
+                id SERIAL PRIMARY KEY,
+                room_id INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
+                image_url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create bookings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS bookings (
+                id SERIAL PRIMARY KEY,
+                room_id INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
+                full_name VARCHAR(255) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                booking_date DATE NOT NULL,
+                booking_time VARCHAR(50) NOT NULL,
+                message TEXT,
+                status VARCHAR(50) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create settings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                hotel_name VARCHAR(255) DEFAULT 'Grand Hotel',
+                hotel_tagline TEXT,
+                hotel_phone VARCHAR(50),
+                hotel_email VARCHAR(255),
+                hotel_address TEXT,
+                hero_title VARCHAR(255),
+                hero_text TEXT,
+                about_title VARCHAR(255),
+                about_text TEXT,
+                about_image TEXT,
+                checkin_time VARCHAR(50),
+                checkout_time VARCHAR(50),
+                front_desk_hours VARCHAR(100),
+                copyright_year VARCHAR(10),
+                company_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Insert default admin if not exists
+        const adminExists = await pool.query("SELECT * FROM users WHERE email = 'admin@hotel.com'");
+        if (adminExists.rows.length === 0) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await pool.query(
+                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                ['Administrator', 'admin@hotel.com', hashedPassword, 'admin']
+            );
+            console.log('Default admin created: admin@hotel.com / admin123');
+        }
+
+        // Insert default settings if not exists
+        const settingsExist = await pool.query("SELECT * FROM settings WHERE id = 1");
+        if (settingsExist.rows.length === 0) {
+            await pool.query(
+                "INSERT INTO settings (id, hotel_name, copyright_year, company_name) VALUES (1, 'Grand Hotel', ?, 'Grand Hotel')",
+                [new Date().getFullYear()]
+            );
+        }
+
+        console.log('Database initialized successfully');
+    } catch (error) {
+        console.error('Error initializing database:', error);
+    }
+}
+
+// Initialize database
+initializeDatabase();
+
+// Helper function to run queries
+function query(sql, params = []) {
+    return pool.query(sql, params);
+}
+
+// Routes
+
+// Home page - get hotel info
+app.get('/api/hotel-info', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM settings WHERE id = 1');
+        res.json(result.rows[0] || { hotel_name: 'Grand Hotel' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-function initializeDatabase() {
-    // Create users table
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT DEFAULT 'admin',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    // Create rooms table
-    db.run(`CREATE TABLE IF NOT EXISTS rooms (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        price REAL NOT NULL,
-        amenities TEXT,
-        status TEXT DEFAULT 'available',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    // Create room_images table
-    db.run(`CREATE TABLE IF NOT EXISTS room_images (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        room_id INTEGER NOT NULL,
-        image_url TEXT NOT NULL,
-        FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
-    )`);
-
-    // Create bookings table
-    db.run(`CREATE TABLE IF NOT EXISTS bookings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        room_id INTEGER NOT NULL,
-        full_name TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        email TEXT NOT NULL,
-        booking_date TEXT NOT NULL,
-        booking_time TEXT NOT NULL,
-        message TEXT,
-        status TEXT DEFAULT 'pending',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
-    )`);
-
-    // Create settings table
-    db.run(`CREATE TABLE IF NOT EXISTS settings (
-        id INTEGER PRIMARY KEY,
-        hotel_name TEXT DEFAULT 'Grand Hotel',
-        hotel_tagline TEXT DEFAULT 'Luxury Accommodations',
-        hotel_phone TEXT DEFAULT '+1 234 567 890',
-        hotel_email TEXT DEFAULT 'info@grandhotel.com',
-        hotel_address TEXT DEFAULT '123 Hotel Street, City Center',
-        hero_title TEXT DEFAULT 'Find Your Perfect Stay',
-        hero_text TEXT DEFAULT 'Experience luxury and comfort at Grand Hotel. Book your dream room today.',
-        about_title TEXT DEFAULT 'Welcome to Grand Hotel',
-        about_text TEXT DEFAULT 'Experience world-class hospitality at Grand Hotel. Our commitment to quality service and guest satisfaction has made us a preferred choice for travelers. Whether you're here for business or leisure, we have the perfect room for your stay. Book your appointment today and experience the difference.',
-        about_image TEXT DEFAULT 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600',
-        checkin_time TEXT DEFAULT '2:00 PM',
-        checkout_time TEXT DEFAULT '12:00 PM',
-        front_desk_hours TEXT DEFAULT '24/7 Front Desk',
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`, (err) => {
-        // Insert default settings if not exists
-        db.get('SELECT * FROM settings WHERE id = 1', (err, setting) => {
-            if (!setting) {
-                db.run('INSERT INTO settings (id, hotel_name, copyright_year, company_name) VALUES (1, ?, ?, ?)', ['Grand Hotel', new Date().getFullYear(), 'Grand Hotel']);
-            }
-        });
-    });
-
-    // Create default admin user if not exists
-    const adminEmail = 'admin@hotel.com';
-    db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, user) => {
-        if (!user) {
-            const hashedPassword = bcrypt.hashSync('admin123', 10);
-            db.run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)', 
-                ['Administrator', adminEmail, hashedPassword, 'admin']);
-            console.log('Default admin created: admin@hotel.com / admin123');
-        }
-    });
-
-    console.log('Database initialized - rooms must be added by admin');
-}
-
-// ==================== PUBLIC ROUTES ====================
-
-// Get all rooms
-app.get('/api/rooms', (req, res) => {
-    db.all('SELECT * FROM rooms ORDER BY created_at DESC', [], (err, rooms) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        
-        // Get images for each room
-        const getImages = rooms.map(room => {
-            return new Promise((resolve) => {
-                db.all('SELECT image_url FROM room_images WHERE room_id = ?', [room.id], (err, images) => {
-                    room.images = images.map(img => img.image_url);
-                    resolve(room);
-                });
-            });
-        });
-
-        Promise.all(getImages).then(roomsWithImages => {
-            res.json(roomsWithImages);
-        });
-    });
+// Get all rooms (public)
+app.get('/api/rooms', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Get single room details
-app.get('/api/rooms/:id', (req, res) => {
-    const roomId = req.params.id;
-    db.get('SELECT * FROM rooms WHERE id = ?', [roomId], (err, room) => {
-        if (err || !room) {
+// Get single room
+app.get('/api/rooms/:id', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM rooms WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Room not found' });
         }
-        
-        db.all('SELECT image_url FROM room_images WHERE room_id = ?', [roomId], (err, images) => {
-            room.images = images.map(img => img.image_url);
-            res.json(room);
-        });
-    });
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get room images
+app.get('/api/rooms/:id/images', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM room_images WHERE room_id = $1', [req.params.id]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Create booking
-app.post('/api/bookings', (req, res) => {
-    const { room_id, full_name, phone, email, booking_date, booking_time, message } = req.body;
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const { room_id, full_name, phone, email, booking_date, booking_time, message } = req.body;
 
-    // Validate required fields
-    if (!room_id || !full_name || !phone || !email || !booking_date || !booking_time) {
-        return res.status(400).json({ error: 'All required fields must be filled' });
-    }
-
-    // Check if room exists and is available
-    db.get('SELECT * FROM rooms WHERE id = ? AND status = ?', [room_id, 'available'], (err, room) => {
-        if (err || !room) {
-            return res.status(400).json({ error: 'Room not available for booking' });
+        // Check if room is available
+        const room = await pool.query('SELECT status FROM rooms WHERE id = $1', [room_id]);
+        if (room.rows.length === 0) {
+            return res.status(404).json({ error: 'Room not found' });
+        }
+        if (room.rows[0].status !== 'available') {
+            return res.status(400).json({ error: 'Room is not available' });
         }
 
-        // Check if date is not in the past
+        // Check date is not in the past
         const today = new Date().toISOString().split('T')[0];
         if (booking_date < today) {
             return res.status(400).json({ error: 'Booking date cannot be in the past' });
         }
 
-        // Create booking
-        db.run(`INSERT INTO bookings (room_id, full_name, phone, email, booking_date, booking_time, message, status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
-            [room_id, full_name, phone, email, booking_date, booking_time, message || ''],
-            function(err) {
-                if (err) {
-                    return res.status(500).json({ error: err.message });
-                }
-                res.json({ message: 'Booking submitted successfully!', booking_id: this.lastID });
-            });
-    });
-});
+        const result = await pool.query(
+            'INSERT INTO bookings (room_id, full_name, phone, email, booking_date, booking_time, message, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [room_id, full_name, phone, email, booking_date, booking_time, message, 'pending']
+        );
 
-// ==================== ADMIN ROUTES ====================
-
-// Admin login
-app.post('/api/admin/login', (req, res) => {
-    const { email, password } = req.body;
-    
-    db.get('SELECT * FROM users WHERE email = ? AND role = ?', [email, 'admin'], (err, user) => {
-        if (err || !user) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        if (!bcrypt.compareSync(password, user.password)) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        req.session.adminId = user.id;
-        req.session.adminRole = user.role;
-        res.json({ message: 'Login successful', user: { id: user.id, name: user.name, email: user.email } });
-    });
-});
-
-// Admin logout
-app.post('/api/admin/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ message: 'Logged out successfully' });
-});
-
-// Check admin session
-app.get('/api/admin/check', (req, res) => {
-    if (req.session.adminId) {
-        res.json({ authenticated: true });
-    } else {
-        res.json({ authenticated: false });
+        res.status(201).json({ message: 'Booking submitted successfully', booking: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Middleware to check admin authentication
+// Admin middleware
 function requireAdmin(req, res, next) {
-    if (!req.session.adminId) {
+    if (!req.session.user || req.session.user.role !== 'admin') {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
 }
 
-// Get all bookings (admin)
-app.get('/api/admin/bookings', requireAdmin, (req, res) => {
-    const query = `
-        SELECT b.*, r.title as room_title, r.price as room_price
-        FROM bookings b
-        LEFT JOIN rooms r ON b.room_id = r.id
-        ORDER BY b.created_at DESC
-    `;
-    db.all(query, [], (err, bookings) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+// Admin login
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
-        res.json(bookings);
-    });
+
+        const user = result.rows[0];
+        const isValid = await bcrypt.compare(password, user.password);
+
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        req.session.user = user;
+        res.json({ message: 'Login successful', user: { id: user.id, name: user.name, email: user.email } });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin logout
+app.post('/api/admin/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ message: 'Logout successful' });
+});
+
+// Check admin auth
+app.get('/api/admin/check', (req, res) => {
+    if (req.session.user && req.session.user.role === 'admin') {
+        res.json({ authenticated: true, user: req.session.user });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
+// Get all bookings (admin)
+app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT b.*, r.title as room_title 
+            FROM bookings b 
+            LEFT JOIN rooms r ON b.room_id = r.id 
+            ORDER BY b.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Update booking status (admin)
-app.put('/api/admin/bookings/:id', requireAdmin, (req, res) => {
-    const bookingId = req.params.id;
-    const { status } = req.body;
-    
-    const validStatuses = ['pending', 'approved', 'cancelled', 'completed'];
-    if (!validStatuses.includes(status)) {
-        return res.status(400).json({ error: 'Invalid status' });
-    }
-
-    db.run('UPDATE bookings SET status = ? WHERE id = ?', [status, bookingId], function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
+app.put('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
+    try {
+        const { status } = req.body;
+        await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, req.params.id]);
         res.json({ message: 'Booking status updated' });
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Get all rooms (admin)
-app.get('/api/admin/rooms', requireAdmin, (req, res) => {
-    db.all('SELECT * FROM rooms ORDER BY created_at DESC', [], (err, rooms) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        
-        const getImages = rooms.map(room => {
-            return new Promise((resolve) => {
-                db.all('SELECT image_url FROM room_images WHERE room_id = ?', [room.id], (err, images) => {
-                    room.images = images.map(img => img.image_url);
-                    resolve(room);
-                });
-            });
-        });
-
-        Promise.all(getImages).then(roomsWithImages => {
-            res.json(roomsWithImages);
-        });
-    });
+app.get('/api/admin/rooms', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Add room (admin)
-app.post('/api/admin/rooms', requireAdmin, (req, res) => {
-    const { title, description, price, amenities, status } = req.body;
-    
-    if (!title || !price) {
-        return res.status(400).json({ error: 'Title and price are required' });
+// Create room (admin)
+app.post('/api/admin/rooms', requireAdmin, async (req, res) => {
+    try {
+        const { title, description, price, amenities, status, image_url } = req.body;
+        const result = await pool.query(
+            'INSERT INTO rooms (title, description, price, amenities, status, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [title, description, price, amenities, status || 'available', image_url]
+        );
+        res.status(201).json({ message: 'Room created successfully', room: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    db.run('INSERT INTO rooms (title, description, price, amenities, status) VALUES (?, ?, ?, ?, ?)',
-        [title, description || '', price, amenities || '', status || 'available'],
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Room added successfully', room_id: this.lastID });
-        });
 });
 
 // Update room (admin)
-app.put('/api/admin/rooms/:id', requireAdmin, (req, res) => {
-    const roomId = req.params.id;
-    const { title, description, price, amenities, status } = req.body;
-
-    db.run(`UPDATE rooms SET title = ?, description = ?, price = ?, amenities = ?, status = ? WHERE id = ?`,
-        [title, description, price, amenities, status, roomId],
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Room updated successfully' });
-        });
+app.put('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
+    try {
+        const { title, description, price, amenities, status, image_url } = req.body;
+        await pool.query(
+            'UPDATE rooms SET title = $1, description = $2, price = $3, amenities = $4, status = $5, image_url = $6 WHERE id = $7',
+            [title, description, price, amenities, status, image_url, req.params.id]
+        );
+        res.json({ message: 'Room updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Delete room (admin)
-app.delete('/api/admin/rooms/:id', requireAdmin, (req, res) => {
-    const roomId = req.params.id;
-    
-    db.run('DELETE FROM room_images WHERE room_id = ?', [roomId], (err) => {
-        db.run('DELETE FROM rooms WHERE id = ?', [roomId], function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            res.json({ message: 'Room deleted successfully' });
-        });
-    });
-});
-
-// Add room image (admin)
-app.post('/api/admin/rooms/:id/images', requireAdmin, upload.single('image'), (req, res) => {
-    const roomId = req.params.id;
-    
-    if (!req.file) {
-        return res.status(400).json({ error: 'No image uploaded' });
+app.delete('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM rooms WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Room deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-
-    const imageUrl = '/uploads/' + req.file.filename;
-    db.run('INSERT INTO room_images (room_id, image_url) VALUES (?, ?)', [roomId, imageUrl], function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ message: 'Image added successfully', image_url: imageUrl });
-    });
 });
 
-// Delete room image (admin)
-app.delete('/api/admin/rooms/:roomId/images/:imageId', requireAdmin, (req, res) => {
-    const imageId = req.params.imageId;
-    
-    db.run('DELETE FROM room_images WHERE id = ?', [imageId], function(err) {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+// Upload room image (admin)
+app.post('/api/admin/rooms/:id/images', requireAdmin, upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
-        res.json({ message: 'Image deleted successfully' });
-    });
-});
-
-// Get booking statistics (admin)
-app.get('/api/admin/stats', requireAdmin, (req, res) => {
-    const stats = {};
-    
-    db.get('SELECT COUNT(*) as total FROM bookings', [], (err, result) => {
-        stats.totalBookings = result ? result.total : 0;
-        
-        db.get('SELECT COUNT(*) as total FROM rooms', [], (err, result) => {
-            stats.totalRooms = result ? result.total : 0;
-            
-            db.get("SELECT COUNT(*) as total FROM bookings WHERE status = 'pending'", [], (err, result) => {
-                stats.pendingBookings = result ? result.total : 0;
-                
-                db.get("SELECT COUNT(*) as total FROM bookings WHERE status = 'approved'", [], (err, result) => {
-                    stats.approvedBookings = result ? result.total : 0;
-                    res.json(stats);
-                });
-            });
-        });
-    });
+        const imageUrl = '/uploads/' + req.file.filename;
+        await pool.query('INSERT INTO room_images (room_id, image_url) VALUES ($1, $2)', [req.params.id, imageUrl]);
+        res.json({ message: 'Image uploaded successfully', image_url: imageUrl });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Get settings (public)
-app.get('/api/settings', (req, res) => {
-    db.get('SELECT * FROM settings WHERE id = 1', (err, setting) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
-        }
-        res.json(setting || { hotel_name: 'Grand Hotel' });
-    });
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM settings WHERE id = 1');
+        res.json(result.rows[0] || { hotel_name: 'Grand Hotel' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Update settings (admin)
-app.put('/api/admin/settings', requireAdmin, (req, res) => {
-    const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name } = req.body;
-    
-    db.run(`UPDATE settings SET hotel_name = ?, hotel_tagline = ?, hotel_phone = ?, 
-            hotel_email = ?, hotel_address = ?, hero_title = ?, hero_text = ?, 
-            about_title = ?, about_text = ?, about_image = ?, checkin_time = ?, 
-            checkout_time = ?, front_desk_hours = ?, copyright_year = ?, company_name = ?, 
-            updated_at = CURRENT_TIMESTAMP WHERE id = 1`,
-        [hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, 
-         hero_title, hero_text, about_title, about_text, about_image, 
-         checkin_time, checkout_time, front_desk_hours, copyright_year, company_name],
-        function(err) {
-            if (err) {
-                return res.status(500).json({ error: err.message});
-            }
-            res.json({ message: 'Settings updated successfully' });
-        });
+app.put('/api/admin/settings', requireAdmin, async (req, res) => {
+    try {
+        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name } = req.body;
+        
+        await pool.query(`
+            UPDATE settings SET 
+                hotel_name = $1, hotel_tagline = $2, hotel_phone = $3, 
+                hotel_email = $4, hotel_address = $5, hero_title = $6, hero_text = $7, 
+                about_title = $8, about_text = $9, about_image = $10, checkin_time = $11, 
+                checkout_time = $12, front_desk_hours = $13, copyright_year = $14, company_name = $15,
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = 1`,
+            [hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, 
+             hero_title, hero_text, about_title, about_text, about_image, 
+             checkin_time, checkout_time, front_desk_hours, copyright_year, company_name]
+        );
+        res.json({ message: 'Settings updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Serve index.html for root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start server
