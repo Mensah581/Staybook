@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Hotel - Luxury Accommodations</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">🏨</div>
+                <span id="hotel-name">Grand Hotel</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="active">Home</a>
+                <a href="/rooms.html">Rooms</a>
+                <a href="/admin/login.html">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 id="hero-title">Find Your Perfect Stay</h1>
+            <p id="hero-text">Experience luxury and comfort at Grand Hotel. Book your dream room today.</p>
+            <a href="/rooms.html" class="btn-primary">View Available Rooms</a>
+        </div>
+    </section>
+
+    <!-- Search Card -->
+    <div class="container" style="max-width: 1200px; padding: 0 1.5rem;">
+        <div class="search-card">
+            <form class="search-form" id="search-form">
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" value="Grand Hotel, City Center" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="checkin-date">Check-in</label>
+                    <input type="date" id="checkin-date" name="checkin-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout-date">Check-out</label>
+                    <input type="date" id="checkout-date" name="checkout-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="guests">Guests</label>
+                    <select id="guests" name="guests">
+                        <option value="1">1 Guest</option>
+                        <option value="2" selected>2 Guests</option>
+                        <option value="3">3 Guests</option>
+                        <option value="4">4 Guests</option>
+                    </select>
+                </div>
+                <button type="submit" class="search-btn">
+                    🔍 Search Rooms
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Popular Rooms Section -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">Available Rooms</h2>
+            <a href="/rooms.html" class="section-link">See All →</a>
+        </div>
+        <div class="rooms-scroll" id="featured-rooms">
+            <div style="text-align: center; padding: 2rem; width: 100%;">
+                <p>Loading rooms...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🛏️</div>
+                <h3>Comfortable Rooms</h3>
+                <p>Spacious and elegantly furnished rooms designed for your comfort</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📶</div>
+                <h3>Free WiFi</h3>
+                <p>High-speed internet access available throughout the property</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🍳</div>
+                <h3>Free Breakfast</h3>
+                <p>Start your day with a delicious complimentary breakfast</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🅿️</div>
+                <h3>Free Parking</h3>
+                <p>Complimentary parking for all hotel guests</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section">
+        <div class="about-content">
+            <div class="about-image">
+                <img id="about-img" src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600" alt="Hotel Interior">
+            </div>
+            <div class="about-text">
+                <h2 id="about-title">Welcome to Grand Hotel</h2>
+                <p id="about-text-1">Experience world-class hospitality at Grand Hotel. Our commitment to quality service and guest satisfaction has made us a preferred choice for travelers.</p>
+                <p id="about-text-2">Whether you're here for business or leisure, we have the perfect room for your stay. Book your appointment today and experience the difference.</p>
+                <a href="/rooms.html" class="btn-primary">Browse Rooms</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <a href="/" class="active">
+            <span>🏠</span>
+            Home
+        </a>
+        <a href="/rooms.html">
+            <span>🛏️</span>
+            Rooms
+        </a>
+        <a href="/admin/login.html">
+            <span>⚙️</span>
+            Admin
+        </a>
+    </nav>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 id="footer-hotel-name">Grand Hotel</h3>
+                <p id="footer-tagline">Your destination for luxury accommodations</p>
+                <p id="footer-address">📍 123 Hotel Street, City Center</p>
+                <p id="footer-phone">📞 +1 234 567 890</p>
+                <p id="footer-email">✉️ info@grandhotel.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="/">Home</a>
+                <a href="/rooms.html">Our Rooms</a>
+                <a href="/admin/login.html">Admin Login</a>
+            </div>
+            <div class="footer-section">
+                <h3>Check-in/out</h3>
+                <p id="footer-checkin">Check-in: 2:00 PM</p>
+                <p id="footer-checkout">Check-out: 12:00 PM</p>
+                <p id="footer-frontdesk">24/7 Front Desk</p>
+            </div>
+        </div>
+        <div class="footer-bottom" id="footer-copyright">
+            © 2024 Grand Hotel. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('checkin-date').min = today;
+        document.getElementById('checkout-date').min = today;
+
+        // Set default dates
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('checkin-date').value = today;
+        document.getElementById('checkout-date').value = tomorrow.toISOString().split('T')[0];
+
+        // Search form handler
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            window.location.href = '/rooms.html';
+        });
+
+        // Load featured rooms
+        async function loadFeaturedRooms() {
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
+                
+                const container = document.getElementById('featured-rooms');
+                
+                if (rooms.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No rooms available</h3>
+                            <p>Please check back later.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Show first 6 rooms
+                const featuredRooms = rooms.slice(0, 6);
+                
+                container.innerHTML = featuredRooms.map(room => `
+                    <div class="room-card">
+                        <div class="room-image">
+                            <img src="${room.images && room.images[0] ? room.images[0] : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400'}" 
+                                 alt="${room.title}">
+                            <span class="room-badge ${room.status}">${room.status === 'available' ? 'Available' : 'Unavailable'}</span>
+                        </div>
+                        <div class="room-info">
+                            <h3 class="room-title">${room.title}</h3>
+                            <p class="room-location">📍 City Center</p>
+                            <div class="room-amenities">
+                                <span class="room-amenity">📶 WiFi</span>
+                                <span class="room-amenity">❄️ AC</span>
+                            </div>
+                            <div class="room-footer">
+                                <div class="room-price">
+                                    <span class="amount">$${room.price}</span>
+                                    <span class="period">/ night</span>
+                                </div>
+                                <div class="room-rating">★ 4.8</div>
+                            </div>
+                        </div>
+                        <div style="padding: 0 1.25rem 1.25rem;">
+                            <a href="/room-details.html?id=${room.id}" class="btn-primary" style="width: 100%; justify-content: center;">
+                                ${room.status === 'available' ? 'Book Now' : 'View Details'}
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
+        loadFeaturedRooms();
+
+        // Load hotel settings
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                
+                if (settings.hotel_name) {
+                    document.getElementById('hotel-name').textContent = settings.hotel_name;
+                    document.title = settings.hotel_name + ' - Luxury Accommodations';
+                }
+                if (settings.hero_title) {
+                    document.getElementById('hero-title').textContent = settings.hero_title;
+                }
+                if (settings.hero_text) {
+                    document.getElementById('hero-text').textContent = settings.hero_text;
+                }
+                if (settings.about_title) {
+                    document.getElementById('about-title').textContent = settings.about_title;
+                }
+                if (settings.about_text) {
+                    // Split about text into two paragraphs
+                    const paragraphs = settings.about_text.split('\n\n');
+                    if (paragraphs.length >= 2) {
+                        document.getElementById('about-text-1').textContent = paragraphs[0];
+                        document.getElementById('about-text-2').textContent = paragraphs[1];
+                    } else {
+                        document.getElementById('about-text-1').textContent = settings.about_text;
+                        document.getElementById('about-text-2').textContent = '';
+                    }
+                }
+                if (settings.about_image) {
+                    document.getElementById('about-img').src = settings.about_image;
+                }
+                // Update footer info
+                if (settings.hotel_name) {
+                    document.getElementById('footer-hotel-name').textContent = settings.hotel_name;
+                }
+                if (settings.hotel_tagline) {
+                    document.getElementById('footer-tagline').textContent = settings.hotel_tagline;
+                }
+                if (settings.hotel_address) {
+                    document.getElementById('footer-address').textContent = '📍 ' + settings.hotel_address;
+                }
+                if (settings.hotel_phone) {
+                    document.getElementById('footer-phone').textContent = '📞 ' + settings.hotel_phone;
+                }
+                if (settings.hotel_email) {
+                    document.getElementById('footer-email').textContent = '✉️ ' + settings.hotel_email;
+                }
+                // Update check-in/out times
+                if (settings.checkin_time) {
+                    document.getElementById('footer-checkin').textContent = 'Check-in: ' + settings.checkin_time;
+                }
+                if (settings.checkout_time) {
+                    document.getElementById('footer-checkout').textContent = 'Check-out: ' + settings.checkout_time;
+                }
+                if (settings.front_desk_hours) {
+                    document.getElementById('footer-frontdesk').textContent = settings.front_desk_hours;
+                }
+                // Update copyright info
+                const year = settings.copyright_year || new Date().getFullYear();
+                const company = settings.company_name || settings.hotel_name || 'Grand Hotel';
+                document.getElementById('footer-copyright').textContent = '© ' + year + ' ' + company + '. All rights reserved.';
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        loadSettings();
+    </script>
+</body>
+</html>

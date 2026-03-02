@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Grand Hotel</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-logo">
+                <a href="/" class="logo">
+                    <div class="logo-icon">🏨</div>
+                    <span id="hotel-name">Grand Hotel</span>
+                </a>
+            </div>
+            <h1>Admin Login</h1>
+            <p>Sign in to manage rooms and bookings</p>
+            
+            <div id="message"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Username</label>
+                    <input type="text" id="email" name="email" required 
+                           placeholder="Enter username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Enter password">
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                    Sign In
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="/" style="color: var(--gray);">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if already logged in
+        document.addEventListener('DOMContentLoaded', async function() {
+            loadSettings();
+            try {
+                const response = await fetch('/api/admin/check');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    window.location.href = '/admin/dashboard.html';
+                }
+            } catch (error) {
+                console.error('Error checking auth:', error);
+            }
+        });
+
+        // Load hotel settings
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                if (settings.hotel_name) {
+                    document.getElementById('hotel-name').textContent = settings.hotel_name;
+                    document.title = settings.hotel_name + ' - Admin';
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const messageDiv = document.getElementById('message');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            const email = form.email.value;
+            const password = form.password.value;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/admin/dashboard.html';
+                } else {
+                    messageDiv.innerHTML = '<div class="error-message">' + result.error + '</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Sign In';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                messageDiv.innerHTML = '<div class="error-message">An error occurred. Please try again.</div>';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Sign In';
+            }
+        });
+    </script>
+</body>
+</html>

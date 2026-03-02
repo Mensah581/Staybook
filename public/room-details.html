@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Details - Grand Hotel</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <a href="/" class="logo">
+                <div class="logo-icon">🏨</div>
+                <span id="hotel-name">Grand Hotel</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="/rooms.html">Rooms</a>
+                <a href="/admin/login.html">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Room Details -->
+    <main>
+        <div id="room-content">
+            <div style="text-align: center; padding: 3rem;">
+                <p>Loading room details...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Section (Sticky Bottom) -->
+    <div class="booking-section" id="booking-section" style="display: none;">
+        <div class="booking-price">
+            <span class="amount" id="booking-price">$0</span>
+            <span class="period">/ night</span>
+        </div>
+        <button class="booking-btn" id="book-now-btn" onclick="openBookingModal()">
+            Book Now
+        </button>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="booking-modal" id="booking-modal">
+        <div class="booking-modal-content">
+            <div class="booking-modal-header">
+                <h2>Book This Room</h2>
+                <button class="booking-modal-close" onclick="closeBookingModal()">&times;</button>
+            </div>
+            
+            <div id="booking-message"></div>
+            
+            <form id="booking-form">
+                <input type="hidden" name="room_id" id="booking-room-id">
+                
+                <div class="form-group">
+                    <label for="full_name">Full Name *</label>
+                    <input type="text" id="full_name" name="full_name" required 
+                           placeholder="Enter your full name">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" required 
+                               placeholder="Phone number">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required 
+                               placeholder="Email address">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="booking_date">Check-in Date *</label>
+                        <input type="date" id="booking_date" name="booking_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="booking_time">Check-in Time *</label>
+                        <select id="booking_time" name="booking_time" required>
+                            <option value="">Select time</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                            <option value="14:00">2:00 PM</option>
+                            <option value="15:00">3:00 PM</option>
+                            <option value="16:00">4:00 PM</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Special Requests (Optional)</label>
+                    <textarea id="message" name="message" rows="3" 
+                              placeholder="Any special requests or requirements?"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    Confirm Booking
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <a href="/">
+            <span>🏠</span>
+            Home
+        </a>
+        <a href="/rooms.html">
+            <span>🛏️</span>
+            Rooms
+        </a>
+        <a href="/admin/login.html">
+            <span>⚙️</span>
+            Admin
+        </a>
+    </nav>
+
+    <!-- Footer -->
+    <footer style="margin-bottom: 70px;">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Grand Hotel</h3>
+                <p>📍 123 Hotel Street, City Center</p>
+                <p>📞 +1 234 567 890</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="/">Home</a>
+                <a href="/rooms.html">Our Rooms</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © 2024 Grand Hotel. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Get room ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('id');
+
+        let currentRoom = null;
+
+        // Load room details on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!roomId) {
+                window.location.href = '/rooms.html';
+                return;
+            }
+            loadRoomDetails();
+            loadSettings();
+            
+            // Set minimum date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('booking_date').min = today;
+        });
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                if (settings.hotel_name) {
+                    document.getElementById('hotel-name').textContent = settings.hotel_name;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function loadRoomDetails() {
+            try {
+                const response = await fetch(`/api/rooms/${roomId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Room not found');
+                }
+                
+                currentRoom = await response.json();
+                renderRoomDetails();
+            } catch (error) {
+                console.error('Error loading room:', error);
+                document.getElementById('room-content').innerHTML = `
+                    <div class="error-message" style="margin: 2rem;">
+                        <p>Room not found. <a href="/rooms.html">Back to Rooms</a></p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderRoomDetails() {
+            const room = currentRoom;
+            const container = document.getElementById('room-content');
+            
+            // Gallery images - use room images or placeholders
+            const images = room.images && room.images.length > 0 
+                ? room.images 
+                : [
+                    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
+                    'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
+                    'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800'
+                ];
+
+            // Amenities
+            const amenities = room.amenities 
+                ? room.amenities.split(',').map(a => a.trim())
+                : ['WiFi', 'Air Conditioning', 'TV'];
+            
+            const amenityIcons = {
+                'wifi': '📶',
+                'ac': '❄️',
+                'tv': '📺',
+                'parking': '🅿️',
+                'pool': '🏊',
+                'gym': '🏋️',
+                'spa': '💆',
+                'restaurant': '🍽️',
+                'room service': '🛎️',
+                'mini bar': '🍷',
+                'balcony': '🌅',
+                'jacuzzi': '🛁'
+            };
+
+            container.innerHTML = `
+                <div class="room-detail-header">
+                    <img src="${images[0]}" alt="${room.title}" class="room-detail-image">
+                </div>
+                
+                <div class="room-detail-content">
+                    <!-- Gallery -->
+                    <div class="gallery-grid">
+                        ${images.slice(0, 3).map(img => `<img src="${img}" alt="${room.title}">`).join('')}
+                    </div>
+                    
+                    <h1 class="room-detail-title">${room.title}</h1>
+                    <p class="room-detail-location">📍 City Center, Downtown</p>
+                    <div class="room-detail-rating">★ 4.8 (128 reviews)</div>
+                    
+                    <div class="room-detail-section">
+                        <h3>Amenities</h3>
+                        <div class="amenities-grid">
+                            ${amenities.map(amenity => {
+                                const lowerAmenity = amenity.toLowerCase();
+                                const icon = Object.keys(amenityIcons).find(key => lowerAmenity.includes(key)) 
+                                    ? amenityIcons[Object.keys(amenityIcons).find(key => lowerAmenity.includes(key))] 
+                                    : '✓';
+                                return `<span class="amenity-tag">${icon} ${amenity}</span>`;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="room-detail-section">
+                        <h3>About This Room</h3>
+                        <p class="room-detail-description">${room.description || 'Experience comfort and luxury in our beautifully appointed room. Perfect for both business and leisure travelers.'}</p>
+                    </div>
+
+                    <div class="room-detail-section">
+                        <h3>Room Details</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
+                                <strong>Max Guests</strong>
+                                <p style="color: var(--gray);">2 Adults</p>
+                            </div>
+                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
+                                <strong>Bed Type</strong>
+                                <p style="color: var(--gray);">King / Twin</p>
+                            </div>
+                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
+                                <strong>Size</strong>
+                                <p style="color: var(--gray);">45 m²</p>
+                            </div>
+                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
+                                <strong>Status</strong>
+                                <p style="color: ${room.status === 'available' ? 'var(--primary)' : '#EF4444'};">
+                                    ${room.status === 'available' ? 'Available' : 'Unavailable'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add some spacing at bottom for sticky booking -->
+                    <div style="height: 100px;"></div>
+                </div>
+            `;
+
+            // Show booking section
+            const bookingSection = document.getElementById('booking-section');
+            const bookNowBtn = document.getElementById('book-now-btn');
+            
+            if (room.status === 'available') {
+                bookingSection.style.display = 'flex';
+                document.getElementById('booking-price').textContent = `$${room.price}`;
+                bookNowBtn.textContent = 'Book Now';
+                bookNowBtn.disabled = false;
+            } else {
+                bookingSection.style.display = 'flex';
+                document.getElementById('booking-price').textContent = `$${room.price}`;
+                bookNowBtn.textContent = 'Currently Unavailable';
+                bookNowBtn.disabled = true;
+            }
+
+            // Set room ID in form
+            document.getElementById('booking-room-id').value = room.id;
+
+            // Add form submission handler
+            document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+        }
+
+        function openBookingModal() {
+            document.getElementById('booking-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function handleBookingSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const messageDiv = document.getElementById('booking-message');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            // Validate date
+            const bookingDate = form.booking_date.value;
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (bookingDate < today) {
+                messageDiv.innerHTML = '<div class="error-message">Check-in date cannot be in the past.</div>';
+                return;
+            }
+
+            // Collect form data
+            const formData = {
+                room_id: parseInt(form.room_id.value),
+                full_name: form.full_name.value,
+                phone: form.phone.value,
+                email: form.email.value,
+                booking_date: form.booking_date.value,
+                booking_time: form.booking_time.value,
+                message: form.message.value
+            };
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+
+            try {
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.innerHTML = '<div class="success-message">🎉 Booking submitted successfully! We will contact you shortly.</div>';
+                    form.reset();
+                    setTimeout(() => {
+                        closeBookingModal();
+                        messageDiv.innerHTML = '';
+                    }, 3000);
+                } else {
+                    messageDiv.innerHTML = '<div class="error-message">' + result.error + '</div>';
+                }
+            } catch (error) {
+                console.error('Error submitting booking:', error);
+                messageDiv.innerHTML = '<div class="error-message">An error occurred. Please try again.</div>';
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Confirm Booking';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('booking-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeBookingModal();
+            }
+        });
+    </script>
+</body>
+</html>
