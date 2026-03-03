@@ -852,7 +852,7 @@ footer {
     opacity: 0.6;
 }
 
-/* Mobile Book Now Button */
+/* Mobile Book Now Button - Premium */
 .mobile-book {
     position: fixed;
     bottom: 0;
@@ -865,7 +865,22 @@ footer {
     justify-content: center;
     font-weight: 600;
     letter-spacing: 2px;
-    z-index: 999;
+    z-index: 9999;
+    
+    /* Premium elevation */
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    
+    /* iPhone safe-area */
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(60px + env(safe-area-inset-bottom));
+    
+    /* Micro interaction */
+    transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+.mobile-book:active {
+    transform: scale(0.98);
+    background-color: #1F4F3F;
 }
 
 .mobile-book a {
@@ -873,6 +888,11 @@ footer {
     text-decoration: none;
     text-transform: uppercase;
     font-size: 14px;
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    line-height: 60px;
 }
 
 @media (max-width: 768px) {
@@ -880,7 +900,16 @@ footer {
         display: flex;
     }
     body {
-        padding-bottom: 60px;
+        padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (min-width: 768px) {
+    .mobile-book {
+        display: none !important;
+    }
+    body {
+        padding-bottom: 0;
     }
 }
 
