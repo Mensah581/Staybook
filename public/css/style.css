@@ -633,7 +633,7 @@ footer {
 }
 
 .tagline-section {
-    padding: 120px 8%;
+    padding: 120px 8% 100px;
     background: var(--bg-primary);
 }
 
@@ -662,7 +662,7 @@ footer {
 }
 
 .complement-images {
-    padding: 60px 24px 100px;
+    padding: 100px 8% 120px;
     max-width: 1100px;
     margin: 0 auto;
 }
@@ -682,13 +682,30 @@ footer {
 }
 
 .food-section {
-    padding: 80px 24px 100px;
-    background: var(--surface);
+    padding: 120px 8%;
+    background: #F8F9F7;
 }
 
 .food-section .section-title {
-    text-align: center;
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+.food-section .section-subtitle {
+    font-size: 18px;
+    font-weight: 400;
+    max-width: 600px;
+    color: #555555;
     margin-bottom: 50px;
+}
+
+.food-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
 }
 
 .food-grid {
@@ -732,25 +749,69 @@ footer {
 }
 
 .overview-footer {
-    background: var(--black);
-    padding: 60px 24px;
+    background: #000000;
+    color: #cccccc;
+    padding: 80px 8%;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.footer-brand h3 {
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: white;
+    font-size: 18px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 30px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #cccccc;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: white;
 }
 
 .footer-social {
     display: flex;
-    justify-content: center;
-    gap: 24px;
-    margin-bottom: 30px;
+    gap: 20px;
 }
 
 .footer-social a {
-    color: white;
-    font-size: 20px;
-    transition: opacity 0.2s;
+    color: #cccccc;
+    font-size: 16px;
+    transition: 0.3s;
 }
 
 .footer-social a:hover {
-    opacity: 0.7;
+    color: white;
+}
+
+.footer-bottom {
+    border-top: 1px solid #222222;
+    padding-top: 30px;
+    text-align: center;
+}
+
+.footer-bottom p {
+    font-size: 13px;
+    font-weight: 300;
 }
 
 .footer-cta {
@@ -758,25 +819,14 @@ footer {
     margin-bottom: 30px;
 }
 
-.footer-cta a {
-    color: white;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
 .footer-contact {
     text-align: center;
-    color: rgba(255,255,255,0.6);
     font-size: 13px;
 }
 
-.footer-contact p {
-    margin-bottom: 6px;
-}
-
-.footer-contact a {
-    color: white;
+/* Remove old footer styles */
+.footer-container, .footer-section, .footer-brand .logo {
+    display: none;
 }
 
 .footer-bottom p {
