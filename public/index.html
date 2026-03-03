@@ -12,12 +12,15 @@
     <header>
         <div class="header-container">
             <a href="/" class="logo">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 00.7-1.7l-9-9a1 1 0 00-1.4 0l-9 9A1 1 0 003 13z"/>
                 </svg>
                 Staybook
             </a>
-            <nav class="nav-links">
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links" id="navLinks">
                 <a href="/">Home</a>
                 <a href="/rooms.html">Apartments</a>
                 <a href="/admin/login.html">Admin</a>
@@ -25,23 +28,21 @@
         </div>
     </header>
 
-    <!-- Hero with Real Image -->
+    <!-- Hero -->
     <section class="hero">
-        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80" alt="Luxury Apartment" class="hero-image">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Luxury Apartment" class="hero-image">
         <div class="hero-overlay">
-            <div class="hero-content">
-                <h1>Find your next stay</h1>
-                <p>Search deals on apartments, houses, and much more</p>
-            </div>
+            <h1>Find your next stay</h1>
+            <p>Search deals on apartments</p>
         </div>
     </section>
 
-    <!-- Search Bar -->
+    <!-- Search -->
     <div class="search-container">
         <div class="search-card">
             <div class="search-field">
                 <label>Location</label>
-                <input type="text" id="location" value="Accra, Ghana" placeholder="Where are you going?">
+                <input type="text" id="location" value="Accra" placeholder="Where?">
             </div>
             <div class="search-field">
                 <label>Check in</label>
@@ -54,34 +55,25 @@
             <div class="search-field">
                 <label>Guests</label>
                 <select id="guests">
-                    <option value="1">1 guest</option>
-                    <option value="2" selected>2 guests</option>
-                    <option value="3">3 guests</option>
-                    <option value="4">4 guests</option>
+                    <option value="1">1</option>
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
                 </select>
             </div>
-            <button class="search-btn" onclick="searchRooms()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.35-4.35"/>
-                </svg>
-                Search
-            </button>
+            <button class="search-btn" onclick="searchRooms()">Search</button>
         </div>
     </div>
 
-    <!-- Featured Apartments -->
+    <!-- Apartments -->
     <section class="section">
-        <div class="section-header">
-            <h2 class="section-title">Explore nearby stays</h2>
-            <a href="/rooms.html" class="section-link">Show all</a>
-        </div>
+        <h2 class="section-title">Explore nearby</h2>
         <div class="rooms-scroll" id="featured-rooms">
             <div class="loading">Loading...</div>
         </div>
     </section>
 
-    <!-- Features - Clean Grid -->
+    <!-- Features -->
     <section class="features">
         <div class="features-grid">
             <div class="feature">
@@ -89,28 +81,28 @@
                     <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
                 <h3>Trust & Safety</h3>
-                <p>Every booking is protected. Your security is our priority.</p>
+                <p>Every booking is protected.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                 </div>
                 <h3>Quality Stays</h3>
-                <p>Verified properties with real photos and reviews.</p>
+                <p>Verified properties.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
                     <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
                 <h3>24/7 Support</h3>
-                <p>Round-the-clock assistance for any queries.</p>
+                <p>Round-the-clock help.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
                 <h3>Secure Payments</h3>
-                <p>Pay securely with Mobile Money, Cards & more.</p>
+                <p>Mobile Money & Cards.</p>
             </div>
         </div>
     </section>
@@ -120,25 +112,22 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h4>Staybook</h4>
-                Premium short-stay apartments in Ghana.
+                Premium stays in Ghana.
             </div>
             <div class="footer-section">
                 <h4>Company</h4>
-                <a href="#">About Us</a>
+                <a href="#">About</a>
                 <a href="#">Careers</a>
-                <a href="#">Press</a>
             </div>
             <div class="footer-section">
                 <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Contact Us</a>
-                <a href="#">Cancellation</a>
+                <a href="#">Help</a>
+                <a href="#">Contact</a>
             </div>
             <div class="footer-section">
                 <h4>Legal</h4>
                 <a href="#">Terms</a>
                 <a href="#">Privacy</a>
-                <a href="#">Sitemap</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -146,61 +135,52 @@
         </div>
     </footer>
 
-    <script src="/js/main.js"></script>
     <script>
-        // Set minimum date
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Set dates
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('checkin-date').setAttribute('min', today);
         document.getElementById('checkout-date').setAttribute('min', today);
 
-        // Load featured rooms
+        // Load rooms
         document.addEventListener('DOMContentLoaded', loadFeaturedRooms);
 
         async function loadFeaturedRooms() {
             try {
-                const response = await fetch('/api/rooms');
-                const rooms = await response.json();
+                const res = await fetch('/api/rooms');
+                const rooms = await res.json();
                 const container = document.getElementById('featured-rooms');
                 
-                if (rooms.length === 0) {
-                    container.innerHTML = '<div class="loading">No apartments available yet.</div>';
+                if (!rooms.length) {
+                    container.innerHTML = '<div class="loading">No apartments available.</div>';
                     return;
                 }
                 
-                container.innerHTML = rooms.slice(0, 8).map(room => renderRoomCardMinimal(room)).join('');
-            } catch (error) {
-                console.error('Error:', error);
+                container.innerHTML = rooms.slice(0, 8).map(room => renderRoomCard(room)).join('');
+            } catch (e) {
                 document.getElementById('featured-rooms').innerHTML = '<div class="loading">Error loading rooms</div>';
             }
         }
 
-        function renderRoomCardMinimal(room) {
-            const image = room.images && room.images[0] ? room.images[0] : 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400';
+        function renderRoomCard(room) {
+            const img = room.images?.[0] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300';
             return `
-                <div class="room-card">
+                <a href="/room-details.html?id=${room.id}" class="room-card">
                     <div class="room-image">
-                        <img src="${image}" alt="${room.title}">
-                        <button class="room-wishlist">♥</button>
+                        <img src="${img}" alt="${room.title}">
                     </div>
                     <div class="room-info">
                         <h3>${room.title}</h3>
                         <p class="room-price">$${room.price}<span>/night</span></p>
                     </div>
-                    <a href="/room-details.html?id=${room.id}" style="display:block;">
-                        <img src="${image}" alt="${room.title}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;">
-                    </a>
-                    <div class="room-info">
-                        <h3>${room.title}</h3>
-                        <p>${room.location}</p>
-                        <p class="room-price">$${room.price}<span>/night</span></p>
-                    </div>
-                </div>
+                </a>
             `;
         }
 
-        function searchRooms() {
-            window.location.href = '/rooms.html';
-        }
+        function searchRooms() { window.location.href = '/rooms.html'; }
     </script>
 </body>
 </html>
