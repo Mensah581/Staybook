@@ -901,7 +901,9 @@ footer {
 
 @media (max-width: 768px) {
     .top-bar { padding: 0 20px; }
-    .main-nav { display: none; }
+    .main-nav { height: auto; padding: 12px 20px; }
+    .nav-center { gap: 30px; flex-wrap: wrap; justify-content: center; }
+    .nav-center a { font-size: 13px; padding: 6px 0; }
     
     .hero h1 { font-size: 32px; letter-spacing: 4px; }
     .hero-content { max-width: 80%; }
