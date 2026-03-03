@@ -3,25 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staybook - Find Your Perfect Stay</title>
+    <title>Staybook - Professional Hotel Booking</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
     <header>
-        <div class="header-container">
-            <a href="/" class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 00.7-1.7l-9-9a1 1 0 00-1.4 0l-9 9A1 1 0 003 13z"/>
-                </svg>
-                Staybook
-            </a>
-            <button class="menu-toggle" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </button>
-            <nav class="nav-links" id="navLinks">
-                <a href="/">Home</a>
+        <div class="header">
+            <a href="/" class="logo">Stay<span>book</span></a>
+            <nav class="nav">
+                <a href="/" class="active">Home</a>
                 <a href="/rooms.html">Apartments</a>
                 <a href="/admin/login.html">Admin</a>
             </nav>
@@ -30,46 +22,50 @@
 
     <!-- Hero -->
     <section class="hero">
-        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Luxury Apartment" class="hero-image">
-        <div class="hero-overlay">
-            <h1>Find your next stay</h1>
-            <p>Search deals on apartments</p>
-        </div>
+        <h1>Book Your Perfect Stay</h1>
+        <p>Professional booking for quality accommodations</p>
     </section>
 
     <!-- Search -->
-    <div class="search-container">
-        <div class="search-card">
+    <div class="search-bar">
+        <div class="search-box">
             <div class="search-field">
                 <label>Location</label>
-                <input type="text" id="location" value="Accra" placeholder="Where?">
+                <input type="text" id="location" value="Accra, Ghana">
             </div>
             <div class="search-field">
-                <label>Check in</label>
-                <input type="date" id="checkin-date" required>
+                <label>Check In</label>
+                <input type="date" id="checkin">
             </div>
             <div class="search-field">
-                <label>Check out</label>
-                <input type="date" id="checkout-date" required>
+                <label>Check Out</label>
+                <input type="date" id="checkout">
             </div>
             <div class="search-field">
                 <label>Guests</label>
                 <select id="guests">
-                    <option value="1">1</option>
-                    <option value="2" selected>2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
+                    <option>1 Guest</option>
+                    <option selected>2 Guests</option>
+                    <option>3 Guests</option>
+                    <option>4 Guests</option>
                 </select>
             </div>
-            <button class="search-btn" onclick="searchRooms()">Search</button>
+            <button class="search-btn" onclick="search()">Search</button>
         </div>
     </div>
 
-    <!-- Apartments -->
+    <!-- Rooms -->
     <section class="section">
-        <h2 class="section-title">Explore nearby</h2>
-        <div class="rooms-scroll" id="featured-rooms">
-            <div class="loading">Loading...</div>
+        <div class="section-header">
+            <h2 class="section-title">Available Apartments</h2>
+        </div>
+        <div class="room-grid" id="rooms">
+            <div class="empty-state" id="empty-state" style="display:none;">
+                <h3>No Apartments Available</h3>
+                <p>Currently there are no available apartments. Please check back later or contact us.</p>
+                <a href="#" class="btn">Contact Hotel</a>
+            </div>
+            <div class="loading">Loading apartments...</div>
         </div>
     </section>
 
@@ -80,51 +76,51 @@
                 <div class="feature-icon">
                     <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-                <h3>Trust & Safety</h3>
-                <p>Every booking is protected.</p>
+                <h3>Secure Booking</h3>
+                <p>Your reservations are protected</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
                     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                 </div>
                 <h3>Quality Stays</h3>
-                <p>Verified properties.</p>
+                <p>Verified property standards</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
                     <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
                 <h3>24/7 Support</h3>
-                <p>Round-the-clock help.</p>
+                <p>Always here to help</p>
             </div>
             <div class="feature">
                 <div class="feature-icon">
                     <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
-                <h3>Secure Payments</h3>
-                <p>Mobile Money & Cards.</p>
+                <h3>Secure Payment</h3>
+                <p>Multiple payment options</p>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
+        <div class="footer">
+            <div>
                 <h4>Staybook</h4>
-                Premium stays in Ghana.
+                <p>Professional hotel booking solution.</p>
             </div>
-            <div class="footer-section">
-                <h4>Company</h4>
-                <a href="#">About</a>
-                <a href="#">Careers</a>
+            <div>
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/rooms.html">Apartments</a>
             </div>
-            <div class="footer-section">
+            <div>
                 <h4>Support</h4>
-                <a href="#">Help</a>
-                <a href="#">Contact</a>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
             </div>
-            <div class="footer-section">
+            <div>
                 <h4>Legal</h4>
                 <a href="#">Terms</a>
                 <a href="#">Privacy</a>
@@ -136,51 +132,43 @@
     </footer>
 
     <script>
-        function toggleMenu() {
-            document.getElementById('navLinks').classList.toggle('active');
-        }
-
         // Set dates
         const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkin-date').setAttribute('min', today);
-        document.getElementById('checkout-date').setAttribute('min', today);
+        document.getElementById('checkin').min = today;
+        document.getElementById('checkout').min = today;
 
         // Load rooms
-        document.addEventListener('DOMContentLoaded', loadFeaturedRooms);
-
-        async function loadFeaturedRooms() {
-            try {
-                const res = await fetch('/api/rooms');
-                const rooms = await res.json();
-                const container = document.getElementById('featured-rooms');
+        fetch('/api/rooms')
+            .then(r => r.json())
+            .then(rooms => {
+                const container = document.getElementById('rooms');
+                const empty = document.getElementById('empty-state');
                 
                 if (!rooms.length) {
-                    container.innerHTML = '<div class="loading">No apartments available.</div>';
+                    container.innerHTML = '';
+                    empty.style.display = 'block';
+                    container.appendChild(empty);
                     return;
                 }
                 
-                container.innerHTML = rooms.slice(0, 8).map(room => renderRoomCard(room)).join('');
-            } catch (e) {
-                document.getElementById('featured-rooms').innerHTML = '<div class="loading">Error loading rooms</div>';
-            }
-        }
+                container.innerHTML = rooms.map(room => `
+                    <a href="/room-details.html?id=${room.id}" class="room-card">
+                        <div class="room-img">
+                            <img src="${room.images?.[0] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400'}" alt="${room.title}">
+                        </div>
+                        <div class="room-body">
+                            <h3 class="room-title">${room.title}</h3>
+                            <p class="room-location">${room.location || 'Ghana'}</p>
+                            <p class="room-price">$${room.price}<span>/night</span></p>
+                        </div>
+                    </a>
+                `).join('');
+            })
+            .catch(() => {
+                document.getElementById('rooms').innerHTML = '<div class="empty-state"><h3>Error Loading</h3><p>Please refresh the page.</p></div>';
+            });
 
-        function renderRoomCard(room) {
-            const img = room.images?.[0] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=300';
-            return `
-                <a href="/room-details.html?id=${room.id}" class="room-card">
-                    <div class="room-image">
-                        <img src="${img}" alt="${room.title}">
-                    </div>
-                    <div class="room-info">
-                        <h3>${room.title}</h3>
-                        <p class="room-price">$${room.price}<span>/night</span></p>
-                    </div>
-                </a>
-            `;
-        }
-
-        function searchRooms() { window.location.href = '/rooms.html'; }
+        function search() { window.location.href = '/rooms.html'; }
     </script>
 </body>
 </html>
