@@ -129,7 +129,7 @@ async function initializeDatabase() {
         if (adminExists.rows.length === 0) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
             await pool.query(
-                "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+                "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
                 ['Administrator', 'admin@hotel.com', hashedPassword, 'admin']
             );
             console.log('Default admin created: admin@hotel.com / admin123');
@@ -139,7 +139,7 @@ async function initializeDatabase() {
         const settingsExist = await pool.query("SELECT * FROM settings WHERE id = 1");
         if (settingsExist.rows.length === 0) {
             await pool.query(
-                "INSERT INTO settings (id, hotel_name, copyright_year, company_name) VALUES (1, 'Grand Hotel', ?, 'Grand Hotel')",
+                "INSERT INTO settings (id, hotel_name, copyright_year, company_name) VALUES (1, 'Grand Hotel', $1, 'Grand Hotel')",
                 [new Date().getFullYear()]
             );
         }
