@@ -25,10 +25,23 @@
             <a href="/">Overview</a>
             <a href="/rooms.html" class="active">Rooms</a>
             <a href="#">Discover</a>
-            <a href="#">Savor</a>
-            <a href="#">Offers</a>
+            <a href="#">Dining</a>
+            <a href="#">Contact</a>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-content">
+            <a href="/">Overview</a>
+            <a href="/rooms.html">Rooms</a>
+            <a href="#">Discover</a>
+            <a href="#">Dining</a>
+            <a href="#">Contact</a>
+            <a href="#">Sign In</a>
+            <a href="#">Join</a>
+        </div>
+    </div>
 
     <!-- Room Details -->
     <main>
@@ -163,6 +176,17 @@
             }
             loadRoomDetails();
             loadSettings();
+            
+            // Mobile menu toggle
+            document.querySelector('.menu-icon').addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('active');
+            });
+            
+            document.getElementById('mobile-menu').addEventListener('click', (e) => {
+                if (e.target.id === 'mobile-menu') {
+                    document.getElementById('mobile-menu').classList.remove('active');
+                }
+            });
             
             // Set minimum date
             const today = new Date().toISOString().split('T')[0];
