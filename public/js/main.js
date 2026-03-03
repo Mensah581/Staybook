@@ -47,31 +47,19 @@ async function fetchAPI(url, options = {}) {
 
 // Room helper functions
 function renderRoomCard(room) {
-    const statusClass = room.status === 'available' ? 'available' : 'unavailable';
-    const statusText = room.status === 'available' ? 'Available' : 'Not Available';
-    const buttonText = room.status === 'available' ? 'View Details & Book' : 'View Details';
+    const image = room.images && room.images[0] ? room.images[0] : 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400';
     
     return `
-        <div class="room-card">
+        <a href="/room-details.html?id=${room.id}" class="room-card" style="display:block;text-decoration:none;color:inherit;">
             <div class="room-image">
-                <img src="${room.images && room.images[0] ? room.images[0] : 'https://picsum.photos/seed/room/400/300'}" 
-                     alt="${room.title}">
-                <span class="room-status ${statusClass}">${statusText}</span>
+                <img src="${image}" alt="${room.title}">
             </div>
             <div class="room-info">
                 <h3>${room.title}</h3>
-                <div class="room-price">$${room.price} <span>/ night</span></div>
-                <p class="room-description">${room.description || 'No description available'}</p>
-                <div class="room-amenities">
-                    ${room.amenities ? room.amenities.split(',').slice(0, 3).map(a => 
-                        `<span class="amenity-tag">${a.trim()}</span>`
-                    ).join('') : ''}
-                </div>
-                <a href="/room-details.html?id=${room.id}" class="btn btn-primary" style="width: 100%; text-align: center;">
-                    ${buttonText}
-                </a>
+                <p style="color:var(--text-secondary);font-size:0.9rem;">${room.location || 'Ghana'}</p>
+                <p class="room-price">${room.price}<span>/night</span></p>
             </div>
-        </div>
+        </a>
     `;
 }
 

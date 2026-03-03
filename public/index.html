@@ -3,182 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staybook - Premium Apartment Living</title>
+    <title>Staybook - Find Your Perfect Stay</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
     <header>
         <div class="header-container">
             <a href="/" class="logo">
-                <div class="logo-icon">🏨</div>
-                <span>Staybook</span>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 00.7-1.7l-9-9a1 1 0 00-1.4 0l-9 9A1 1 0 003 13z"/>
+                </svg>
+                Staybook
             </a>
             <nav class="nav-links">
-                <a href="/" class="active">Home</a>
+                <a href="/">Home</a>
                 <a href="/rooms.html">Apartments</a>
                 <a href="/admin/login.html">Admin</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero with Real Image -->
     <section class="hero">
-        <div class="hero-content">
-            <h1>Find Your Perfect Stay</h1>
-            <p>Experience luxury and comfort at Staybook. Book your dream apartment today.</p>
-            <a href="/rooms.html" class="btn-primary">View Available Apartments</a>
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80" alt="Luxury Apartment" class="hero-image">
+        <div class="hero-overlay">
+            <div class="hero-content">
+                <h1>Find your next stay</h1>
+                <p>Search deals on apartments, houses, and much more</p>
+            </div>
         </div>
     </section>
 
-    <!-- Search Card -->
-    <div class="container">
+    <!-- Search Bar -->
+    <div class="search-container">
         <div class="search-card">
-            <form class="search-form" id="search-form">
-                <div class="form-group">
-                    <label for="location">Location</label>
-                    <input type="text" id="location" name="location" value="Accra, Ghana" placeholder="Enter location">
-                </div>
-                <div class="form-group">
-                    <label for="checkin-date">Check-in</label>
-                    <input type="date" id="checkin-date" name="checkin-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="checkout-date">Check-out</label>
-                    <input type="date" id="checkout-date" name="checkout-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="guests">Guests</label>
-                    <select id="guests" name="guests">
-                        <option value="1">1 Guest</option>
-                        <option value="2" selected>2 Guests</option>
-                        <option value="3">3 Guests</option>
-                        <option value="4">4 Guests</option>
-                        <option value="5">5+ Guests</option>
-                    </select>
-                </div>
-                <button type="submit" class="search-btn">
-                    🔍 Search
-                </button>
-            </form>
+            <div class="search-field">
+                <label>Location</label>
+                <input type="text" id="location" value="Accra, Ghana" placeholder="Where are you going?">
+            </div>
+            <div class="search-field">
+                <label>Check in</label>
+                <input type="date" id="checkin-date" required>
+            </div>
+            <div class="search-field">
+                <label>Check out</label>
+                <input type="date" id="checkout-date" required>
+            </div>
+            <div class="search-field">
+                <label>Guests</label>
+                <select id="guests">
+                    <option value="1">1 guest</option>
+                    <option value="2" selected>2 guests</option>
+                    <option value="3">3 guests</option>
+                    <option value="4">4 guests</option>
+                </select>
+            </div>
+            <button class="search-btn" onclick="searchRooms()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                Search
+            </button>
         </div>
     </div>
 
-    <!-- Popular Rooms Section -->
+    <!-- Featured Apartments -->
     <section class="section">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Featured Apartments</h2>
-                <a href="/rooms.html" class="section-link">See All →</a>
-            </div>
-            <div class="rooms-scroll" id="featured-rooms">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Loading apartments...</p>
-                </div>
-            </div>
+        <div class="section-header">
+            <h2 class="section-title">Explore nearby stays</h2>
+            <a href="/rooms.html" class="section-link">Show all</a>
+        </div>
+        <div class="rooms-scroll" id="featured-rooms">
+            <div class="loading">Loading...</div>
         </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- Features - Clean Grid -->
     <section class="features">
-        <div class="container">
-            <div class="features-grid">
-                <div class="feature">
-                    <div class="feature-icon">🛎️</div>
-                    <h3>Premium Service</h3>
-                    <p>Experience world-class hospitality with our dedicated staff</p>
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">📶</div>
-                    <h3>Free WiFi</h3>
-                    <p>High-speed internet access throughout your stay</p>
+                <h3>Trust & Safety</h3>
+                <p>Every booking is protected. Your security is our priority.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">🍳</div>
-                    <h3>Breakfast Included</h3>
-                    <p>Start your day with our delicious complimentary breakfast</p>
+                <h3>Quality Stays</h3>
+                <p>Verified properties with real photos and reviews.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">🔒</div>
-                    <h3>24/7 Security</h3>
-                    <p>Your safety is our top priority around the clock</p>
+                <h3>24/7 Support</h3>
+                <p>Round-the-clock assistance for any queries.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">
+                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
+                <h3>Secure Payments</h3>
+                <p>Pay securely with Mobile Money, Cards & more.</p>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Staybook</h4>
-                    <p>Premium apartment living for travelers seeking comfort and luxury.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quick Links</h4>
-                    <a href="/">Home</a>
-                    <a href="/rooms.html">Apartments</a>
-                    <a href="/admin/login.html">Admin Login</a>
-                </div>
-                <div class="footer-section">
-                    <h4>Contact</h4>
-                    <p>📍 Accra, Ghana</p>
-                    <p>📞 +233 20 123 4567</p>
-                    <p>✉️ info@staybook.app</p>
-                </div>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Staybook</h4>
+                Premium short-stay apartments in Ghana.
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Staybook. All rights reserved.</p>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <a href="#">About Us</a>
+                <a href="#">Careers</a>
+                <a href="#">Press</a>
             </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Cancellation</a>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">Sitemap</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2024 Staybook. All rights reserved.
         </div>
     </footer>
 
     <script src="/js/main.js"></script>
     <script>
-        // Set minimum date to today
+        // Set minimum date
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('checkin-date').setAttribute('min', today);
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFeaturedRooms();
-        });
+        document.getElementById('checkout-date').setAttribute('min', today);
+
+        // Load featured rooms
+        document.addEventListener('DOMContentLoaded', loadFeaturedRooms);
 
         async function loadFeaturedRooms() {
             try {
                 const response = await fetch('/api/rooms');
                 const rooms = await response.json();
-                
                 const container = document.getElementById('featured-rooms');
                 
                 if (rooms.length === 0) {
-                    container.innerHTML = `
-                        <div class="loading">
-                            <p>No apartments available at the moment.</p>
-                        </div>
-                    `;
+                    container.innerHTML = '<div class="loading">No apartments available yet.</div>';
                     return;
                 }
                 
-                // Show first 6 rooms
-                const featuredRooms = rooms.slice(0, 6);
-                container.innerHTML = featuredRooms.map(room => renderRoomCard(room)).join('');
+                container.innerHTML = rooms.slice(0, 8).map(room => renderRoomCardMinimal(room)).join('');
             } catch (error) {
-                console.error('Error loading rooms:', error);
-                document.getElementById('featured-rooms').innerHTML = `
-                    <div class="loading">
-                        <p>Error loading rooms. Please try again.</p>
-                    </div>
-                `;
+                console.error('Error:', error);
+                document.getElementById('featured-rooms').innerHTML = '<div class="loading">Error loading rooms</div>';
             }
         }
 
-        // Search form handler
-        document.getElementById('search-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function renderRoomCardMinimal(room) {
+            const image = room.images && room.images[0] ? room.images[0] : 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400';
+            return `
+                <div class="room-card">
+                    <div class="room-image">
+                        <img src="${image}" alt="${room.title}">
+                        <button class="room-wishlist">♥</button>
+                    </div>
+                    <div class="room-info">
+                        <h3>${room.title}</h3>
+                        <p class="room-price">$${room.price}<span>/night</span></p>
+                    </div>
+                    <a href="/room-details.html?id=${room.id}" style="display:block;">
+                        <img src="${image}" alt="${room.title}" style="width:100%;height:200px;object-fit:cover;border-radius:12px;">
+                    </a>
+                    <div class="room-info">
+                        <h3>${room.title}</h3>
+                        <p>${room.location}</p>
+                        <p class="room-price">$${room.price}<span>/night</span></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function searchRooms() {
             window.location.href = '/rooms.html';
-        });
+        }
     </script>
 </body>
 </html>
