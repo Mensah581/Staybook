@@ -14,8 +14,8 @@
             <span class="hotel-name" id="hotel-name">Grand Horizon</span>
         </div>
         <div class="top-bar-right">
-            <a href="#">Sign In</a>
-            <a href="#">Join</a>
+            <a href="/admin/login.html">Sign In</a>
+            <a href="/admin/login.html">Join</a>
             <span class="menu-icon">☰</span>
         </div>
     </div>
@@ -39,58 +39,66 @@
             <a href="#">Discover</a>
             <a href="#">Dining</a>
             <a href="#">Contact</a>
-            <a href="#">Sign In</a>
-            <a href="#">Join</a>
+            <a href="/admin/login.html">Sign In</a>
+            <a href="/admin/login.html">Join</a>
         </div>
     </div>
 
-    <!-- Hero Section -->
-    <section class="hero">
+    <!-- 1. Overview Hero - Full Width Image -->
+    <section class="overview-hero" id="overview-hero">
         <div class="hero-content">
-            <h1>The Escape</h1>
-            <p>Your sanctuary in the city</p>
+            <h1 id="hero-title">The Escape</h1>
+            <p id="hero-text">Your sanctuary in the city</p>
         </div>
     </section>
 
-    <!-- Booking Bar -->
-    <div class="booking-bar" id="booking-bar">
-        <div class="booking-fields">
-            <div class="booking-field">
-                <label>Check In</label>
-                <input type="date" id="checkin">
+    <!-- 2. Tagline + Hotel Description -->
+    <section class="tagline-section">
+        <div class="tagline-columns">
+            <div class="tagline-left">
+                <h2>Discover comfort, elegance, and a stay made just for you</h2>
             </div>
-            <div class="booking-field">
-                <label>Check Out</label>
-                <input type="date" id="checkout">
+            <div class="tagline-right">
+                <p id="hotel-description">Welcome to Grand Horizon, where luxury meets warmth. Our hotel offers an unparalleled experience with world-class dining, rejuvenating spa treatments, and comprehensive wellness facilities. Stay connected with complimentary high-speed Wi-Fi throughout the property, and enjoy the convenience of our professional laundry services. Whether you're here for business or leisure, our dedicated team ensures every moment of your stay is exceptional.</p>
             </div>
-            <div class="booking-field">
-                <label>Guests</label>
-                <select id="guests">
-                    <option value="1">1 Guest</option>
-                    <option value="2" selected>2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4 Guests</option>
-                </select>
-            </div>
-            <button class="btn-check" onclick="checkAvailability()">Check Availability</button>
-        </div>
-    </div>
-
-    <!-- Rooms Section -->
-    <section class="section">
-        <div class="section-header">
-            <div>
-                <p class="section-label">Accommodations</p>
-                <h2 class="section-title">Rooms & Suites</h2>
-            </div>
-            <p class="section-desc">Beautifully appointed spaces designed for comfort and tranquility.</p>
-        </div>
-        <div class="rooms-container" id="rooms-container">
-            <div class="loading">Loading rooms...</div>
         </div>
     </section>
 
-    <!-- Amenities -->
+    <!-- 3. Image Complement Section -->
+    <section class="complement-images">
+        <img src="https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200" alt="Hotel Interior">
+        <p class="image-caption">Elegantly designed spaces for your comfort</p>
+        
+        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200" alt="Fine Dining">
+        <p class="image-caption">Exquisite culinary experiences</p>
+        
+        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbec29?w=1200" alt="Spa & Wellness">
+        <p class="image-caption">Rejuvenate your body and mind</p>
+    </section>
+
+    <!-- 4. Food Section -->
+    <section class="food-section">
+        <h2 class="section-title">Culinary Delights</h2>
+        <div class="food-grid">
+            <div class="food-card">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600" alt="Gourmet Breakfast">
+                <h4>Morning Elegance</h4>
+                <p>Start your day with our curated breakfast selection</p>
+            </div>
+            <div class="food-card">
+                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600" alt="Fine Dining">
+                <h4>Signature Restaurant</h4>
+                <p>Experience culinary artistry in an intimate setting</p>
+            </div>
+            <div class="food-card">
+                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600" alt="Cocktails">
+                <h4>Poolside Lounge</h4>
+                <p>Refreshments and light bites by the pool</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Experience / Hotel Amenities (Keep as-is) -->
     <section class="amenities-section">
         <div class="amenities-container">
             <div class="section-header">
@@ -128,33 +136,26 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-brand">
-                <div class="logo" id="footer-hotel-name">GRAND HORIZON</div>
-                <p id="footer-address">Accra, Ghana</p>
-                <p id="footer-phone">+233 20 123 4567</p>
-            </div>
-            <div class="footer-section">
-                <h4>Navigate</h4>
-                <a href="/">Overview</a>
-                <a href="/rooms.html">Rooms</a>
-                <a href="#">Discover</a>
-                <a href="#">Savor</a>
-            </div>
-            <div class="footer-section">
-                <h4>Info</h4>
-                <p>Check In: <span id="checkin-time">2:00 PM</span></p>
-                <p>Check Out: <span id="checkout-time">12:00 PM</span></p>
-            </div>
-            <div class="footer-section">
-                <h4>Contact</h4>
-                <p id="footer-email">info@grandhorizon.com</p>
-            </div>
+    <!-- 6. Footer - New Design -->
+    <footer class="overview-footer">
+        <div class="footer-social">
+            <a href="#" aria-label="WhatsApp">WhatsApp</a>
+            <a href="#" aria-label="Instagram">Instagram</a>
+            <a href="#" aria-label="Facebook">Facebook</a>
+            <a href="#" aria-label="Twitter">Twitter</a>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="copyright-year">2024</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
+        
+        <div class="footer-cta">
+            <a href="/rooms.html">Book Online</a>
+            <span style="color: rgba(255,255,255,0.4); margin: 0 12px;">|</span>
+            <a href="tel:+233201234567">Call</a>
+        </div>
+        
+        <div class="footer-contact">
+            <p>About Us → Contact info, live chat, phone numbers</p>
+            <p id="footer-address">Accra, Ghana | <span id="footer-phone">+233 20 123 4567</span></p>
+            <p id="footer-email">info@grandhorizon.com</p>
+            <p style="margin-top: 12px; font-size: 11px; color: rgba(255,255,255,0.4);">Best Price Guarantee</p>
         </div>
     </footer>
 
@@ -168,120 +169,29 @@
                 if (settings.hotel_name) {
                     const name = settings.hotel_name.toUpperCase();
                     document.getElementById('hotel-name').textContent = name;
-                    document.getElementById('footer-hotel-name').textContent = name;
-                    document.getElementById('company-name').textContent = settings.hotel_name;
                     document.title = settings.hotel_name + ' - Luxury Hotel';
                 }
                 
-                if (settings.hotel_address) document.getElementById('footer-address').textContent = settings.hotel_address;
+                if (settings.hotel_address) {
+                    const addr = settings.hotel_address + ' | ' + (settings.hotel_phone || '');
+                    document.getElementById('footer-address').innerHTML = addr;
+                }
                 if (settings.hotel_phone) document.getElementById('footer-phone').textContent = settings.hotel_phone;
                 if (settings.hotel_email) document.getElementById('footer-email').textContent = settings.hotel_email;
-                if (settings.checkin_time) document.getElementById('checkin-time').textContent = settings.checkin_time;
-                if (settings.checkout_time) document.getElementById('checkout-time').textContent = settings.checkout_time;
-                if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
                 
-                if (settings.hero_title) document.querySelector('.hero h1').textContent = settings.hero_title;
-                if (settings.hero_text) document.querySelector('.hero p').textContent = settings.hero_text;
+                if (settings.hero_title) document.getElementById('hero-title').textContent = settings.hero_title;
+                if (settings.hero_text) document.getElementById('hero-text').textContent = settings.hero_text;
                 if (settings.hero_image) {
-                    document.querySelector('.hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%), url('${settings.hero_image}') center/cover`;
+                    document.getElementById('overview-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${settings.hero_image}') center/cover`;
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
         }
 
-        // Load rooms
-        async function loadRooms() {
-            try {
-                const response = await fetch('/api/rooms');
-                const rooms = await response.json();
-                
-                const container = document.getElementById('rooms-container');
-                
-                if (!rooms || rooms.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M3 9l9-7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                                </svg>
-                            </div>
-                            <h3>No Rooms Available</h3>
-                            <p>Currently there are no available rooms. Please check back later.</p>
-                            <a href="tel:${document.getElementById('footer-phone').textContent}" class="btn-primary">Contact Hotel</a>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                const availableRooms = rooms.filter(r => r.status === 'available');
-                
-                if (availableRooms.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                </svg>
-                            </div>
-                            <h3>No Rooms Available</h3>
-                            <p>All rooms are booked for your selected dates.</p>
-                            <button class="btn-outline" onclick="document.getElementById('checkin').value=''; document.getElementById('checkout').value=''; loadRooms();">Change Dates</button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = availableRooms.map(room => `
-                    <div class="room-card">
-                        <div class="room-image">
-                            <img src="${room.image_url || 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600'}" alt="${room.title}">
-                        </div>
-                        <div class="room-content">
-                            <h3 class="room-title">${room.title}</h3>
-                            <p class="room-description">${room.description ? room.description.substring(0, 80) + '...' : 'Comfortable and well-appointed room'}</p>
-                            <div class="room-price">
-                                <span class="price-amount">$${parseFloat(room.price).toFixed(0)}</span>
-                                <span class="price-period">/ night</span>
-                            </div>
-                            <a href="/room-details.html?id=${room.id}" class="btn-room">View Room</a>
-                        </div>
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading rooms:', error);
-                document.getElementById('rooms-container').innerHTML = '<div class="error-state"><p>Error loading rooms.</p></div>';
-            }
-        }
-
-        // Check availability
-        function checkAvailability() {
-            const checkin = document.getElementById('checkin').value;
-            const checkout = document.getElementById('checkout').value;
-            
-            if (!checkin || !checkout) {
-                alert('Please select check-in and check-out dates');
-                return;
-            }
-            
-            if (checkout <= checkin) {
-                alert('Check-out must be after check-in');
-                return;
-            }
-            
-            sessionStorage.setItem('search_checkin', checkin);
-            sessionStorage.setItem('search_checkout', checkout);
-            sessionStorage.setItem('search_guests', document.getElementById('guests').value);
-            
-            document.querySelector('.section').scrollIntoView({behavior: 'smooth'});
-            loadRooms();
-        }
-
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadHotelSettings();
-            loadRooms();
             
             // Mobile menu toggle
             document.querySelector('.menu-icon').addEventListener('click', () => {
@@ -293,17 +203,6 @@
                     document.getElementById('mobile-menu').classList.remove('active');
                 }
             });
-            
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const dayAfter = new Date(today);
-            dayAfter.setDate(dayAfter.getDate() + 2);
-            
-            document.getElementById('checkin').value = tomorrow.toISOString().split('T')[0];
-            document.getElementById('checkout').value = dayAfter.toISOString().split('T')[0];
-            document.getElementById('checkin').min = tomorrow.toISOString().split('T')[0];
-            document.getElementById('checkout').min = dayAfter.toISOString().split('T')[0];
         });
     </script>
 </body>
