@@ -901,9 +901,17 @@ footer {
 
 @media (max-width: 768px) {
     .top-bar { padding: 0 20px; }
-    .main-nav { height: auto; padding: 12px 20px; }
-    .nav-center { gap: 30px; flex-wrap: wrap; justify-content: center; }
-    .nav-center a { font-size: 13px; padding: 6px 0; }
+    .main-nav { 
+        height: 60px; 
+        padding: 0 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        justify-content: flex-start;
+    }
+    .main-nav::-webkit-scrollbar { display: none; }
+    .nav-center { gap: 40px; }
+    .nav-center a { font-size: 14px; flex: 0 0 auto; }
     
     .hero h1 { font-size: 32px; letter-spacing: 4px; }
     .hero-content { max-width: 80%; }
