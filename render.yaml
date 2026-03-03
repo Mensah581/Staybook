@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: Staybook
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
-    rootDirectory: ""
