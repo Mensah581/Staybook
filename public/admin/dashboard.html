@@ -202,11 +202,16 @@
                 
                 <div class="form-group">
                     <label for="hero-title">Hero Title</label>
-                    <input type="text" id="hero-title" name="hero-title" placeholder="e.g., Find Your Perfect Stay">
+                    <input type="text" id="hero-title" name="hero-title" placeholder="e.g., Luxury Accommodations in the Heart of the City">
                 </div>
                 <div class="form-group">
-                    <label for="hero-text">Hero Text</label>
-                    <textarea id="hero-text" name="hero-text" rows="2" placeholder="e.g., Experience luxury and comfort at Grand Hotel..."></textarea>
+                    <label for="hero-text">Hero Subtitle</label>
+                    <textarea id="hero-text" name="hero-text" rows="2" placeholder="e.g., Experience comfort and elegance at our hotel..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="hero-image">Hero Image URL</label>
+                    <input type="text" id="hero-image" name="hero-image" placeholder="https://example.com/hero-image.jpg">
+                    <small style="color: var(--gray);">Paste a high-quality hotel image URL (recommended: 1920x1080)</small>
                 </div>
                 <div class="form-group">
                     <label for="about-title">About Section Title</label>
@@ -602,6 +607,7 @@
                 document.getElementById('hotel-address').value = settings.hotel_address || '';
                 document.getElementById('hero-title').value = settings.hero_title || '';
                 document.getElementById('hero-text').value = settings.hero_text || '';
+                document.getElementById('hero-image').value = settings.hero_image || '';
                 document.getElementById('about-title').value = settings.about_title || '';
                 document.getElementById('about-text').value = settings.about_text || '';
                 document.getElementById('about-image').value = settings.about_image || '';
@@ -627,6 +633,7 @@
                 hotel_address: document.getElementById('hotel-address').value,
                 hero_title: document.getElementById('hero-title').value,
                 hero_text: document.getElementById('hero-text').value,
+                hero_image: document.getElementById('hero-image').value,
                 about_title: document.getElementById('about-title').value,
                 about_text: document.getElementById('about-text').value,
                 about_image: document.getElementById('about-image').value,

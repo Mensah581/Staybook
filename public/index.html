@@ -11,164 +11,289 @@
     <!-- Header -->
     <header>
         <div class="header">
-            <a href="/" class="logo">Stay<span>book</span></a>
+            <a href="/" class="logo"><span id="hotel-name">Grand Horizon Suites</span></a>
             <nav class="nav">
                 <a href="/" class="active">Home</a>
-                <a href="/rooms.html">Apartments</a>
+                <a href="/rooms.html">Rooms</a>
                 <a href="/admin/login.html">Admin</a>
             </nav>
         </div>
     </header>
 
-    <!-- Hero -->
-    <section class="hero">
-        <h1>Book Your Perfect Stay</h1>
-        <p>Professional booking for quality accommodations</p>
+    <!-- Hero Section -->
+    <section class="hero" id="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 id="hero-title">Luxury Accommodations in the Heart of the City</h1>
+            <p id="hero-subtitle">Experience comfort and elegance at Grand Horizon Suites</p>
+            <a href="#booking-bar" class="btn-hero">Check Availability</a>
+        </div>
     </section>
 
-    <!-- Search -->
-    <div class="search-bar">
-        <div class="search-box">
-            <div class="search-field">
-                <label>Location</label>
-                <input type="text" id="location" value="Accra, Ghana">
-            </div>
-            <div class="search-field">
+    <!-- Booking Bar -->
+    <div class="booking-bar" id="booking-bar">
+        <div class="booking-fields">
+            <div class="booking-field">
                 <label>Check In</label>
                 <input type="date" id="checkin">
             </div>
-            <div class="search-field">
+            <div class="booking-field">
                 <label>Check Out</label>
                 <input type="date" id="checkout">
             </div>
-            <div class="search-field">
+            <div class="booking-field">
                 <label>Guests</label>
                 <select id="guests">
-                    <option>1 Guest</option>
-                    <option selected>2 Guests</option>
-                    <option>3 Guests</option>
-                    <option>4 Guests</option>
+                    <option value="1">1 Guest</option>
+                    <option value="2" selected>2 Guests</option>
+                    <option value="3">3 Guests</option>
+                    <option value="4">4 Guests</option>
                 </select>
             </div>
-            <button class="search-btn" onclick="search()">Search</button>
+            <button class="btn-check" onclick="checkAvailability()">Check Availability</button>
         </div>
     </div>
 
-    <!-- Rooms -->
+    <!-- Rooms Section -->
     <section class="section">
         <div class="section-header">
-            <h2 class="section-title">Available Apartments</h2>
+            <h2 class="section-title">Our Rooms & Suites</h2>
+            <p class="section-subtitle">Choose from our selection of beautifully appointed accommodations</p>
         </div>
-        <div class="room-grid" id="rooms">
-            <div class="empty-state" id="empty-state" style="display:none;">
-                <h3>No Apartments Available</h3>
-                <p>Currently there are no available apartments. Please check back later or contact us.</p>
-                <a href="#" class="btn">Contact Hotel</a>
-            </div>
-            <div class="loading">Loading apartments...</div>
+        <div class="rooms-container" id="rooms-container">
+            <div class="loading">Loading rooms...</div>
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="features">
-        <div class="features-grid">
-            <div class="feature">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <!-- Amenities -->
+    <section class="amenities-section">
+        <div class="amenities-container">
+            <h2 class="section-title">Hotel Amenities</h2>
+            <div class="amenities-grid">
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5v14"/></svg>
+                    <span>Free WiFi</span>
                 </div>
-                <h3>Secure Booking</h3>
-                <p>Your reservations are protected</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <span>24/7 Front Desk</span>
                 </div>
-                <h3>Quality Stays</h3>
-                <p>Verified property standards</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+                    <span>Restaurant</span>
                 </div>
-                <h3>24/7 Support</h3>
-                <p>Always here to help</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">
-                    <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+                    <span>Room Service</span>
                 </div>
-                <h3>Secure Payment</h3>
-                <p>Multiple payment options</p>
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                    <span>Luxury Suites</span>
+                </div>
+                <div class="amenity-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Secure Parking</span>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <div class="footer">
-            <div>
-                <h4>Staybook</h4>
-                <p>Professional hotel booking solution.</p>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4 id="footer-hotel-name">Grand Horizon Suites</h4>
+                <p id="footer-address">Accra, Ghana</p>
+                <p id="footer-phone">+233 20 123 4567</p>
             </div>
-            <div>
+            <div class="footer-section">
                 <h4>Quick Links</h4>
                 <a href="/">Home</a>
-                <a href="/rooms.html">Apartments</a>
+                <a href="/rooms.html">Rooms</a>
+                <a href="/admin/login.html">Admin Login</a>
             </div>
-            <div>
-                <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Contact Us</a>
+            <div class="footer-section">
+                <h4>Check In/Out</h4>
+                <p>Check In: <span id="checkin-time">2:00 PM</span></p>
+                <p>Check Out: <span id="checkout-time">12:00 PM</span></p>
             </div>
-            <div>
-                <h4>Legal</h4>
-                <a href="#">Terms</a>
-                <a href="#">Privacy</a>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p id="footer-email">info@grandhorizonsuites.com</p>
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2024 Staybook. All rights reserved.
+            <p>&copy; <span id="copyright-year">2024</span> <span id="company-name">Grand Horizon Suites</span>. All rights reserved.</p>
         </div>
     </footer>
 
+    <script src="/js/main.js"></script>
     <script>
-        // Set dates
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('checkin').min = today;
-        document.getElementById('checkout').min = today;
+        // Load hotel settings on page load
+        async function loadHotelSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                
+                // Update hotel name
+                if (settings.hotel_name) {
+                    document.getElementById('hotel-name').textContent = settings.hotel_name;
+                    document.getElementById('footer-hotel-name').textContent = settings.hotel_name;
+                    document.getElementById('company-name').textContent = settings.hotel_name;
+                    document.title = settings.hotel_name + ' - Hotel Booking';
+                }
+                
+                // Update hero section
+                if (settings.hero_title) {
+                    document.getElementById('hero-title').textContent = settings.hero_title;
+                }
+                if (settings.hero_text) {
+                    document.getElementById('hero-subtitle').textContent = settings.hero_text;
+                }
+                if (settings.hero_image) {
+                    document.getElementById('hero-section').style.backgroundImage = `url('${settings.hero_image}')`;
+                }
+                
+                // Update footer
+                if (settings.hotel_address) {
+                    document.getElementById('footer-address').textContent = settings.hotel_address;
+                }
+                if (settings.hotel_phone) {
+                    document.getElementById('footer-phone').textContent = settings.hotel_phone;
+                }
+                if (settings.hotel_email) {
+                    document.getElementById('footer-email').textContent = settings.hotel_email;
+                }
+                if (settings.checkin_time) {
+                    document.getElementById('checkin-time').textContent = settings.checkin_time;
+                }
+                if (settings.checkout_time) {
+                    document.getElementById('checkout-time').textContent = settings.checkout_time;
+                }
+                if (settings.copyright_year) {
+                    document.getElementById('copyright-year').textContent = settings.copyright_year;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
 
         // Load rooms
-        fetch('/api/rooms')
-            .then(r => r.json())
-            .then(rooms => {
-                const container = document.getElementById('rooms');
-                const empty = document.getElementById('empty-state');
+        async function loadRooms() {
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
                 
-                if (!rooms.length) {
-                    container.innerHTML = '';
-                    empty.style.display = 'block';
-                    container.appendChild(empty);
+                const container = document.getElementById('rooms-container');
+                
+                if (!rooms || rooms.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M3 9l9-7v11a2 9 7 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                    <polyline points="9,22 9,12 15,12 15,22"/>
+                                </svg>
+                            </div>
+                            <h3>No Rooms Available</h3>
+                            <p>We currently have no rooms available for your selected dates. Please try different dates or contact us directly.</p>
+                            <button class="btn-primary" onclick="document.getElementById('booking-bar').scrollIntoView({behavior:'smooth'}); document.getElementById('checkin').value=''; document.getElementById('checkout').value=''; loadRooms();">Change Dates</button>
+                            <a href="tel:${document.getElementById('footer-phone').textContent}" class="btn-outline">Contact Hotel</a>
+                        </div>
+                    `;
                     return;
                 }
                 
-                container.innerHTML = rooms.map(room => `
-                    <a href="/room-details.html?id=${room.id}" class="room-card">
-                        <div class="room-img">
-                            <img src="${room.images?.[0] || 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400'}" alt="${room.title}">
+                const availableRooms = rooms.filter(r => r.status === 'available');
+                
+                if (availableRooms.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                            <h3>No Rooms Available for Selected Dates</h3>
+                            <p>All our rooms are booked for your chosen dates. Please select different dates to check availability.</p>
+                            <button class="btn-primary" onclick="document.getElementById('checkin').value=''; document.getElementById('checkout').value=''; loadRooms();">Change Dates</button>
+                            <a href="tel:${document.getElementById('footer-phone').textContent}" class="btn-outline">Contact Hotel</a>
                         </div>
-                        <div class="room-body">
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = availableRooms.map(room => `
+                    <div class="room-card">
+                        <div class="room-image">
+                            <img src="${room.image_url || '/images/room-placeholder.jpg'}" alt="${room.title}">
+                            <span class="room-badge">${room.status === 'available' ? 'Available' : 'Booked'}</span>
+                        </div>
+                        <div class="room-content">
                             <h3 class="room-title">${room.title}</h3>
-                            <p class="room-location">${room.location || 'Ghana'}</p>
-                            <p class="room-price">$${room.price}<span>/night</span></p>
+                            <p class="room-description">${room.description ? room.description.substring(0, 100) + '...' : 'Comfortable and well-appointed room'}</p>
+                            <div class="room-price">
+                                <span class="price-amount">$${parseFloat(room.price).toFixed(0)}</span>
+                                <span class="price-period">/ night</span>
+                            </div>
+                            <a href="/room-details.html?id=${room.id}" class="btn-room">View Room</a>
                         </div>
-                    </a>
+                    </div>
                 `).join('');
-            })
-            .catch(() => {
-                document.getElementById('rooms').innerHTML = '<div class="empty-state"><h3>Error Loading</h3><p>Please refresh the page.</p></div>';
-            });
+                
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                document.getElementById('rooms-container').innerHTML = '<div class="error-state"><p>Error loading rooms. Please try again.</p></div>';
+            }
+        }
 
-        function search() { window.location.href = '/rooms.html'; }
+        // Check availability
+        function checkAvailability() {
+            const checkin = document.getElementById('checkin').value;
+            const checkout = document.getElementById('checkout').value;
+            
+            if (!checkin || !checkout) {
+                alert('Please select check-in and check-out dates');
+                return;
+            }
+            
+            if (checkout <= checkin) {
+                alert('Check-out date must be after check-in date');
+                return;
+            }
+            
+            // Store dates in sessionStorage for room-details page
+            sessionStorage.setItem('search_checkin', checkin);
+            sessionStorage.setItem('search_checkout', checkout);
+            sessionStorage.setItem('search_guests', document.getElementById('guests').value);
+            
+            // Scroll to rooms
+            document.querySelector('.section').scrollIntoView({behavior: 'smooth'});
+            
+            // Reload rooms (could add filtering here later)
+            loadRooms();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHotelSettings();
+            loadRooms();
+            
+            // Set default dates (today + 1 day, today + 2 days)
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(today);
+            dayAfter.setDate(dayAfter.getDate() + 2);
+            
+            document.getElementById('checkin').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('checkout').value = dayAfter.toISOString().split('T')[0];
+            document.getElementById('checkin').min = tomorrow.toISOString().split('T')[0];
+            document.getElementById('checkout').min = dayAfter.toISOString().split('T')[0];
+        });
     </script>
 </body>
 </html>

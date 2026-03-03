@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apartments - Staybook</title>
+    <title>Rooms - Staybook</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
     <header>
-        <div class="header-container">
-            <a href="/" class="logo">
-                <div class="logo-icon">🏨</div>
-                <span>Staybook</span>
-            </a>
-            <nav class="nav-links">
+        <div class="header">
+            <a href="/" class="logo"><span id="hotel-name">Grand Horizon Suites</span></a>
+            <nav class="nav">
                 <a href="/">Home</a>
                 <a href="/rooms.html" class="active">Rooms</a>
                 <a href="/admin/login.html">Admin</a>
@@ -23,85 +21,85 @@
     </header>
 
     <!-- Page Header -->
-    <section style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 3rem 1.5rem; color: white; text-align: center;">
-        <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Our Apartments</h1>
-        <p style="opacity: 0.9;">Choose from our premium selection of accommodations</p>
+    <section class="page-header">
+        <h1>Our Rooms & Suites</h1>
+        <p>Choose from our selection of beautifully appointed accommodations</p>
     </section>
 
     <!-- Rooms Section -->
-    <main style="padding: 2rem 1.5rem 4rem;">
-        <div class="container" style="max-width: 1200px; padding: 0;">
-            <div class="rooms-scroll" id="rooms-container">
-                <div style="text-align: center; padding: 3rem; width: 100%;">
-                    <p>Loading rooms...</p>
-                </div>
-            </div>
+    <section class="section">
+        <div class="rooms-container" id="rooms-container">
+            <div class="loading">Loading rooms...</div>
         </div>
-    </main>
-
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav">
-        <a href="/">
-            <span>🏠</span>
-            Home
-        </a>
-        <a href="/rooms.html" class="active">
-            <span>🛏️</span>
-            Rooms
-        </a>
-        <a href="/admin/login.html">
-            <span>⚙️</span>
-            Admin
-        </a>
-    </nav>
+    </section>
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
+        <div class="footer-container">
             <div class="footer-section">
-                <h3>Grand Hotel</h3>
-                <p>Your destination for luxury accommodations</p>
-                <p>📍 123 Hotel Street, City Center</p>
-                <p>📞 +1 234 567 890</p>
-                <p>✉️ info@grandhotel.com</p>
+                <h4 id="footer-hotel-name">Grand Horizon Suites</h4>
+                <p id="footer-address">Accra, Ghana</p>
+                <p id="footer-phone">+233 20 123 4567</p>
             </div>
             <div class="footer-section">
-                <h3>Quick Links</h3>
+                <h4>Quick Links</h4>
                 <a href="/">Home</a>
-                <a href="/rooms.html">Our Rooms</a>
+                <a href="/rooms.html">Rooms</a>
                 <a href="/admin/login.html">Admin Login</a>
             </div>
             <div class="footer-section">
-                <h3>Check-in/out</h3>
-                <p>Check-in: 2:00 PM</p>
-                <p>Check-out: 12:00 PM</p>
+                <h4>Check In/Out</h4>
+                <p>Check In: <span id="checkin-time">2:00 PM</span></p>
+                <p>Check Out: <span id="checkout-time">12:00 PM</span></p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p id="footer-email">info@grandhorizonsuites.com</p>
             </div>
         </div>
         <div class="footer-bottom">
-            © 2024 Grand Hotel. All rights reserved.
+            <p>&copy; <span id="copyright-year">2024</span> <span id="company-name">Grand Horizon Suites</span>. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        // Load rooms on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            loadRooms();
-            loadSettings();
-        });
-
-        async function loadSettings() {
+        // Load hotel settings
+        async function loadHotelSettings() {
             try {
                 const response = await fetch('/api/settings');
                 const settings = await response.json();
+                
                 if (settings.hotel_name) {
                     document.getElementById('hotel-name').textContent = settings.hotel_name;
+                    document.getElementById('footer-hotel-name').textContent = settings.hotel_name;
+                    document.getElementById('company-name').textContent = settings.hotel_name;
                     document.title = settings.hotel_name + ' - Rooms';
+                }
+                
+                if (settings.hotel_address) {
+                    document.getElementById('footer-address').textContent = settings.hotel_address;
+                }
+                if (settings.hotel_phone) {
+                    document.getElementById('footer-phone').textContent = settings.hotel_phone;
+                }
+                if (settings.hotel_email) {
+                    document.getElementById('footer-email').textContent = settings.hotel_email;
+                }
+                if (settings.checkin_time) {
+                    document.getElementById('checkin-time').textContent = settings.checkin_time;
+                }
+                if (settings.checkout_time) {
+                    document.getElementById('checkout-time').textContent = settings.checkout_time;
+                }
+                if (settings.copyright_year) {
+                    document.getElementById('copyright-year').textContent = settings.copyright_year;
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
         }
 
+        // Load rooms
         async function loadRooms() {
             try {
                 const response = await fetch('/api/rooms');
@@ -109,56 +107,73 @@
                 
                 const container = document.getElementById('rooms-container');
                 
-                if (rooms.length === 0) {
+                if (!rooms || rooms.length === 0) {
                     container.innerHTML = `
-                        <div class="empty-state" style="min-width: 100%;">
-                            <h3>No rooms available</h3>
-                            <p>Please check back later for available rooms.</p>
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M3 9l9-7v11a2 9 7 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                                    <polyline points="9,22 9,12 15,12 15,22"/>
+                                </svg>
+                            </div>
+                            <h3>No Rooms Available</h3>
+                            <p>We currently have no rooms available. Please check back later or contact us directly.</p>
+                            <a href="tel:${document.getElementById('footer-phone').textContent}" class="btn-primary">Contact Hotel</a>
                         </div>
                     `;
                     return;
                 }
-
-                container.innerHTML = rooms.map(room => `
+                
+                const availableRooms = rooms.filter(r => r.status === 'available');
+                
+                if (availableRooms.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                            <h3>No Rooms Available for Selected Dates</h3>
+                            <p>All our rooms are currently booked. Please select different dates or contact us for availability.</p>
+                            <a href="tel:${document.getElementById('footer-phone').textContent}" class="btn-primary">Contact Hotel</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = availableRooms.map(room => `
                     <div class="room-card">
                         <div class="room-image">
-                            <img src="${room.images && room.images[0] ? room.images[0] : 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400'}" 
-                                 alt="${room.title}">
-                            <span class="room-badge ${room.status}">${room.status === 'available' ? 'Available' : 'Unavailable'}</span>
-                            <div class="room-favorite">♡</div>
+                            <img src="${room.image_url || '/images/room-placeholder.jpg'}" alt="${room.title}">
+                            <span class="room-badge">${room.status === 'available' ? 'Available' : 'Booked'}</span>
                         </div>
-                        <div class="room-info">
+                        <div class="room-content">
                             <h3 class="room-title">${room.title}</h3>
-                            <p class="room-location">📍 City Center</p>
-                            <div class="room-amenities">
-                                <span class="room-amenity">📶 WiFi</span>
-                                <span class="room-amenity">❄️ AC</span>
-                                <span class="room-amenity">📺 TV</span>
+                            <p class="room-description">${room.description ? room.description.substring(0, 100) + '...' : 'Comfortable and well-appointed room'}</p>
+                            <div class="room-price">
+                                <span class="price-amount">$${parseFloat(room.price).toFixed(0)}</span>
+                                <span class="price-period">/ night</span>
                             </div>
-                            <div class="room-footer">
-                                <div class="room-price">
-                                    <span class="amount">$${room.price}</span>
-                                    <span class="period">/ night</span>
-                                </div>
-                                <div class="room-rating">★ 4.8</div>
-                            </div>
-                        </div>
-                        <div style="padding: 0 1.25rem 1.25rem;">
-                            <a href="/room-details.html?id=${room.id}" class="btn-primary" style="width: 100%; justify-content: center;">
-                                ${room.status === 'available' ? 'Book Now' : 'View Details'}
-                            </a>
+                            <a href="/room-details.html?id=${room.id}" class="btn-room">View Room</a>
                         </div>
                     </div>
                 `).join('');
+                
             } catch (error) {
                 console.error('Error loading rooms:', error);
-                document.getElementById('rooms-container').innerHTML = `
-                    <div class="error-message" style="min-width: 100%;">
-                        <p>Error loading rooms. Please try again later.</p>
-                    </div>
-                `;
+                document.getElementById('rooms-container').innerHTML = '<div class="error-state"><p>Error loading rooms. Please try again.</p></div>';
             }
         }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHotelSettings();
+            loadRooms();
+        });
     </script>
 </body>
 </html>

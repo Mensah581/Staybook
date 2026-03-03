@@ -104,13 +104,14 @@ async function initializeDatabase() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
                 id INTEGER PRIMARY KEY DEFAULT 1,
-                hotel_name VARCHAR(255) DEFAULT 'Grand Hotel',
+                hotel_name VARCHAR(255) DEFAULT 'Grand Horizon Suites',
                 hotel_tagline TEXT,
                 hotel_phone VARCHAR(50),
                 hotel_email VARCHAR(255),
                 hotel_address TEXT,
                 hero_title VARCHAR(255),
                 hero_text TEXT,
+                hero_image TEXT,
                 about_title VARCHAR(255),
                 about_text TEXT,
                 about_image TEXT,
@@ -139,7 +140,7 @@ async function initializeDatabase() {
         const settingsExist = await pool.query("SELECT * FROM settings WHERE id = 1");
         if (settingsExist.rows.length === 0) {
             await pool.query(
-                "INSERT INTO settings (id, hotel_name, copyright_year, company_name) VALUES (1, 'Grand Hotel', $1, 'Grand Hotel')",
+                "INSERT INTO settings (id, hotel_name, hero_title, hero_text, checkin_time, checkout_time, copyright_year, company_name) VALUES (1, 'Grand Horizon Suites', 'Luxury Accommodations in the Heart of the City', 'Experience comfort and elegance at Grand Horizon Suites', '2:00 PM', '12:00 PM', $1, 'Grand Horizon Suites')",
                 [new Date().getFullYear()]
             );
         }
@@ -382,18 +383,18 @@ app.get('/api/settings', async (req, res) => {
 // Update settings (admin)
 app.put('/api/admin/settings', requireAdmin, async (req, res) => {
     try {
-        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name } = req.body;
+        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, hero_image, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name } = req.body;
         
         await pool.query(`
             UPDATE settings SET 
                 hotel_name = $1, hotel_tagline = $2, hotel_phone = $3, 
-                hotel_email = $4, hotel_address = $5, hero_title = $6, hero_text = $7, 
-                about_title = $8, about_text = $9, about_image = $10, checkin_time = $11, 
-                checkout_time = $12, front_desk_hours = $13, copyright_year = $14, company_name = $15,
+                hotel_email = $4, hotel_address = $5, hero_title = $6, hero_text = $7, hero_image = $8,
+                about_title = $9, about_text = $10, about_image = $11, checkin_time = $12, 
+                checkout_time = $13, front_desk_hours = $14, copyright_year = $15, company_name = $16,
                 updated_at = CURRENT_TIMESTAMP 
             WHERE id = 1`,
             [hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, 
-             hero_title, hero_text, about_title, about_text, about_image, 
+             hero_title, hero_text, hero_image, about_title, about_text, about_image, 
              checkin_time, checkout_time, front_desk_hours, copyright_year, company_name]
         );
         res.json({ message: 'Settings updated successfully' });
