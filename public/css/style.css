@@ -3,13 +3,13 @@
 
 :root {
     /* Core Colors */
-    --bg-primary: #F7F6F2;
+    --bg-primary: #F8F9F7;
     --bg-secondary: #EFECE6;
     --text-primary: #1A1A1A;
     --text-muted: #6B6B6B;
-    --accent: #8B9A8B; /* muted sage green */
-    --accent-light: #A5B5A5;
-    --accent-dark: #6B7A6B;
+    --accent: #2F6F5F; /* Kimpton green */
+    --accent-light: #4E8C7B;
+    --accent-dark: #1F4F3F;
     
     /* Utility */
     --surface: #FFFFFF;
@@ -27,7 +27,7 @@
     --radius-lg: 12px;
     
     /* Typography */
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font: 'Poppins', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -89,7 +89,7 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
 /* ========== NAVIGATION BAR ========== */
 .main-nav {
     height: 75px;
-    background: #F7F6F2;
+    background: #F8F9F7;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -101,17 +101,16 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
 
 .nav-center {
     display: flex;
-    gap: 60px;
+    gap: 40px;
 }
 
 .nav-center a {
     font-size: 14px;
     font-weight: 500;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--text-primary);
-    padding: 8px 0;
-    padding-bottom: 6px;
+    color: #444444;
+    padding: 20px 0;
     border-bottom: 2px solid transparent;
     transition: all 0.2s;
 }
@@ -119,6 +118,7 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
 .nav-center a:hover,
 .nav-center a.active {
     border-bottom-color: var(--accent);
+    color: var(--text-primary);
 }
 
 /* Mobile Menu Overlay */
@@ -184,19 +184,22 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
 }
 
 .hero h1 {
-    font-size: 52px;
+    font-size: 56px;
     font-weight: 300;
     color: white;
-    letter-spacing: 8px;
+    letter-spacing: -1px;
     text-transform: uppercase;
     margin-bottom: 16px;
+    line-height: 1.1;
 }
 
 .hero p {
-    font-size: 14px;
-    color: rgba(255,255,255,0.85);
+    font-size: 20px;
+    font-weight: 400;
+    color: #eaeaea;
     letter-spacing: 3px;
     text-transform: uppercase;
+    max-width: 600px;
 }
 
 /* ========== BOOKING BAR ========== */
@@ -272,7 +275,7 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
 .section {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 100px 24px;
+    padding: 120px 8%;
 }
 
 .section-header {
@@ -601,10 +604,24 @@ footer {
 /* ========== OVERVIEW PAGE ========== */
 .overview-hero {
     position: relative;
-    height: 70vh;
-    min-height: 500px;
+    height: 75vh;
+    min-height: 650px;
+    max-height: 800px;
     background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%),
                 url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920') center/cover;
+}
+
+.overview-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.overview-hero .hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
 }
 
 .overview-hero .hero-content {
@@ -616,7 +633,7 @@ footer {
 }
 
 .tagline-section {
-    padding: 100px 24px;
+    padding: 120px 8%;
     background: var(--bg-primary);
 }
 
@@ -630,17 +647,18 @@ footer {
 }
 
 .tagline-left h2 {
-    font-size: 22px;
+    font-size: 48px;
     font-weight: 300;
     color: var(--text-primary);
-    line-height: 1.5;
+    line-height: 1.2;
     letter-spacing: 0.5px;
+    max-width: 800px;
 }
 
 .tagline-right p {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--text-muted);
-    line-height: 1.8;
+    line-height: 1.9;
 }
 
 .complement-images {
