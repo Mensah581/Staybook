@@ -7,33 +7,28 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <!-- Utility Bar -->
-        <div class="utility-bar">
-            <div class="utility-bar-left">
-                <a href="tel:+233201234567">+233 20 123 4567</a>
-                <a href="#">Chat with us</a>
-            </div>
-            <div class="utility-bar-right">
-                <a href="#">My Stays</a>
-                <a href="/admin/login.html">Sign In</a>
-            </div>
+    <!-- Top Black Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <span class="hotel-name" id="hotel-name">Grand Horizon</span>
         </div>
-        
-        <!-- Main Navigation -->
-        <div class="main-nav">
-            <a href="/" class="logo"><span id="hotel-name">GRAND HORIZON</span></a>
-            <nav class="nav-links">
-                <a href="/">Home</a>
-                <a href="/rooms.html">Rooms</a>
-                <a href="#">Discover</a>
-                <a href="#">Savor</a>
-                <a href="#">Contact</a>
-            </nav>
-            <a href="#" class="book-btn">Book Now</a>
+        <div class="top-bar-right">
+            <a href="#">Sign In</a>
+            <a href="#">Join</a>
+            <span class="menu-icon">☰</span>
         </div>
-    </header>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="main-nav">
+        <div class="nav-center">
+            <a href="/">Overview</a>
+            <a href="/rooms.html" class="active">Rooms</a>
+            <a href="#">Discover</a>
+            <a href="#">Savor</a>
+            <a href="#">Offers</a>
+        </div>
+    </nav>
 
     <!-- Room Details -->
     <main>
@@ -125,20 +120,31 @@
 
     <!-- Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Grand Hotel</h3>
-                <p>📍 123 Hotel Street, City Center</p>
-                <p>📞 +1 234 567 890</p>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="logo" id="footer-hotel-name">GRAND HORIZON</div>
+                <p id="footer-address">Accra, Ghana</p>
+                <p id="footer-phone">+233 20 123 4567</p>
             </div>
             <div class="footer-section">
-                <h3>Quick Links</h3>
-                <a href="/">Home</a>
-                <a href="/rooms.html">Our Rooms</a>
+                <h4>Navigate</h4>
+                <a href="/">Overview</a>
+                <a href="/rooms.html">Rooms</a>
+                <a href="#">Discover</a>
+                <a href="#">Savor</a>
+            </div>
+            <div class="footer-section">
+                <h4>Info</h4>
+                <p>Check In: <span id="checkin-time">2:00 PM</span></p>
+                <p>Check Out: <span id="checkout-time">12:00 PM</span></p>
+            </div>
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p id="footer-email">info@grandhorizon.com</p>
             </div>
         </div>
         <div class="footer-bottom">
-            © 2024 Grand Hotel. All rights reserved.
+            <p>&copy; <span id="copyright-year">2024</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
         </div>
     </footer>
 
@@ -167,9 +173,21 @@
             try {
                 const response = await fetch('/api/settings');
                 const settings = await response.json();
+                
                 if (settings.hotel_name) {
-                    document.getElementById('hotel-name').textContent = settings.hotel_name;
+                    const name = settings.hotel_name.toUpperCase();
+                    document.getElementById('hotel-name').textContent = name;
+                    document.getElementById('footer-hotel-name').textContent = name;
+                    document.getElementById('company-name').textContent = settings.hotel_name;
+                    document.title = settings.hotel_name + ' - Room Details';
                 }
+                
+                if (settings.hotel_address) document.getElementById('footer-address').textContent = settings.hotel_address;
+                if (settings.hotel_phone) document.getElementById('footer-phone').textContent = settings.hotel_phone;
+                if (settings.hotel_email) document.getElementById('footer-email').textContent = settings.hotel_email;
+                if (settings.checkin_time) document.getElementById('checkin-time').textContent = settings.checkin_time;
+                if (settings.checkout_time) document.getElementById('checkout-time').textContent = settings.checkout_time;
+                if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
