@@ -782,19 +782,34 @@ footer {
 .footer-social-section .icons {
     display: flex;
     justify-content: center;
-    gap: 30px;
+    gap: 22px;
+    margin-top: 20px;
 }
 
 .footer-social-section .icons a {
-    font-size: 20px;
-    opacity: 0.8;
-    transition: 0.3s ease;
-    color: #eaeaea;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 18px;
     text-decoration: none;
+    opacity: 0.85;
+    transition: all 0.2s ease;
 }
 
 .footer-social-section .icons a:hover {
     opacity: 1;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .footer-social-section .icons a {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
 }
 
 /* Divider */
