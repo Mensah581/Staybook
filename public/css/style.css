@@ -32,6 +32,11 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
 body {
     font-family: var(--font);
     background: var(--bg-primary);
@@ -1141,10 +1146,18 @@ footer {
         justify-content: flex-start;
     }
     .main-nav::-webkit-scrollbar { display: none; }
-    .nav-center { gap: 40px; }
-    .nav-center a { font-size: 14px; flex: 0 0 auto; }
+    .nav-center { gap: 30px; }
+    .nav-center a { font-size: 12px; flex: 0 0 auto; letter-spacing: 1.5px; }
     
-    .hero h1 { font-size: 32px; letter-spacing: 4px; }
+    /* Hero - Mobile */
+    .overview-hero {
+        height: 65vh;
+        min-height: 450px;
+    }
+    
+    .hero h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.5px; }
+    .hero p { font-size: 16px; margin-top: 12px; }
+    .hero-content { max-width: 80%; }
     .hero-content { max-width: 80%; }
     
     .booking-fields { flex-direction: column; }
@@ -1163,17 +1176,22 @@ footer {
 
 @media (max-width: 480px) {
     .top-bar-left .hotel-name { font-size: 11px; letter-spacing: 2px; }
-    .hero { height: 450px; }
-    .hero h1 { font-size: 24px; letter-spacing: 3px; }
-    .section { padding: 60px 20px; }
+    .hero { height: 60vh; }
+    .hero h1 { font-size: 28px; }
+    .section { padding: 60px 5%; }
+    .tagline-columns { gap: 20px; }
+    .tagline-left h2 { font-size: 32px; }
+    .tagline-right p { font-size: 14px; }
+    .food-grid { grid-template-columns: 1fr; }
+    .footer-top { flex-direction: column; gap: 20px; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
     
     /* Overview Page */
-    .overview-hero { height: 60vh; }
-    .tagline-section { padding: 60px 20px; }
-    .tagline-columns { grid-template-columns: 1fr; gap: 30px; }
-    .complement-images { padding: 40px 20px; }
+    .overview-hero { height: 55vh; min-height: 380px; }
+    .tagline-section { padding: 60px 5%; }
+    .complement-images { padding: 40px 5%; }
     .complement-images img { height: 200px; }
-    .food-section { padding: 60px 20px; }
-    .food-grid { grid-template-columns: 1fr; gap: 20px; }
-    .footer-social { justify-content: center; }
+    .food-section { padding: 60px 5%; }
+    .food-section .section-title { font-size: 32px; }
+    .overview-footer { padding: 60px 5%; }
 }
