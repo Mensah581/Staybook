@@ -755,78 +755,133 @@ footer {
 
 .overview-footer {
     background: #000000;
-    color: #cccccc;
-    padding: 80px 8%;
+    color: #eaeaea;
+    padding: 60px 0;
 }
 
-.footer-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 60px;
-    flex-wrap: wrap;
-    gap: 30px;
+.overview-footer .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.footer-brand h3 {
-    font-weight: 400;
-    letter-spacing: 1px;
-    color: white;
-    font-size: 18px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 30px;
-}
-
-.footer-links a {
-    text-decoration: none;
-    color: #cccccc;
-    font-size: 14px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: 0.3s;
-}
-
-.footer-links a:hover {
-    color: white;
-}
-
-.footer-social {
-    display: flex;
-    gap: 20px;
-}
-
-.footer-social a {
-    color: #cccccc;
-    font-size: 16px;
-    transition: 0.3s;
-}
-
-.footer-social a:hover {
-    color: white;
-}
-
-.footer-bottom {
-    border-top: 1px solid #222222;
-    padding-top: 30px;
+/* Social Section */
+.footer-social-section {
     text-align: center;
+    margin-bottom: 40px;
+}
+
+.footer-social-section h3 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.footer-social-section .icons {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.footer-social-section .icons a {
+    font-size: 20px;
+    opacity: 0.8;
+    transition: 0.3s ease;
+    color: #eaeaea;
+    text-decoration: none;
+}
+
+.footer-social-section .icons a:hover {
+    opacity: 1;
+}
+
+/* Divider */
+.footer-divider {
+    height: 1px;
+    background: #222222;
+    margin: 40px 0;
+}
+
+/* Links Grid */
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.footer-link-column h4 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #eaeaea;
+}
+
+.footer-link-column a {
+    display: block;
+    margin-bottom: 14px;
+    color: #eaeaea;
+    text-decoration: none;
+    font-size: 15px;
+    opacity: 0.8;
+    transition: 0.3s ease;
+}
+
+.footer-link-column a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* Bottom */
+.footer-bottom {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #222222;
 }
 
 .footer-bottom p {
     font-size: 13px;
     font-weight: 300;
+    color: #eaeaea;
+    opacity: 0.6;
 }
 
-.footer-cta {
-    text-align: center;
-    margin-bottom: 30px;
+/* Mobile Book Now Button */
+.mobile-book {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #2F6F5F;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    letter-spacing: 2px;
+    z-index: 999;
 }
 
-.footer-contact {
-    text-align: center;
-    font-size: 13px;
+.mobile-book a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .mobile-book {
+        display: flex;
+    }
+    body {
+        padding-bottom: 60px;
+    }
 }
 
 /* Remove old footer styles */
