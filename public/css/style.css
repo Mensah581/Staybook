@@ -1,47 +1,60 @@
-/* Staybook - Warm & Inviting Hotel Booking */
+/* Staybook - Luxury Hotel Booking System */
+/* Brand Variables: Luxury-Neutral Palette */
 
-/* Warm, welcoming color palette */
+/* 5 Core Brand Variables */
 :root {
-    --primary: #1a1a1a;
-    --secondary: #4a4a4a;
-    /* Warm amber/gold accent - inviting, premium */
-    --accent: #d97706;
-    --accent-light: #f59e0b;
-    --accent-dark: #b45309;
-    /* Warm backgrounds - not cold gray */
-    --background: #fffcf8;
-    --surface: #ffffff;
-    --text-primary: #1f2937;
-    --text-secondary: #4b5563;
-    --text-muted: #9ca3af;
-    --border: #e5e7eb;
-    --success: #059669;
-    --error: #dc2626;
-    --warning: #f59e0b;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
-    --radius: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Primary Brand Colors */
+    --bg-primary: #F7F5F1;       /* warm white */
+    --bg-secondary: #EFECE6;     /* soft beige */
+    --text-primary: #1C1C1C;     /* charcoal */
+    --text-muted: #6B6B6B;       /* soft gray */
+    --accent: #B89B5E;           /* muted gold/bronze */
+    --accent-light: #D4B876;
+    --accent-dark: #9A7B3E;
+    
+    /* Utility Colors */
+    --surface: #FFFFFF;
+    --border: #E5E3DE;
+    --success: #6B9B7A;
+    --error: #B86B6B;
+    --warning: #C9A85C;
+    
+    /* Shadows & Radius */
+    --shadow: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+    --radius: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    
+    /* Typography */
+    --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    font-family: var(--font);
-    background: var(--background);
+    font-family: var(--font-body);
+    background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 a { text-decoration: none; color: inherit; }
 img { max-width: 100%; display: block; }
 button { cursor: pointer; font-family: inherit; }
 
-/* Header */
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    line-height: 1.3;
+}
+
+/* ========== HEADER ========== */
 header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -53,16 +66,16 @@ header {
 .header {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 16px 24px;
+    padding: 14px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .logo {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--text-primary);
     letter-spacing: -0.5px;
 }
 
@@ -70,6 +83,7 @@ header {
 
 .nav {
     display: flex;
+    align-items: center;
     gap: 4px;
 }
 
@@ -77,26 +91,43 @@ header {
     padding: 10px 18px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     border-radius: var(--radius);
-    transition: all 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .nav a:hover { 
-    background: var(--background); 
-    color: var(--primary); 
+    color: var(--accent); 
 }
 
 .nav a.active { 
-    background: var(--accent); 
-    color: white;
+    color: var(--accent);
+    background: rgba(184, 155, 94, 0.08);
 }
 
-/* Hero Section */
+/* Book Now Button */
+.btn-book {
+    padding: 10px 22px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius);
+    border: none;
+    transition: all 0.2s ease;
+    margin-left: 8px;
+}
+
+.btn-book:hover {
+    background: var(--accent-light);
+    transform: translateY(-1px);
+}
+
+/* ========== HERO SECTION ========== */
 .hero {
     position: relative;
-    height: 480px;
-    background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+    height: 500px;
+    background: linear-gradient(135deg, #2c2c2c 0%, #3d3d3d 50%, #2c2c2c 100%);
     background-size: cover;
     background-position: center;
     display: flex;
@@ -104,6 +135,7 @@ header {
     justify-content: center;
 }
 
+/* Dark transparent overlay for text readability */
 .hero::before {
     content: '';
     position: absolute;
@@ -111,30 +143,32 @@ header {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
+    background: rgba(0, 0, 0, 0.35);
 }
 
 .hero-content {
     position: relative;
     z-index: 2;
     text-align: center;
-    max-width: 700px;
+    max-width: 680px;
     padding: 0 24px;
 }
 
 .hero h1 {
-    font-size: 44px;
+    font-size: 46px;
     font-weight: 700;
     color: white;
-    margin-bottom: 12px;
-    line-height: 1.15;
+    margin-bottom: 10px;
     letter-spacing: -1px;
 }
 
 .hero p {
-    font-size: 18px;
-    color: rgba(255,255,255,0.9);
+    font-size: 17px;
+    color: rgba(255,255,255,0.85);
     margin-bottom: 28px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .btn-hero {
@@ -142,7 +176,7 @@ header {
     padding: 14px 36px;
     background: var(--accent);
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     border-radius: var(--radius);
     transition: all 0.2s ease;
@@ -153,25 +187,25 @@ header {
 .btn-hero:hover {
     background: var(--accent-light);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
+    box-shadow: 0 8px 20px rgba(184, 155, 94, 0.35);
 }
 
-/* Booking Bar */
+/* ========== BOOKING BAR ========== */
 .booking-bar {
     background: var(--surface);
     max-width: 900px;
-    margin: -30px auto 40px;
+    margin: -30px auto 50px;
     position: relative;
     z-index: 10;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    padding: 20px 24px;
+    padding: 18px 24px;
     border: 1px solid var(--border);
 }
 
 .booking-fields {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     align-items: flex-end;
 }
 
@@ -179,20 +213,20 @@ header {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
 }
 
 .booking-field label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .booking-field input,
 .booking-field select {
-    padding: 12px 14px;
+    padding: 11px 13px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 14px;
@@ -209,10 +243,10 @@ header {
 }
 
 .btn-check {
-    padding: 12px 28px;
+    padding: 11px 26px;
     background: var(--accent);
     color: white;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     border: none;
     border-radius: var(--radius);
@@ -224,32 +258,43 @@ header {
     background: var(--accent-light);
 }
 
-/* Section Styles */
+/* ========== SECTIONS ========== */
 .section {
     max-width: 1200px;
     margin: 0 auto;
     padding: 60px 24px;
 }
 
+/* Alternating backgrounds for rhythm */
+.section:nth-child(odd) {
+    background: var(--bg-primary);
+}
+
+.section:nth-child(even) {
+    background: var(--surface);
+}
+
 .section-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 44px;
 }
 
 .section-title {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--text-primary);
     margin-bottom: 8px;
     letter-spacing: -0.5px;
 }
 
 .section-subtitle {
     font-size: 15px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    max-width: 500px;
+    margin: 0 auto;
 }
 
-/* Rooms Grid */
+/* ========== ROOMS GRID ========== */
 .rooms-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -274,14 +319,14 @@ header {
     position: relative;
     height: 200px;
     overflow: hidden;
-    background: #f3f4f6;
+    background: var(--bg-secondary);
 }
 
 .room-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.35s ease;
 }
 
 .room-card:hover .room-image img {
@@ -292,9 +337,9 @@ header {
     position: absolute;
     top: 12px;
     right: 12px;
-    padding: 6px 12px;
+    padding: 5px 11px;
     background: rgba(255,255,255,0.95);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     border-radius: 20px;
     color: var(--success);
@@ -311,17 +356,17 @@ header {
 }
 
 .room-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 8px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
 }
 
 .room-description {
     font-size: 13px;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     line-height: 1.6;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -332,27 +377,27 @@ header {
     display: flex;
     align-items: baseline;
     gap: 4px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .price-amount {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--accent);
 }
 
 .price-period {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
 }
 
 .btn-room {
     display: block;
     width: 100%;
-    padding: 12px;
+    padding: 11px;
     background: var(--accent);
     color: white;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     text-align: center;
     border-radius: var(--radius);
@@ -364,7 +409,7 @@ header {
     background: var(--accent-light);
 }
 
-/* Empty State */
+/* ========== EMPTY STATE ========== */
 .empty-state {
     grid-column: 1 / -1;
     text-align: center;
@@ -375,10 +420,10 @@ header {
 }
 
 .empty-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: #fef3c7;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+    background: var(--bg-secondary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -386,38 +431,38 @@ header {
 }
 
 .empty-icon svg {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     color: var(--accent);
 }
 
 .empty-state h3 {
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 8px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
 }
 
 .empty-state p {
     font-size: 14px;
-    color: var(--text-secondary);
-    max-width: 400px;
-    margin: 0 auto 24px;
+    color: var(--text-muted);
+    max-width: 380px;
+    margin: 0 auto 22px;
     line-height: 1.6;
 }
 
 .btn-primary {
     display: inline-block;
-    padding: 12px 24px;
+    padding: 11px 22px;
     background: var(--accent);
     color: white;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     border-radius: var(--radius);
     border: none;
     cursor: pointer;
     transition: all 0.15s;
-    margin-right: 12px;
+    margin-right: 10px;
 }
 
 .btn-primary:hover {
@@ -426,10 +471,10 @@ header {
 
 .btn-outline {
     display: inline-block;
-    padding: 12px 24px;
+    padding: 11px 22px;
     background: transparent;
-    color: var(--primary);
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 13px;
     font-weight: 600;
     border-radius: var(--radius);
     border: 1.5px solid var(--border);
@@ -456,7 +501,7 @@ header {
     font-size: 14px;
 }
 
-/* Amenities Section */
+/* ========== AMENITIES SECTION ========== */
 .amenities-section {
     background: var(--surface);
     padding: 60px 24px;
@@ -471,8 +516,8 @@ header {
 
 .amenities-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
     margin-top: 32px;
 }
 
@@ -480,9 +525,9 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 24px 16px;
-    background: var(--background);
+    gap: 10px;
+    padding: 22px 14px;
+    background: var(--bg-primary);
     border-radius: var(--radius-md);
     text-align: center;
     transition: all 0.2s;
@@ -494,8 +539,8 @@ header {
 }
 
 .amenity-item svg {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     color: var(--accent);
 }
 
@@ -504,44 +549,44 @@ header {
 }
 
 .amenity-item span {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
 .amenity-item:hover span {
     color: white;
 }
 
-/* Footer */
+/* ========== FOOTER ========== */
 footer {
-    background: #1f2937;
+    background: #1C1C1C;
     color: white;
-    padding: 60px 24px 24px;
+    padding: 56px 24px 24px;
 }
 
 .footer-container {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 36px;
     margin-bottom: 40px;
 }
 
 .footer-section h4 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     color: white;
 }
 
 .footer-section p,
 .footer-section a {
     font-size: 13px;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.6);
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     line-height: 1.6;
 }
 
@@ -552,28 +597,28 @@ footer {
 .footer-bottom {
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 24px;
+    padding-top: 22px;
     border-top: 1px solid rgba(255,255,255,0.1);
     text-align: center;
 }
 
 .footer-bottom p {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
 }
 
-/* Page Header */
+/* ========== PAGE HEADER ========== */
 .page-header {
-    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-    padding: 60px 24px;
+    background: linear-gradient(135deg, #2c2c2c 0%, #3d3d3d 100%);
+    padding: 56px 24px;
     text-align: center;
 }
 
 .page-header h1 {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 700;
     color: white;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .page-header p {
@@ -581,9 +626,9 @@ footer {
     color: rgba(255,255,255,0.8);
 }
 
-/* Room Details Page */
+/* ========== ROOM DETAILS ========== */
 .room-detail-header {
-    height: 400px;
+    height: 380px;
     overflow: hidden;
     position: relative;
 }
@@ -611,7 +656,7 @@ footer {
 
 .gallery-grid img {
     width: 100%;
-    height: 120px;
+    height: 110px;
     object-fit: cover;
     transition: opacity 0.2s;
     cursor: pointer;
@@ -624,14 +669,14 @@ footer {
 .room-detail-title {
     font-size: 28px;
     font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 8px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
 }
 
 .room-detail-location {
     font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
 }
 
 .room-detail-rating {
@@ -641,20 +686,21 @@ footer {
 }
 
 .room-detail-section {
-    margin-bottom: 32px;
+    margin-bottom: 30px;
 }
 
 .room-detail-section h3 {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 16px;
+    color: var(--text-primary);
+    margin-bottom: 14px;
 }
 
 .room-detail-description {
     font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.7;
+    color: var(--text-muted);
+    line-height: 1.75;
+    max-width: 600px;
 }
 
 .amenities-grid {
@@ -666,16 +712,16 @@ footer {
 .amenity-tag {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: var(--background);
+    gap: 5px;
+    padding: 7px 13px;
+    background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: 20px;
-    font-size: 13px;
-    color: var(--text-secondary);
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
-/* Sticky Booking Section */
+/* ========== STICKY BOOKING ========== */
 .booking-section {
     position: fixed;
     bottom: 0;
@@ -683,12 +729,12 @@ footer {
     right: 0;
     background: var(--surface);
     border-top: 1px solid var(--border);
-    padding: 16px 24px;
+    padding: 14px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 50;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
 }
 
 .booking-price {
@@ -698,21 +744,21 @@ footer {
 }
 
 .booking-price .amount {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--accent);
 }
 
 .booking-price .period {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-muted);
 }
 
 .booking-btn {
-    padding: 14px 32px;
+    padding: 12px 30px;
     background: var(--accent);
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     border: none;
     border-radius: var(--radius);
@@ -729,7 +775,7 @@ footer {
     cursor: not-allowed;
 }
 
-/* Booking Modal */
+/* ========== BOOKING MODAL ========== */
 .booking-modal {
     display: none;
     position: fixed;
@@ -737,7 +783,7 @@ footer {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.4);
     z-index: 200;
     align-items: center;
     justify-content: center;
@@ -752,76 +798,72 @@ footer {
     background: var(--surface);
     border-radius: var(--radius-lg);
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s ease;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .booking-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--border);
 }
 
 .booking-modal-header h2 {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
 }
 
 .booking-modal-close {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border: none;
-    background: var(--background);
+    background: var(--bg-primary);
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
 .booking-modal form {
-    padding: 24px;
+    padding: 22px;
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .form-group label {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 12px 14px;
+    padding: 11px 13px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.15s;
+    background: var(--surface);
+    color: var(--text-primary);
 }
 
 .form-group input:focus,
@@ -834,20 +876,21 @@ footer {
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
 }
 
 .submit-btn {
     width: 100%;
-    padding: 14px;
+    padding: 13px;
     background: var(--accent);
     color: white;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
     transition: background 0.15s;
+    margin-top: 6px;
 }
 
 .submit-btn:hover {
@@ -855,81 +898,42 @@ footer {
 }
 
 .success-message {
-    padding: 16px;
-    background: #d1fae5;
+    padding: 14px;
+    background: rgba(107, 155, 122, 0.1);
     color: var(--success);
     border-radius: var(--radius);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     text-align: center;
 }
 
 .error-message {
-    padding: 16px;
-    background: #fee2e2;
+    padding: 14px;
+    background: rgba(184, 107, 107, 0.1);
     color: var(--error);
     border-radius: var(--radius);
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
-/* Responsive */
+/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-    .hero h1 {
-        font-size: 28px;
-    }
+    .hero h1 { font-size: 28px; }
+    .hero p { font-size: 15px; }
     
-    .hero p {
-        font-size: 15px;
-    }
+    .booking-fields { flex-direction: column; }
+    .booking-field { width: 100%; }
+    .btn-check { width: 100%; }
     
-    .booking-fields {
-        flex-direction: column;
-    }
-    
-    .booking-field {
-        width: 100%;
-    }
-    
-    .btn-check {
-        width: 100%;
-    }
-    
-    .rooms-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .amenities-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .gallery-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .gallery-grid img {
-        height: 80px;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
+    .rooms-container { grid-template-columns: 1fr; }
+    .amenities-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+    .gallery-grid img { height: 70px; }
+    .form-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
-    .header {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .nav {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .hero {
-        height: 400px;
-    }
-    
-    .hero h1 {
-        font-size: 24px;
-    }
+    .header { flex-direction: column; gap: 10px; }
+    .nav { width: 100%; justify-content: center; }
+    .hero { height: 400px; }
+    .hero h1 { font-size: 24px; }
+    .section-title { font-size: 26px; }
 }
