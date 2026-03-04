@@ -26,7 +26,12 @@ app.use(session({
     secret: 'hotel-booking-secret-key-2024',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { 
+        maxAge: 30 * 60 * 1000, // 30 minutes
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+    }
 }));
 
 // Ensure uploads directory exists
@@ -53,9 +58,11 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                email VARCHAR(255),
                 password VARCHAR(255) NOT NULL,
                 role VARCHAR(50) DEFAULT 'admin',
+                permissions JSONB DEFAULT '{"overview": true, "rooms": true, "discover": true, "dining": true, "contact": true, "media": true, "settings": false, "users": false}',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -126,14 +133,14 @@ async function initializeDatabase() {
         `);
 
         // Insert default admin if not exists
-        const adminExists = await pool.query("SELECT * FROM users WHERE email = 'admin@hotel.com'");
+        const adminExists = await pool.query("SELECT * FROM users WHERE username = 'kwesi Otabil'");
         if (adminExists.rows.length === 0) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
+            const hashedPassword = await bcrypt.hash('Jiddel123@', 10);
             await pool.query(
-                "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-                ['Administrator', 'admin@hotel.com', hashedPassword, 'admin']
+                "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
+                ['Kwesi Otabil', 'kwesi Otabil', 'admin@hotel.com', hashedPassword, 'main_admin']
             );
-            console.log('Default admin created: admin@hotel.com / admin123');
+            console.log('Default admin created: kwesi Otabil / Jiddel123@');
         }
 
         // Insert default settings if not exists
@@ -246,22 +253,31 @@ function requireAdmin(req, res, next) {
 // Admin login
 app.post('/api/admin/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const { username, password } = req.body;
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
 
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Incorrect username or password' });
         }
 
         const user = result.rows[0];
         const isValid = await bcrypt.compare(password, user.password);
 
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ error: 'Incorrect username or password' });
         }
 
         req.session.user = user;
-        res.json({ message: 'Login successful', user: { id: user.id, name: user.name, email: user.email } });
+        res.json({ 
+            message: 'Login successful', 
+            user: { 
+                id: user.id, 
+                name: user.name, 
+                username: user.username,
+                role: user.role,
+                permissions: user.permissions
+            } 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -275,7 +291,7 @@ app.post('/api/admin/logout', (req, res) => {
 
 // Check admin auth
 app.get('/api/admin/check', (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
+    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin')) {
         res.json({ authenticated: true, user: req.session.user });
     } else {
         res.json({ authenticated: false });

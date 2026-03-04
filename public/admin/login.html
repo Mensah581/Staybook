@@ -23,8 +23,8 @@
             
             <form id="login-form">
                 <div class="form-group">
-                    <label for="email">Username</label>
-                    <input type="text" id="email" name="email" required 
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required 
                            placeholder="Enter username">
                 </div>
                 
@@ -83,7 +83,7 @@
             const messageDiv = document.getElementById('message');
             const submitBtn = form.querySelector('button[type="submit"]');
             
-            const email = form.email.value;
+            const username = form.username.value;
             const password = form.password.value;
             
             submitBtn.disabled = true;
@@ -95,7 +95,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
                 
                 const result = await response.json();
