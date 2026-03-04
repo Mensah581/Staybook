@@ -40,10 +40,52 @@
         
         <div class="admin-login-back">
             <a href="/">← Back to Website</a>
+            <span style="margin: 0 8px;">|</span>
+            <a href="#" id="reset-link" onclick="showReset(); return false;">Reset Password</a>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div id="reset-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+        <div style="background: white; padding: 32px; border-radius: 12px; max-width: 400px; width: 90%;">
+            <h3 style="margin-bottom: 16px;">Reset Password</h3>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="new-password" placeholder="Enter new password" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <button onclick="resetPassword()" class="admin-login-btn" style="margin-top: 16px;">Reset</button>
+            <button onclick="hideReset()" style="margin-left: 8px; padding: 14px; background: #eee; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
         </div>
     </div>
 
     <script>
+        function showReset() {
+            document.getElementById('reset-modal').style.display = 'flex';
+        }
+        function hideReset() {
+            document.getElementById('reset-modal').style.display = 'none';
+        }
+        async function resetPassword() {
+            const password = document.getElementById('new-password').value;
+            if (!password) return alert('Please enter a password');
+            
+            try {
+                const response = await fetch('/api/admin/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'kwesi Otabil', newPassword: password })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Password reset! Please login with: kwesi Otabil / ' + password);
+                    hideReset();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
         // Check if already logged in
         document.addEventListener('DOMContentLoaded', async function() {
             loadSettings();

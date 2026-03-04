@@ -495,6 +495,34 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ message: 'Logout successful' });
 });
 
+// Password reset endpoint (development only - for resetting admin password)
+app.post('/api/admin/reset-password', async (req, res) => {
+    try {
+        const { username, newPassword } = req.body;
+        
+        if (!username || !newPassword) {
+            return res.status(400).json({ error: 'Username and new password required' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Try to update by username or name
+        try {
+            await pool.query('UPDATE users SET password = $1 WHERE username = $2', [hashedPassword, username]);
+        } catch (updateError) {
+            if (updateError.message.includes('username')) {
+                await pool.query('UPDATE users SET password = $1 WHERE name = $2', [hashedPassword, username]);
+            } else {
+                throw updateError;
+            }
+        }
+        
+        res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Check admin auth
 app.get('/api/admin/check', (req, res) => {
     if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin')) {
