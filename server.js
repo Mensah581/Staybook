@@ -495,59 +495,29 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ message: 'Logout successful' });
 });
 
-// Password reset endpoint - creates admin if not exists
-app.post('/api/admin/reset-password', async (req, res) => {
+// Complete admin reset - clears and creates fresh admin
+app.post('/api/admin/setup-fresh', async (req, res) => {
     try {
-        const { username, newPassword } = req.body;
+        const { username, password } = req.body;
         
-        if (!username || !newPassword) {
-            return res.status(400).json({ error: 'Username and new password required' });
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password required' });
         }
         
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Check if user exists by email first (most reliable)
-        let existingUser = null;
-        try {
-            const result = await pool.query('SELECT * FROM users WHERE email = $1', ['admin@hotel.com']);
-            existingUser = result.rows[0];
-        } catch (e) {}
+        // Delete all existing users
+        await pool.query('DELETE FROM users');
         
-        // Also try by name
-        if (!existingUser) {
-            try {
-                const result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1)', [username]);
-                existingUser = result.rows[0];
-            } catch (e) {}
-        }
+        // Create fresh admin user
+        await pool.query(
+            "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
+            [username, username, 'admin@hotel.com', hashedPassword, 'main_admin']
+        );
         
-        if (existingUser) {
-            // Update existing user password by ID
-            await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, existingUser.id]);
-            return res.json({ message: 'Password reset successfully' });
-        } else {
-            // Create new admin user - use unique email
-            const uniqueEmail = 'admin' + Date.now() + '@hotel.com';
-            try {
-                await pool.query(
-                    "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
-                    [username, username, uniqueEmail, hashedPassword, 'main_admin']
-                );
-            } catch (e) {
-                // If username column doesn't exist, try without it
-                if (e.message.includes('username')) {
-                    await pool.query(
-                        "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-                        [username, uniqueEmail, hashedPassword, 'main_admin']
-                    );
-                } else {
-                    throw e;
-                }
-            }
-            return res.json({ message: 'Admin created successfully' });
-        }
+        res.json({ message: 'Admin created successfully', username: username });
     } catch (error) {
-        console.error('Reset password error:', error);
+        console.error('Setup error:', error);
         res.status(500).json({ error: error.message });
     }
 });

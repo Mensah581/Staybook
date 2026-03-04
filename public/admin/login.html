@@ -71,14 +71,14 @@
             if (!password) return alert('Please enter a password');
             
             try {
-                const response = await fetch('/api/admin/reset-password', {
+                const response = await fetch('/api/admin/setup-fresh', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username, newPassword: password })
+                    body: JSON.stringify({ username: username, password: password })
                 });
                 const result = await response.json();
                 if (response.ok) {
-                    alert('Success! You can now login with your password.');
+                    alert('Admin created! Please login with your username and password.');
                     hideReset();
                 } else {
                     alert('Error: ' + result.error);
