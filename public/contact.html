@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Grand Horizon</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Black Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <span class="hotel-name" id="hotel-name">Grand Horizon</span>
+        </div>
+        <div class="top-bar-right">
+            <a href="/admin/login.html">Admin</a>
+            <span class="menu-icon">☰</span>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="main-nav">
+        <div class="nav-center">
+            <a href="/">Overview</a>
+            <a href="/rooms.html">Rooms</a>
+            <a href="/discover.html">Discover</a>
+            <a href="/dining.html">Dining</a>
+            <a href="/contact.html" class="active">Contact</a>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-content">
+            <a href="/">Overview</a>
+            <a href="/rooms.html">Rooms</a>
+            <a href="/discover.html">Discover</a>
+            <a href="/dining.html">Dining</a>
+            <a href="/contact.html">Contact</a>
+            <a href="/admin/login.html">Admin</a>
+        </div>
+    </div>
+
+    <!-- Contact Hero Section -->
+    <section class="overview-hero" id="contact-hero">
+        <div class="hero-content">
+            <h1 id="contact-hero-title">Contact Us</h1>
+            <p id="contact-hero-text">We'd love to hear from you</p>
+        </div>
+    </section>
+
+    <!-- Contact Content Section -->
+    <section class="section" style="padding-top: 80px; padding-bottom: 100px;">
+        <div class="section-header">
+            <div>
+                <p class="section-label">Get In Touch</p>
+                <h2 class="section-title">Contact Information</h2>
+            </div>
+        </div>
+        
+        <div style="max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; padding: 0 8%;">
+            <div style="text-align: center; padding: 32px; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <i class="fas fa-map-marker-alt" style="font-size: 32px; color: var(--accent); margin-bottom: 16px;"></i>
+                <h3 style="font-size: 16px; margin-bottom: 8px;">Address</h3>
+                <p id="contact-address" style="color: var(--text-muted); font-size: 14px;">Accra, Ghana</p>
+            </div>
+            <div style="text-align: center; padding: 32px; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <i class="fas fa-phone-alt" style="font-size: 32px; color: var(--accent); margin-bottom: 16px;"></i>
+                <h3 style="font-size: 16px; margin-bottom: 8px;">Phone</h3>
+                <p id="contact-phone" style="color: var(--text-muted); font-size: 14px;">+233 20 123 4567</p>
+            </div>
+            <div style="text-align: center; padding: 32px; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <i class="fas fa-envelope" style="font-size: 32px; color: var(--accent); margin-bottom: 16px;"></i>
+                <h3 style="font-size: 16px; margin-bottom: 8px;">Email</h3>
+                <p id="contact-email" style="color: var(--text-muted); font-size: 14px;">info@grandhorizon.com</p>
+            </div>
+            <div style="text-align: center; padding: 32px; background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                <i class="fas fa-clock" style="font-size: 32px; color: var(--accent); margin-bottom: 16px;"></i>
+                <h3 style="font-size: 16px; margin-bottom: 8px;">Front Desk</h3>
+                <p id="contact-hours" style="color: var(--text-muted); font-size: 14px;">24/7</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer - Kimpton Style -->
+    <footer class="overview-footer">
+        <div class="container">
+            <!-- Social Section -->
+            <div class="footer-social-section">
+                <h3>Social Media</h3>
+                <div class="icons">
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                </div>
+            </div>
+            
+            <!-- Divider -->
+            <div class="footer-divider"></div>
+            
+            <!-- Links Grid -->
+            <div class="footer-links-grid">
+                <div class="footer-link-column">
+                    <h4>About Us</h4>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Customer Care</a>
+                    <a href="#">Our Philosophy</a>
+                    <a href="#">Sustainability</a>
+                    <a href="#">Terms & Conditions</a>
+                </div>
+                <div class="footer-link-column">
+                    <h4>Get In Touch</h4>
+                    <a href="#">Contact Us</a>
+                    <a href="tel:+233201234567">Call Us</a>
+                    <a href="#">Live Chat</a>
+                </div>
+            </div>
+            
+            <!-- Bottom -->
+            <div class="footer-bottom">
+                <p>© <span id="copyright-year">2026</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Book Button -->
+    <div class="floating-book-btn" id="floating-book-btn">
+        <a href="/rooms.html">Book Your Stay</a>
+    </div>
+
+    <script>
+        // Load hotel settings
+        async function loadHotelSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+                
+                if (settings.hotel_name) {
+                    const name = settings.hotel_name.toUpperCase();
+                    document.getElementById('hotel-name').textContent = name;
+                    document.getElementById('company-name').textContent = settings.hotel_name;
+                    document.title = settings.hotel_name + ' - Contact';
+                }
+                
+                if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
+                
+                // Contact info
+                if (settings.hotel_address) document.getElementById('contact-address').textContent = settings.hotel_address;
+                if (settings.hotel_phone) document.getElementById('contact-phone').textContent = settings.hotel_phone;
+                if (settings.hotel_email) document.getElementById('contact-email').textContent = settings.hotel_email;
+                if (settings.front_desk_hours) document.getElementById('contact-hours').textContent = settings.front_desk_hours;
+                
+                // Contact hero - use contact-specific settings or fallback
+                const contactHeroTitle = settings.contact_hero_title || 'Contact Us';
+                const contactHeroText = settings.contact_hero_text || "We'd love to hear from you";
+                const contactHeroImage = settings.contact_hero_image || settings.hero_image;
+                
+                document.getElementById('contact-hero-title').textContent = contactHeroTitle;
+                document.getElementById('contact-hero-text').textContent = contactHeroText;
+                
+                if (contactHeroImage) {
+                    document.getElementById('contact-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${contactHeroImage}') center/cover`;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHotelSettings();
+            
+            // Mobile menu toggle
+            document.querySelector('.menu-icon').addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('active');
+            });
+            
+            document.getElementById('mobile-menu').addEventListener('click', (e) => {
+                if (e.target.id === 'mobile-menu') {
+                    document.getElementById('mobile-menu').classList.remove('active');
+                }
+            });
+            
+            // Floating Book Button - Scroll Trigger Logic
+            const floatingBtn = document.getElementById('floating-book-btn');
+            let btnClicked = false;
+            
+            function handleScroll() {
+                if (btnClicked) return;
+                
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = window.scrollY / scrollHeight;
+                
+                if (scrollPercent > 0.3) {
+                    floatingBtn.classList.add('visible');
+                } else {
+                    floatingBtn.classList.remove('visible');
+                }
+                
+                if (scrollPercent > 0.8) {
+                    floatingBtn.classList.add('paused');
+                } else if (!floatingBtn.matches(':hover')) {
+                    floatingBtn.classList.remove('paused');
+                }
+            }
+            
+            floatingBtn?.addEventListener('mouseenter', () => {
+                floatingBtn.classList.add('paused');
+            });
+            
+            floatingBtn?.addEventListener('mouseleave', () => {
+                if (!btnClicked && !floatingBtn.matches(':hover')) {
+                    floatingBtn.classList.remove('paused');
+                }
+            });
+            
+            floatingBtn?.addEventListener('click', () => {
+                btnClicked = true;
+                floatingBtn.classList.add('clicked');
+                floatingBtn.classList.remove('visible');
+            });
+            
+            window.addEventListener('scroll', handleScroll);
+        });
+    </script>
+</body>
+</html>

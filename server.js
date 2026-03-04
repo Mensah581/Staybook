@@ -136,12 +136,27 @@ async function initializeDatabase() {
                 hotel_phone VARCHAR(50),
                 hotel_email VARCHAR(255),
                 hotel_address TEXT,
+                
                 hero_title VARCHAR(255),
                 hero_text TEXT,
                 hero_image TEXT,
-                rooms_hero_image TEXT,
+                
                 rooms_hero_title VARCHAR(255),
                 rooms_hero_text TEXT,
+                rooms_hero_image TEXT,
+                
+                discover_hero_title VARCHAR(255),
+                discover_hero_text TEXT,
+                discover_hero_image TEXT,
+                
+                dining_hero_title VARCHAR(255),
+                dining_hero_text TEXT,
+                dining_hero_image TEXT,
+                
+                contact_hero_title VARCHAR(255),
+                contact_hero_text TEXT,
+                contact_hero_image TEXT,
+                
                 about_title VARCHAR(255),
                 about_text TEXT,
                 about_image TEXT,
@@ -154,6 +169,24 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add new columns if they don't exist (for existing databases)
+        try {
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_title VARCHAR(255)`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_text TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_image TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_title VARCHAR(255)`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_text TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_image TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_title VARCHAR(255)`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_text TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_image TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_title VARCHAR(255)`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_text TEXT`);
+            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_image TEXT`);
+        } catch (e) {
+            // Columns may already exist
+        }
 
         // Create overview_sections table (8 blocks for Overview page)
         await pool.query(`
@@ -550,6 +583,26 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
+// Get dining items (public)
+app.get('/api/dining', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM dining_items ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get discover items (public)
+app.get('/api/discover', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Update settings (admin)
 app.put('/api/admin/settings', requireAdmin, async (req, res) => {
     try {
@@ -655,6 +708,16 @@ app.delete('/api/admin/discover/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         await pool.query('DELETE FROM discover_items WHERE id = $1', [id]);
         res.json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get discover items (public)
+app.get('/api/discover', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
+        res.json(result.rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
