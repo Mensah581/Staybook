@@ -170,7 +170,7 @@
                 container.innerHTML = items.filter(item => item.is_visible !== false).map(item => `
                     <div class="room-card">
                         <div class="room-image">
-                            <img src="${item.image_url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600'}" alt="${item.title}" loading="lazy">
+                            <img src="${item.image_url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600'}${!item.image_url ? '" crossorigin="anonymous"' : '"'}" alt="${item.title}" loading="lazy">
                         </div>
                         <div class="room-content">
                             <h3 class="room-title">${item.title}</h3>
