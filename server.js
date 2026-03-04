@@ -527,18 +527,19 @@ app.post('/api/admin/reset-password', async (req, res) => {
             }
             return res.json({ message: 'Password reset successfully' });
         } else {
-            // Create new admin user
+            // Create new admin user - use unique email
+            const uniqueEmail = 'admin' + Date.now() + '@hotel.com';
             try {
                 await pool.query(
                     "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
-                    [username, username, 'admin@hotel.com', hashedPassword, 'main_admin']
+                    [username, username, uniqueEmail, hashedPassword, 'main_admin']
                 );
             } catch (e) {
                 // If username column doesn't exist, try without it
                 if (e.message.includes('username')) {
                     await pool.query(
                         "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-                        [username, 'admin@hotel.com', hashedPassword, 'main_admin']
+                        [username, uniqueEmail, hashedPassword, 'main_admin']
                     );
                 } else {
                     throw e;
