@@ -132,6 +132,117 @@ async function initializeDatabase() {
             )
         `);
 
+        // Create overview_sections table (8 blocks for Overview page)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS overview_sections (
+                id SERIAL PRIMARY KEY,
+                section_key VARCHAR(50) UNIQUE NOT NULL,
+                title VARCHAR(255),
+                description TEXT,
+                image_url TEXT,
+                display_order INTEGER DEFAULT 0,
+                is_visible BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create discover_items table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS discover_items (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                display_order INTEGER DEFAULT 0,
+                is_visible BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create dining_items table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS dining_items (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                opening_hours VARCHAR(100),
+                price_range VARCHAR(50),
+                display_order INTEGER DEFAULT 0,
+                is_visible BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create contact_settings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS contact_settings (
+                id INTEGER PRIMARY KEY DEFAULT 1,
+                phone VARCHAR(50),
+                email VARCHAR(255),
+                address TEXT,
+                map_link TEXT,
+                live_chat_enabled BOOLEAN DEFAULT false,
+                contact_form_email VARCHAR(255),
+                facebook_link VARCHAR(255),
+                instagram_link VARCHAR(255),
+                twitter_link VARCHAR(255),
+                whatsapp VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create media_library table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS media_library (
+                id SERIAL PRIMARY KEY,
+                filename VARCHAR(255) NOT NULL,
+                original_name VARCHAR(255),
+                file_path TEXT NOT NULL,
+                file_size INTEGER,
+                mime_type VARCHAR(100),
+                alt_text VARCHAR(255),
+                is_used BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Insert default overview sections
+        const overviewSections = [
+            { key: 'hero', title: 'Hero Section', order: 1 },
+            { key: 'elegant_spaces', title: 'Elegant Spaces', order: 2 },
+            { key: 'culinary', title: 'Culinary Experience', order: 3 },
+            { key: 'spa_wellness', title: 'Spa & Wellness', order: 4 },
+            { key: 'dining', title: 'Dining Experience', order: 5 },
+            { key: 'modern_elegance', title: 'Modern Elegance', order: 6 },
+            { key: 'signature_restaurant', title: 'Signature Restaurant', order: 7 },
+            { key: 'poolside_lunch', title: 'Poolside Lunch', order: 8 }
+        ];
+        
+        for (const section of overviewSections) {
+            const exists = await pool.query('SELECT * FROM overview_sections WHERE section_key = $1', [section.key]);
+            if (exists.rows.length === 0) {
+                await pool.query(
+                    'INSERT INTO overview_sections (section_key, title, display_order) VALUES ($1, $2, $3)',
+                    [section.key, section.title, section.order]
+                );
+            }
+        }
+
+        // Insert default contact settings if not exists
+        const contactExist = await pool.query('SELECT * FROM contact_settings WHERE id = 1');
+        if (contactExist.rows.length === 0) {
+            await pool.query(
+                "INSERT INTO contact_settings (id, phone, email, address) VALUES (1, '+233 20 123 4567', 'info@hotel.com', 'Accra, Ghana')"
+            );
+        }
+
+        console.log('Database tables created successfully');
+
         // Insert default admin if not exists
         const adminExists = await pool.query("SELECT * FROM users WHERE username = 'kwesi Otabil'");
         if (adminExists.rows.length === 0) {
@@ -244,7 +355,7 @@ app.post('/api/bookings', async (req, res) => {
 
 // Admin middleware
 function requireAdmin(req, res, next) {
-    if (!req.session.user || req.session.user.role !== 'admin') {
+    if (!req.session.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'main_admin')) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
@@ -414,6 +525,248 @@ app.put('/api/admin/settings', requireAdmin, async (req, res) => {
              checkin_time, checkout_time, front_desk_hours, copyright_year, company_name]
         );
         res.json({ message: 'Settings updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========== NEW ADMIN API ENDPOINTS ==========
+
+// Get overview sections (admin)
+app.get('/api/admin/overview-sections', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM overview_sections ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update overview section
+app.put('/api/admin/overview-sections/:key', requireAdmin, async (req, res) => {
+    try {
+        const { key } = req.params;
+        const { title, description, image_url, is_visible } = req.body;
+        
+        await pool.query(`
+            UPDATE overview_sections 
+            SET title = $1, description = $2, image_url = $3, is_visible = $4, updated_at = CURRENT_TIMESTAMP
+            WHERE section_key = $5
+        `, [title, description, image_url, is_visible, key]);
+        
+        res.json({ message: 'Section updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get discover items (admin)
+app.get('/api/admin/discover', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add discover item
+app.post('/api/admin/discover', requireAdmin, async (req, res) => {
+    try {
+        const { title, description, image_url, is_visible } = req.body;
+        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM discover_items');
+        const newOrder = (maxOrder.rows[0].max || 0) + 1;
+        
+        const result = await pool.query(`
+            INSERT INTO discover_items (title, description, image_url, display_order, is_visible)
+            VALUES ($1, $2, $3, $4, $5) RETURNING *
+        `, [title, description, image_url, newOrder, is_visible !== false]);
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update discover item
+app.put('/api/admin/discover/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, image_url, display_order, is_visible } = req.body;
+        
+        await pool.query(`
+            UPDATE discover_items 
+            SET title = $1, description = $2, image_url = $3, display_order = $4, is_visible = $5, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $6
+        `, [title, description, image_url, display_order, is_visible, id]);
+        
+        res.json({ message: 'Item updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete discover item
+app.delete('/api/admin/discover/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM discover_items WHERE id = $1', [id]);
+        res.json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get dining items (admin)
+app.get('/api/admin/dining', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM dining_items ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add dining item
+app.post('/api/admin/dining', requireAdmin, async (req, res) => {
+    try {
+        const { title, description, image_url, opening_hours, price_range, is_visible } = req.body;
+        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM dining_items');
+        const newOrder = (maxOrder.rows[0].max || 0) + 1;
+        
+        const result = await pool.query(`
+            INSERT INTO dining_items (title, description, image_url, opening_hours, price_range, display_order, is_visible)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+        `, [title, description, image_url, opening_hours, price_range, newOrder, is_visible !== false]);
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update dining item
+app.put('/api/admin/dining/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, image_url, opening_hours, price_range, display_order, is_visible } = req.body;
+        
+        await pool.query(`
+            UPDATE dining_items 
+            SET title = $1, description = $2, image_url = $3, opening_hours = $4, price_range = $5, display_order = $6, is_visible = $7, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $8
+        `, [title, description, image_url, opening_hours, price_range, display_order, is_visible, id]);
+        
+        res.json({ message: 'Item updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete dining item
+app.delete('/api/admin/dining/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM dining_items WHERE id = $1', [id]);
+        res.json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get contact settings (admin)
+app.get('/api/admin/contact', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM contact_settings WHERE id = 1');
+        res.json(result.rows[0] || {});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update contact settings
+app.put('/api/admin/contact', requireAdmin, async (req, res) => {
+    try {
+        const { phone, email, address, map_link, live_chat_enabled, contact_form_email, facebook_link, instagram_link, twitter_link, whatsapp } = req.body;
+        
+        await pool.query(`
+            UPDATE contact_settings 
+            SET phone = $1, email = $2, address = $3, map_link = $4, live_chat_enabled = $5, 
+                contact_form_email = $6, facebook_link = $7, instagram_link = $8, twitter_link = $9, 
+                whatsapp = $10, updated_at = CURRENT_TIMESTAMP
+            WHERE id = 1
+        `, [phone, email, address, map_link, live_chat_enabled, contact_form_email, facebook_link, instagram_link, twitter_link, whatsapp]);
+        
+        res.json({ message: 'Contact settings updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get media library (admin)
+app.get('/api/admin/media', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM media_library ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Upload media (admin)
+app.post('/api/admin/media', requireAdmin, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        
+        const filePath = '/uploads/' + req.file.filename;
+        
+        const result = await pool.query(`
+            INSERT INTO media_library (filename, original_name, file_path, file_size, mime_type)
+            VALUES ($1, $2, $3, $4, $5) RETURNING *
+        `, [req.file.filename, req.file.originalname, filePath, req.file.size, req.file.mimetype]);
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete media
+app.delete('/api/admin/media/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const media = await pool.query('SELECT * FROM media_library WHERE id = $1', [id]);
+        
+        if (media.rows.length > 0) {
+            const filePath = path.join(__dirname, 'uploads', media.rows[0].filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+            await pool.query('DELETE FROM media_library WHERE id = $1', [id]);
+        }
+        
+        res.json({ message: 'Media deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get dashboard stats
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+    try {
+        const rooms = await pool.query('SELECT COUNT(*) as total FROM rooms');
+        const bookings = await pool.query('SELECT COUNT(*) as total FROM bookings');
+        const media = await pool.query('SELECT COUNT(*) as total FROM media_library');
+        const sections = await pool.query('SELECT COUNT(*) as total FROM overview_sections');
+        
+        res.json({
+            totalRooms: parseInt(rooms.rows[0].total),
+            totalBookings: parseInt(bookings.rows[0].total),
+            totalMedia: parseInt(media.rows[0].total),
+            totalSections: parseInt(sections.rows[0].total)
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
