@@ -12,23 +12,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
 });
 
-// Check authentication
+// Check authentication - don't redirect, just get user info
 async function checkAuth() {
     try {
         const response = await fetch('/api/admin/check');
         const data = await response.json();
         
-        if (!data.authenticated) {
-            window.location.href = '/admin/login.html';
-            return;
-        }
-        
-        if (data.user) {
-            document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || data.user.username || 'Admin'}`;
+        if (data.authenticated && data.user) {
+            document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || 'Admin'}`;
+        } else {
+            document.getElementById('admin-name').textContent = 'Welcome, Admin';
         }
     } catch (error) {
         console.error('Auth check error:', error);
-        // Don't redirect on network error, just log
+        document.getElementById('admin-name').textContent = 'Welcome, Admin';
     }
 }
 

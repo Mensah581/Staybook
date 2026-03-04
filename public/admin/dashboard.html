@@ -365,5 +365,13 @@
     <div id="toast" class="toast"></div>
 
     <script src="/js/admin.js"></script>
+    <script>
+        // Skip auth check on page load - just show dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            setupNavigation();
+            setupEventListeners();
+        });
+    </script>
 </body>
 </html>
