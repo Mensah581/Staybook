@@ -495,7 +495,7 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ message: 'Logout successful' });
 });
 
-// Password reset endpoint (development only - for resetting admin password)
+// Password reset endpoint - creates admin if not exists
 app.post('/api/admin/reset-password', async (req, res) => {
     try {
         const { username, newPassword } = req.body;
@@ -506,26 +506,48 @@ app.post('/api/admin/reset-password', async (req, res) => {
         
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         
-        // Try to update by username or name (case-insensitive)
-        let updated = false;
+        // Check if user exists (try both username and name columns)
+        let existingUser = null;
         try {
-            const result = await pool.query('UPDATE users SET password = $1 WHERE LOWER(username) = LOWER($2) RETURNING id', [hashedPassword, username]);
-            if (result.rowCount > 0) updated = true;
-        } catch (updateError) {
-            if (updateError.message.includes('username')) {
-                const result = await pool.query('UPDATE users SET password = $1 WHERE LOWER(name) = LOWER($2) RETURNING id', [hashedPassword, username]);
-                if (result.rowCount > 0) updated = true;
-            } else {
-                throw updateError;
+            const result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+            existingUser = result.rows[0];
+        } catch (e) {
+            if (e.message.includes('username')) {
+                const result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1)', [username]);
+                existingUser = result.rows[0];
             }
         }
         
-        if (!updated) {
-            return res.status(404).json({ error: 'User not found' });
+        if (existingUser) {
+            // Update existing user password
+            try {
+                await pool.query('UPDATE users SET password = $1 WHERE LOWER(username) = LOWER($2)', [hashedPassword, username]);
+            } catch (e) {
+                await pool.query('UPDATE users SET password = $1 WHERE LOWER(name) = LOWER($2)', [hashedPassword, username]);
+            }
+            return res.json({ message: 'Password reset successfully' });
+        } else {
+            // Create new admin user
+            try {
+                await pool.query(
+                    "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
+                    [username, username, 'admin@hotel.com', hashedPassword, 'main_admin']
+                );
+            } catch (e) {
+                // If username column doesn't exist, try without it
+                if (e.message.includes('username')) {
+                    await pool.query(
+                        "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
+                        [username, 'admin@hotel.com', hashedPassword, 'main_admin']
+                    );
+                } else {
+                    throw e;
+                }
+            }
+            return res.json({ message: 'Admin created successfully' });
         }
-        
-        res.json({ message: 'Password reset successfully' });
     } catch (error) {
+        console.error('Reset password error:', error);
         res.status(500).json({ error: error.message });
     }
 });
