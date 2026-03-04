@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadDashboard();
     setupNavigation();
     setupEventListeners();
+    setupMobileMenu();
 });
 
 // Check authentication - don't redirect, just get user info
@@ -19,7 +20,9 @@ async function checkAuth() {
         const data = await response.json();
         
         if (data.authenticated && data.user) {
-            document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || 'Admin'}`;
+            const name = data.user.name || 'Admin';
+            document.getElementById('admin-name').textContent = `Welcome, ${name}`;
+            document.getElementById('admin-avatar').textContent = name.charAt(0).toUpperCase();
         } else {
             // Not authenticated, redirect to login
             window.location.href = '/auth.html';
@@ -30,16 +33,43 @@ async function checkAuth() {
     }
 }
 
+// Setup mobile menu
+function setupMobileMenu() {
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        });
+        
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    }
+}
+
 // Setup navigation
 function setupNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
-    const quickLinks = document.querySelectorAll('.quick-link');
+    const quickLinks = document.querySelectorAll('.action-btn, .view-all-link');
     
     navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const section = item.dataset.section;
             switchSection(section);
+            
+            // Close mobile menu
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
         });
     });
     
@@ -47,7 +77,7 @@ function setupNavigation() {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const section = link.dataset.section;
-            switchSection(section);
+            if (section) switchSection(section);
         });
     });
 }
@@ -170,9 +200,81 @@ async function loadDashboard() {
         document.getElementById('stat-bookings').textContent = stats.totalBookings || 0;
         document.getElementById('stat-media').textContent = stats.totalMedia || 0;
         document.getElementById('stat-sections').textContent = stats.totalSections || 0;
+        
+        // Load recent bookings for the table
+        loadRecentBookings();
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
+}
+
+// Load Recent Bookings for dashboard table
+async function loadRecentBookings() {
+    try {
+        const response = await fetch('/api/admin/bookings', { credentials: 'include' });
+        if (response.status === 401) return;
+        
+        const bookings = await response.json();
+        const tbody = document.getElementById('recent-bookings-body');
+        
+        if (!tbody) return;
+        
+        if (!bookings || bookings.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px;">
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-check"></i>
+                            <h4>No bookings yet</h4>
+                            <p>Bookings will appear here when guests make reservations.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Show only first 5 recent bookings
+        const recentBookings = bookings.slice(0, 5);
+        
+        tbody.innerHTML = recentBookings.map(booking => `
+            <tr>
+                <td>
+                    <div style="font-weight: 500;">${booking.full_name}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">${booking.email}</div>
+                </td>
+                <td>${booking.room_title || 'N/A'}</td>
+                <td>${formatDate(booking.booking_date)}</td>
+                <td><span class="status-badge ${booking.status}">${booking.status}</span></td>
+                <td>
+                    <div class="table-actions">
+                        ${booking.status === 'pending' ? `
+                            <button onclick="updateBookingStatus(${booking.id}, 'approved')" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="updateBookingStatus(${booking.id}, 'cancelled')" title="Cancel" class="danger">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                        ${booking.status === 'approved' ? `
+                            <button onclick="updateBookingStatus(${booking.id}, 'completed')" title="Mark Completed">
+                                <i class="fas fa-check-double"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading recent bookings:', error);
+    }
+}
+
+// Format date helper
+function formatDate(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 // Load Overview Blocks
@@ -269,34 +371,49 @@ async function loadBookings() {
         const container = document.getElementById('bookings-list');
         
         if (!bookings || bookings.length === 0) {
-            container.innerHTML = '<p class="no-items">No bookings yet.</p>';
+            container.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 60px;">
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-check"></i>
+                            <h4>No bookings yet</h4>
+                            <p>Bookings will appear here when guests make reservations.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
             return;
         }
         
         container.innerHTML = bookings.map(booking => `
-            <div class="booking-card">
-                <div class="booking-info">
-                    <h3>${booking.full_name}</h3>
-                    <p><strong>Room:</strong> ${booking.room_title || 'N/A'}</p>
-                    <p><strong>Date:</strong> ${booking.booking_date}</p>
-                    <p><strong>Time:</strong> ${booking.booking_time}</p>
-                    <p><strong>Phone:</strong> ${booking.phone}</p>
-                    <p><strong>Email:</strong> ${booking.email}</p>
-                    ${booking.message ? `<p><strong>Message:</strong> ${booking.message}</p>` : ''}
-                </div>
-                <div class="booking-status">
-                    <span class="status-badge ${booking.status}">${booking.status}</span>
-                    <div class="booking-actions">
+            <tr>
+                <td>
+                    <div style="font-weight: 500;">${booking.full_name}</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">${booking.email}</div>
+                </td>
+                <td>${booking.room_title || 'N/A'}</td>
+                <td>${formatDate(booking.booking_date)}</td>
+                <td>${booking.booking_time}</td>
+                <td>${booking.phone}</td>
+                <td><span class="status-badge ${booking.status}">${booking.status}</span></td>
+                <td>
+                    <div class="table-actions">
                         ${booking.status === 'pending' ? `
-                            <button class="btn-primary" onclick="updateBookingStatus(${booking.id}, 'approved')">Approve</button>
-                            <button class="btn-danger" onclick="updateBookingStatus(${booking.id}, 'cancelled')">Cancel</button>
+                            <button onclick="updateBookingStatus(${booking.id}, 'approved')" title="Approve">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="updateBookingStatus(${booking.id}, 'cancelled')" title="Cancel" class="danger">
+                                <i class="fas fa-times"></i>
+                            </button>
                         ` : ''}
                         ${booking.status === 'approved' ? `
-                            <button class="btn-primary" onclick="updateBookingStatus(${booking.id}, 'completed')">Mark Completed</button>
+                            <button onclick="updateBookingStatus(${booking.id}, 'completed')" title="Mark Completed">
+                                <i class="fas fa-check-double"></i>
+                            </button>
                         ` : ''}
                     </div>
-                </div>
-            </div>
+                </td>
+            </tr>
         `).join('');
     } catch (error) {
         console.error('Error loading bookings:', error);

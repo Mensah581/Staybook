@@ -53,61 +53,105 @@
 
         <!-- Main Content -->
         <main class="content-wrapper">
+            <!-- Mobile Overlay -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            
             <!-- Header -->
-            <header class="main-content class="content-header">
-                <h1 id="page-title">Dashboard</h1>
+            <header class="content-header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <button class="mobile-toggle" id="mobile-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                </div>
                 <div class="header-right">
-                    <span id="admin-name">Welcome, Admin</span>
+                    <span class="admin-name" id="admin-name">Welcome, Admin</span>
+                    <div class="admin-avatar" id="admin-avatar">A</div>
                 </div>
             </header>
 
             <!-- Dashboard Section -->
             <section id="dashboard-section" class="content-section active">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <i class="fas fa-bed"></i>
-                        <div class="stat-info">
-                            <h3>Total Rooms</h3>
-                            <p id="stat-rooms">0</p>
+                <div class="content-area">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-bed"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Rooms</div>
+                                <div class="stat-value" id="stat-rooms">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Bookings</div>
+                                <div class="stat-value" id="stat-bookings">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon info">
+                                <i class="fas fa-images"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Total Images</div>
+                                <div class="stat-value" id="stat-media">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Sections</div>
+                                <div class="stat-value" id="stat-sections">0</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <i class="fas fa-calendar-check"></i>
-                        <div class="stat-info">
-                            <h3>Total Bookings</h3>
-                            <p id="stat-bookings">0</p>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="actions-grid">
+                            <button class="action-btn" data-section="rooms">
+                                <i class="fas fa-plus"></i> Add Room
+                            </button>
+                            <button class="action-btn" data-section="media">
+                                <i class="fas fa-upload"></i> Upload Image
+                            </button>
+                            <button class="action-btn" data-section="bookings">
+                                <i class="fas fa-list"></i> View Bookings
+                            </button>
+                            <button class="action-btn" data-section="overview">
+                                <i class="fas fa-edit"></i> Edit Overview
+                            </button>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <i class="fas fa-images"></i>
-                        <div class="stat-info">
-                            <h3>Total Images</h3>
-                            <p id="stat-media">0</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-th"></i>
-                        <div class="stat-info">
-                            <h3>Sections</h3>
-                            <p id="stat-sections">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="quick-links">
-                    <h3>Quick Actions</h3>
-                    <div class="links-grid">
-                        <a href="#" class="quick-link" data-section="overview">
-                            <i class="fas fa-edit"></i> Edit Overview
-                        </a>
-                        <a href="#" class="quick-link" data-section="rooms">
-                            <i class="fas fa-plus"></i> Add Room
-                        </a>
-                        <a href="#" class="quick-link" data-section="media">
-                            <i class="fas fa-upload"></i> Upload Image
-                        </a>
-                        <a href="#" class="quick-link" data-section="bookings">
-                            <i class="fas fa-list"></i> View Bookings
-                        </a>
+                    
+                    <!-- Recent Bookings Table -->
+                    <div class="recent-bookings">
+                        <h3>
+                            Recent Bookings
+                            <span class="view-all-link" data-section="bookings">View All</span>
+                        </h3>
+                        <table class="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>Guest</th>
+                                    <th>Room</th>
+                                    <th>Check-in</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-bookings-body">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -138,11 +182,28 @@
 
             <!-- Bookings Section -->
             <section id="bookings-section" class="content-section">
-                <div class="section-header">
-                    <h2>Bookings</h2>
-                </div>
-                <div id="bookings-list" class="bookings-list">
-                    <!-- Bookings loaded dynamically -->
+                <div class="content-area">
+                    <div class="section-header">
+                        <h2>All Bookings</h2>
+                    </div>
+                    <div class="recent-bookings">
+                        <table class="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>Guest</th>
+                                    <th>Room</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-list">
+                                <!-- Bookings loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
