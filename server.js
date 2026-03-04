@@ -448,14 +448,14 @@ app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        // Try to find user by username or name (fallback for older databases)
+        // Try to find user by username or name (case-insensitive)
         let result;
         try {
-            result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+            result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
         } catch (queryError) {
             // If username column doesn't exist, try name column
             if (queryError.message.includes('username')) {
-                result = await pool.query('SELECT * FROM users WHERE name = $1', [username]);
+                result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1)', [username]);
             } else {
                 throw queryError;
             }
@@ -506,15 +506,22 @@ app.post('/api/admin/reset-password', async (req, res) => {
         
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         
-        // Try to update by username or name
+        // Try to update by username or name (case-insensitive)
+        let updated = false;
         try {
-            await pool.query('UPDATE users SET password = $1 WHERE username = $2', [hashedPassword, username]);
+            const result = await pool.query('UPDATE users SET password = $1 WHERE LOWER(username) = LOWER($2) RETURNING id', [hashedPassword, username]);
+            if (result.rowCount > 0) updated = true;
         } catch (updateError) {
             if (updateError.message.includes('username')) {
-                await pool.query('UPDATE users SET password = $1 WHERE name = $2', [hashedPassword, username]);
+                const result = await pool.query('UPDATE users SET password = $1 WHERE LOWER(name) = LOWER($2) RETURNING id', [hashedPassword, username]);
+                if (result.rowCount > 0) updated = true;
             } else {
                 throw updateError;
             }
+        }
+        
+        if (!updated) {
+            return res.status(404).json({ error: 'User not found' });
         }
         
         res.json({ message: 'Password reset successfully' });
