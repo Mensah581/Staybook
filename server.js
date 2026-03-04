@@ -525,7 +525,7 @@ app.get('/api/check-auth', (req, res) => {
 
 // Check admin auth
 app.get('/api/admin/check', (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
+    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin')) {
         res.json({ authenticated: true, user: req.session.user });
     } else {
         res.json({ authenticated: false });
