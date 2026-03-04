@@ -633,6 +633,7 @@ async function loadSettings() {
         const response = await fetch('/api/settings');
         const settings = await response.json();
         
+        // Main settings
         document.getElementById('setting-hotel-name').value = settings.hotel_name || '';
         document.getElementById('setting-company-name').value = settings.company_name || '';
         document.getElementById('setting-hero-title').value = settings.hero_title || '';
@@ -641,6 +642,26 @@ async function loadSettings() {
         document.getElementById('setting-checkin').value = settings.checkin_time || '';
         document.getElementById('setting-checkout').value = settings.checkout_time || '';
         document.getElementById('setting-copyright').value = settings.copyright_year || '';
+        
+        // Rooms hero settings
+        if (document.getElementById('setting-rooms-hero-title')) document.getElementById('setting-rooms-hero-title').value = settings.rooms_hero_title || '';
+        if (document.getElementById('setting-rooms-hero-text')) document.getElementById('setting-rooms-hero-text').value = settings.rooms_hero_text || '';
+        if (document.getElementById('setting-rooms-hero-image')) document.getElementById('setting-rooms-hero-image').value = settings.rooms_hero_image || '';
+        
+        // Discover hero settings
+        if (document.getElementById('setting-discover-hero-title')) document.getElementById('setting-discover-hero-title').value = settings.discover_hero_title || '';
+        if (document.getElementById('setting-discover-hero-text')) document.getElementById('setting-discover-hero-text').value = settings.discover_hero_text || '';
+        if (document.getElementById('setting-discover-hero-image')) document.getElementById('setting-discover-hero-image').value = settings.discover_hero_image || '';
+        
+        // Dining hero settings
+        if (document.getElementById('setting-dining-hero-title')) document.getElementById('setting-dining-hero-title').value = settings.dining_hero_title || '';
+        if (document.getElementById('setting-dining-hero-text')) document.getElementById('setting-dining-hero-text').value = settings.dining_hero_text || '';
+        if (document.getElementById('setting-dining-hero-image')) document.getElementById('setting-dining-hero-image').value = settings.dining_hero_image || '';
+        
+        // Contact hero settings
+        if (document.getElementById('setting-contact-hero-title')) document.getElementById('setting-contact-hero-title').value = settings.contact_hero_title || '';
+        if (document.getElementById('setting-contact-hero-text')) document.getElementById('setting-contact-hero-text').value = settings.contact_hero_text || '';
+        if (document.getElementById('setting-contact-hero-image')) document.getElementById('setting-contact-hero-image').value = settings.contact_hero_image || '';
     } catch (error) {
         console.error('Error loading settings:', error);
     }
@@ -659,7 +680,23 @@ async function saveSettings(e) {
         hero_image: form.hero_image.value,
         checkin_time: form.checkin_time.value,
         checkout_time: form.checkout_time.value,
-        copyright_year: form.copyright_year.value
+        copyright_year: form.copyright_year.value,
+        // Rooms hero
+        rooms_hero_title: form.rooms_hero_title ? form.rooms_hero_title.value : '',
+        rooms_hero_text: form.rooms_hero_text ? form.rooms_hero_text.value : '',
+        rooms_hero_image: form.rooms_hero_image ? form.rooms_hero_image.value : '',
+        // Discover hero
+        discover_hero_title: form.discover_hero_title ? form.discover_hero_title.value : '',
+        discover_hero_text: form.discover_hero_text ? form.discover_hero_text.value : '',
+        discover_hero_image: form.discover_hero_image ? form.discover_hero_image.value : '',
+        // Dining hero
+        dining_hero_title: form.dining_hero_title ? form.dining_hero_title.value : '',
+        dining_hero_text: form.dining_hero_text ? form.dining_hero_text.value : '',
+        dining_hero_image: form.dining_hero_image ? form.dining_hero_image.value : '',
+        // Contact hero
+        contact_hero_title: form.contact_hero_title ? form.contact_hero_title.value : '',
+        contact_hero_text: form.contact_hero_text ? form.contact_hero_text.value : '',
+        contact_hero_image: form.contact_hero_image ? form.contact_hero_image.value : ''
     };
     
     try {

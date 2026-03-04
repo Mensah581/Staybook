@@ -606,7 +606,7 @@ app.get('/api/discover', async (req, res) => {
 // Update settings (admin)
 app.put('/api/admin/settings', requireAdmin, async (req, res) => {
     try {
-        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, hero_image, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name } = req.body;
+        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, hero_image, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name, rooms_hero_title, rooms_hero_text, rooms_hero_image, discover_hero_title, discover_hero_text, discover_hero_image, dining_hero_title, dining_hero_text, dining_hero_image, contact_hero_title, contact_hero_text, contact_hero_image } = req.body;
         
         await pool.query(`
             UPDATE settings SET 
@@ -614,11 +614,19 @@ app.put('/api/admin/settings', requireAdmin, async (req, res) => {
                 hotel_email = $4, hotel_address = $5, hero_title = $6, hero_text = $7, hero_image = $8,
                 about_title = $9, about_text = $10, about_image = $11, checkin_time = $12, 
                 checkout_time = $13, front_desk_hours = $14, copyright_year = $15, company_name = $16,
+                rooms_hero_title = $17, rooms_hero_text = $18, rooms_hero_image = $19,
+                discover_hero_title = $20, discover_hero_text = $21, discover_hero_image = $22,
+                dining_hero_title = $23, dining_hero_text = $24, dining_hero_image = $25,
+                contact_hero_title = $26, contact_hero_text = $27, contact_hero_image = $28,
                 updated_at = CURRENT_TIMESTAMP 
             WHERE id = 1`,
             [hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, 
              hero_title, hero_text, hero_image, about_title, about_text, about_image, 
-             checkin_time, checkout_time, front_desk_hours, copyright_year, company_name]
+             checkin_time, checkout_time, front_desk_hours, copyright_year, company_name,
+             rooms_hero_title, rooms_hero_text, rooms_hero_image,
+             discover_hero_title, discover_hero_text, discover_hero_image,
+             dining_hero_title, dining_hero_text, dining_hero_image,
+             contact_hero_title, contact_hero_text, contact_hero_image]
         );
         res.json({ message: 'Settings updated successfully' });
     } catch (error) {
