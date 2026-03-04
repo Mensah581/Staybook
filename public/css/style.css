@@ -1020,8 +1020,12 @@ footer {
     text-align: center;
 }
 
-/* ========== OVERVIEW PAGE ========== */
-.overview-hero {
+/* ========== HERO SECTIONS ========== */
+.overview-hero,
+.rooms-hero,
+.discover-hero,
+.dining-hero,
+.contact-hero {
     position: relative;
     height: 75vh;
     min-height: 650px;
@@ -1030,7 +1034,31 @@ footer {
                 url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920') center/cover;
 }
 
-.overview-hero::after {
+.rooms-hero {
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%),
+                url('https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1920') center/cover;
+}
+
+.discover-hero {
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%),
+                url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920') center/cover;
+}
+
+.dining-hero {
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%),
+                url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920') center/cover;
+}
+
+.contact-hero {
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%),
+                url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1920') center/cover;
+}
+
+.overview-hero::after,
+.rooms-hero::after,
+.discover-hero::after,
+.dining-hero::after,
+.contact-hero::after {
     content: "";
     position: absolute;
     inset: 0;
