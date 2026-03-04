@@ -27,9 +27,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        maxAge: 30 * 60 * 1000, // 30 minutes
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false, // Set to false for now to test
         sameSite: 'lax'
     }
 }));
@@ -470,6 +470,14 @@ app.post('/api/signup', async (req, res) => {
             [name, email, hashedPassword, role]
         );
         
+        const newUser = result.rows[0];
+        req.session.user = newUser;
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+            }
+        });
+        
         res.json({ 
             message: isFirstUser ? 'Admin account created!' : 'Account created!',
             user: result.rows[0]
@@ -499,6 +507,11 @@ app.post('/api/login', async (req, res) => {
         }
         
         req.session.user = user;
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+            }
+        });
         res.json({ 
             message: 'Login successful', 
             user: { 
