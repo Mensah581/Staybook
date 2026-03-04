@@ -366,11 +366,15 @@
 
     <script src="/js/admin.js"></script>
     <script>
-        // Skip auth check on page load - just show dashboard
+        // Debug - show what's happening
+        console.log('Dashboard loading...');
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
             loadDashboard();
             setupNavigation();
             setupEventListeners();
+            checkAuth();
+            console.log('Scripts loaded');
         });
     </script>
 </body>
