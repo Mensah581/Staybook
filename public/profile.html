@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Grand Hotel</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: #1a1a2e;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .header-right {
+            position: relative;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .avatar span {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .avatar-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+        
+        .avatar-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .dropdown-header {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .dropdown-header .name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .dropdown-header .email {
+            color: #666;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        
+        .dropdown-menu {
+            padding: 8px 0;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            color: #333;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+        
+        .dropdown-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .dropdown-item.logout {
+            color: #dc3545;
+            border-top: 1px solid #eee;
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+        
+        /* Main Content */
+        .profile-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .profile-avatar span {
+            color: #333;
+            font-weight: 600;
+            font-size: 28px;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-info h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .profile-info .email {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .profile-info .member-since {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .edit-btn {
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .edit-btn:hover {
+            border-color: #1a1a2e;
+        }
+        
+        /* Upcoming Stay */
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .booking-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .booking-room {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .booking-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .booking-status.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .booking-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .booking-status.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .booking-detail label {
+            color: #666;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        .booking-detail span {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .booking-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-primary {
+            padding: 8px 16px;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn-secondary {
+            padding: 8px 16px;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            margin-bottom: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-container {
+                padding: 16px;
+            }
+            
+            .profile-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h1>Grand Hotel</h1>
+        </div>
+        <div class="header-right">
+            <div class="avatar" id="avatar-btn">
+                <span id="avatar-initial">G</span>
+            </div>
+            <div class="avatar-dropdown" id="avatar-dropdown">
+                <div class="dropdown-header">
+                    <div class="name" id="dropdown-name">Guest User</div>
+                    <div class="email" id="dropdown-email">user@email.com</div>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="goToProfile()">My Profile</div>
+                    <div class="dropdown-item" onclick="goToBookings()">My Bookings</div>
+                    <div class="dropdown-item logout" onclick="logout()">Logout</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="profile-container">
+        <!-- Profile Overview -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <span id="profile-initial">G</span>
+                </div>
+                <div class="profile-info">
+                    <h2 id="profile-name">Guest User</h2>
+                    <p class="email" id="profile-email">user@email.com</p>
+                    <p class="member-since" id="profile-member">Member since: January 2024</p>
+                </div>
+                <button class="edit-btn" onclick="editProfile()">Edit Profile</button>
+            </div>
+        </div>
+
+        <!-- Upcoming Stay -->
+        <div class="profile-card">
+            <h3 class="section-title">Upcoming Stay</h3>
+            <div id="upcoming-booking">
+                <div class="empty-state">
+                    <p>You currently have no upcoming reservations.</p>
+                    <button class="btn-primary" onclick="window.location.href='/rooms.html'">Book a Room</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservation History -->
+        <div class="profile-card">
+            <h3 class="section-title">Reservation History</h3>
+            <div id="booking-history">
+                <div class="empty-state">
+                    <p>No past reservations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check auth on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/check-auth', { credentials: 'include' });
+                const data = await response.json();
+                
+                if (!data.authenticated || data.user.role === 'main_admin' || data.user.role === 'admin') {
+                    window.location.href = '/auth.html';
+                    return;
+                }
+                
+                // Load user data
+                loadUserData(data.user);
+            } catch (error) {
+                window.location.href = '/auth.html';
+            }
+        });
+        
+        // Avatar dropdown toggle
+        document.getElementById('avatar-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('avatar-dropdown').classList.toggle('show');
+        });
+        
+        document.addEventListener('click', () => {
+            document.getElementById('avatar-dropdown').classList.remove('show');
+        });
+        
+        // Load user data
+        function loadUserData(user) {
+            const name = user.name || 'Guest';
+            const initial = name.charAt(0).toUpperCase();
+            
+            document.getElementById('avatar-initial').textContent = initial;
+            document.getElementById('profile-initial').textContent = initial;
+            document.getElementById('dropdown-name').textContent = name;
+            document.getElementById('profile-name').textContent = name;
+            document.getElementById('dropdown-email').textContent = user.email;
+            document.getElementById('profile-email').textContent = user.email;
+            
+            if (user.created_at) {
+                const date = new Date(user.created_at);
+                const options = { year: 'numeric', month: 'long' };
+                document.getElementById('profile-member').textContent = 'Member since: ' + date.toLocaleDateString('en-US', options);
+            }
+            
+            // Load bookings
+            loadBookings();
+        }
+        
+        // Load bookings
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/user/bookings', { credentials: 'include' });
+                if (response.ok) {
+                    const bookings = await response.json();
+                    displayBookings(bookings);
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+        
+        // Display bookings
+        function displayBookings(bookings) {
+            const upcomingContainer = document.getElementById('upcoming-booking');
+            const historyContainer = document.getElementById('booking-history');
+            
+            const upcoming = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
+            const history = bookings.filter(b => b.status === 'completed' || b.status === 'cancelled');
+            
+            // Upcoming
+            if (upcoming.length > 0) {
+                upcomingContainer.innerHTML = upcoming.map(booking => `
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <span class="booking-room">${booking.room_title || 'Room'}</span>
+                            <span class="booking-status ${booking.status}">${booking.status}</span>
+                        </div>
+                        <div class="booking-details">
+                            <div class="booking-detail">
+                                <label>Check-in</label>
+                                <span>${booking.check_in || booking.booking_date}</span>
+                            </div>
+                            <div class="booking-detail">
+                                <label>Check-out</label>
+                                <span>${booking.check_out}</span>
+                            </div>
+                            <div class="booking-detail">
+                                <label>Guests</label>
+                                <span>${booking.guests || 1}</span>
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn-primary" onclick="viewBookingDetails(${booking.id})">View Details</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // History
+            if (history.length > 0) {
+                historyContainer.innerHTML = history.map(booking => `
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <span class="booking-room">${booking.room_title || 'Room'}</span>
+                            <span class="booking-status ${booking.status}">${booking.status}</span>
+                        </div>
+                        <div class="booking-details">
+                            <div class="booking-detail">
+                                <label>Check-in</label>
+                                <span>${booking.check_in || booking.booking_date}</span>
+                            </div>
+                            <div class="booking-detail">
+                                <label>Check-out</label>
+                                <span>${booking.check_out}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Navigation
+        function goToProfile() {
+            document.getElementById('avatar-dropdown').classList.remove('show');
+        }
+        
+        function goToBookings() {
+            document.getElementById('avatar-dropdown').classList.remove('show');
+            document.getElementById('booking-history').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function editProfile() {
+            alert('Edit profile feature coming soon');
+        }
+        
+        function viewBookingDetails(id) {
+            alert('Booking details: ' + id);
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

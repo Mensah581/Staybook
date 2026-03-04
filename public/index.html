@@ -270,6 +270,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadHotelSettings();
+            checkAuth();
             
             // Mobile menu toggle
             document.querySelector('.menu-icon').addEventListener('click', () => {
@@ -285,6 +286,68 @@
             // Add scroll listener
             window.addEventListener('scroll', handleScroll);
         });
+        
+        // Check authentication and update navigation
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth', { credentials: 'include' });
+                const data = await response.json();
+                
+                const topBarRight = document.querySelector('.top-bar-right');
+                const mobileMenuContent = document.querySelector('.mobile-menu-content');
+                
+                if (data.authenticated) {
+                    const user = data.user;
+                    const isAdmin = user.role === 'main_admin' || user.role === 'admin';
+                    
+                    // Update desktop nav
+                    if (isAdmin) {
+                        topBarRight.innerHTML = `
+                            <a href="/admin/dashboard.html">Admin</a>
+                            <a href="#" onclick="logout()">Logout</a>
+                            <span class="menu-icon">☰</span>
+                        `;
+                        mobileMenuContent.innerHTML = `
+                            <a href="/">Overview</a>
+                            <a href="/rooms.html">Rooms</a>
+                            <a href="/discover.html">Discover</a>
+                            <a href="/dining.html">Dining</a>
+                            <a href="/contact.html">Contact</a>
+                            <a href="/admin/dashboard.html">Admin</a>
+                            <a href="#" onclick="logout()">Logout</a>
+                        `;
+                    } else {
+                        const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+                        topBarRight.innerHTML = `
+                            <a href="/profile.html">My Profile</a>
+                            <a href="#" onclick="logout()">Logout</a>
+                            <span class="menu-icon">☰</span>
+                        `;
+                        mobileMenuContent.innerHTML = `
+                            <a href="/">Overview</a>
+                            <a href="/rooms.html">Rooms</a>
+                            <a href="/discover.html">Discover</a>
+                            <a href="/dining.html">Dining</a>
+                            <a href="/contact.html">Contact</a>
+                            <a href="/profile.html">My Profile</a>
+                            <a href="#" onclick="logout()">Logout</a>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+            }
+        }
+        
+        // Logout function
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
     </script>
 </body>
 </html>

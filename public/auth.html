@@ -181,7 +181,7 @@
                     if (data.user.role === 'main_admin' || data.user.role === 'admin') {
                         window.location.href = '/admin/dashboard.html';
                     } else {
-                        window.location.href = '/';
+                        window.location.href = '/profile.html';
                     }
                 }
             } catch (error) {
@@ -232,7 +232,7 @@
                     if (data.user.role === 'main_admin' || data.user.role === 'admin') {
                         window.location.href = '/admin/dashboard.html';
                     } else {
-                        window.location.href = '/';
+                        window.location.href = '/profile.html';
                     }
                 } else {
                     showMessage(data.error || 'Login failed', 'error');
@@ -265,7 +265,8 @@
                     const loginResponse = await fetch('/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password })
+                        body: JSON.stringify({ email, password }),
+                        credentials: 'include'
                     });
                     
                     const loginData = await loginResponse.json();
@@ -274,7 +275,7 @@
                         if (loginData.user.role === 'main_admin' || loginData.user.role === 'admin') {
                             window.location.href = '/admin/dashboard.html';
                         } else {
-                            window.location.href = '/account.html';
+                            window.location.href = '/profile.html';
                         }
                     } else {
                         // If auto-login fails, show message

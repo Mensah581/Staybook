@@ -142,6 +142,7 @@ async function initializeDatabase() {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS bookings (
                 id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
                 room_id INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
                 full_name VARCHAR(255) NOT NULL,
                 phone VARCHAR(50) NOT NULL,
@@ -153,6 +154,13 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // Add user_id column to bookings if it doesn't exist (for existing databases)
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
+        } catch (e) {
+            // Column may already exist, ignore error
+        }
 
         // Create settings table
         await pool.query(`
@@ -444,9 +452,12 @@ app.post('/api/bookings', async (req, res) => {
             return res.status(400).json({ error: 'Booking date cannot be in the past' });
         }
 
+        // Get user_id if user is logged in
+        const userId = req.session.user ? req.session.user.id : null;
+        
         const result = await pool.query(
-            'INSERT INTO bookings (room_id, full_name, phone, email, booking_date, booking_time, message, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [room_id, full_name, phone, email, booking_date, booking_time, message, 'pending']
+            'INSERT INTO bookings (user_id, room_id, full_name, phone, email, booking_date, booking_time, message, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [userId, room_id, full_name, phone, email, booking_date, booking_time, message, 'pending']
         );
 
         res.status(201).json({ message: 'Booking submitted successfully', booking: result.rows[0] });
@@ -585,6 +596,12 @@ app.get('/api/admin/check', (req, res) => {
 
 // Admin logout
 app.post('/api/admin/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ message: 'Logout successful' });
+});
+
+// General logout (for any user)
+app.post('/api/logout', (req, res) => {
     req.session.destroy();
     res.json({ message: 'Logout successful' });
 });
@@ -1029,6 +1046,73 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// User middleware - requires authenticated user (not admin)
+function requireUser(req, res, next) {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+}
+
+// Get current user profile
+app.get('/api/user/profile', requireUser, async (req, res) => {
+    try {
+        const user = req.session.user;
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            created_at: user.created_at
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update user profile
+app.put('/api/user/profile', requireUser, async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        const userId = req.session.user.id;
+        
+        const result = await pool.query(
+            'UPDATE users SET name = $1, email = $2 WHERE id = $3 RETURNING id, name, email, role',
+            [name, email, userId]
+        );
+        
+        // Update session
+        req.session.user = { ...req.session.user, name, email };
+        
+        res.json({ message: 'Profile updated', user: result.rows[0] });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get user bookings
+app.get('/api/user/bookings', requireUser, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const result = await pool.query(`
+            SELECT b.*, r.title as room_title, r.image_url as room_image
+            FROM bookings b 
+            LEFT JOIN rooms r ON b.room_id = r.id 
+            WHERE b.user_id = $1
+            ORDER BY b.created_at DESC
+        `, [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// User logout
+app.post('/api/user/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ message: 'Logout successful' });
 });
 
 // Serve index.html for root
