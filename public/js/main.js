@@ -1,5 +1,64 @@
 // Main JavaScript for Hotel Booking System
 
+// Check auth status and update UI
+async function checkAuthAndUpdateUI() {
+    try {
+        const response = await fetch('/api/check-auth');
+        const data = await response.json();
+        
+        if (data.authenticated && data.user) {
+            // Check if user is admin
+            if (data.user.role === 'main_admin' || data.user.role === 'admin') {
+                // Show admin link in nav
+                const topBarRight = document.querySelector('.top-bar-right');
+                if (topBarRight) {
+                    // Remove Join Us if exists, add Admin
+                    let adminLink = topBarRight.querySelector('.admin-link');
+                    if (!adminLink) {
+                        adminLink = document.createElement('a');
+                        adminLink.href = '/admin/dashboard.html';
+                        adminLink.className = 'admin-link';
+                        adminLink.textContent = 'Dashboard';
+                        
+                        const joinUsLink = topBarRight.querySelector('a[href="/auth.html"]');
+                        if (joinUsLink) {
+                            topBarRight.replaceChild(adminLink, joinUsLink);
+                        } else {
+                            topBarRight.insertBefore(adminLink, topBarRight.querySelector('.menu-icon'));
+                        }
+                    }
+                }
+                
+                // Update mobile menu
+                const mobileMenuContent = document.querySelector('.mobile-menu-content');
+                if (mobileMenuContent) {
+                    let adminLink = mobileMenuContent.querySelector('.admin-link');
+                    if (!adminLink) {
+                        adminLink = document.createElement('a');
+                        adminLink.href = '/admin/dashboard.html';
+                        adminLink.className = 'admin-link';
+                        adminLink.textContent = 'Dashboard';
+                        
+                        const joinUsLink = mobileMenuContent.querySelector('a[href="/auth.html"]');
+                        if (joinUsLink) {
+                            mobileMenuContent.replaceChild(adminLink, joinUsLink);
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.log('Auth check failed:', error);
+    }
+}
+
+// Run on page load if DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkAuthAndUpdateUI);
+} else {
+    checkAuthAndUpdateUI();
+}
+
 // Utility functions
 function showMessage(message, type = 'success') {
     const messageDiv = document.createElement('div');
