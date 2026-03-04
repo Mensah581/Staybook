@@ -448,14 +448,14 @@ app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        // Try to find user by username or name (case-insensitive)
+        // Try to find user by username, name, or email (case-insensitive)
         let result;
         try {
-            result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+            result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1)', [username]);
         } catch (queryError) {
             // If username column doesn't exist, try name column
             if (queryError.message.includes('username')) {
-                result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1)', [username]);
+                result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1) OR LOWER(email) = LOWER($1)', [username]);
             } else {
                 throw queryError;
             }
@@ -506,25 +506,24 @@ app.post('/api/admin/reset-password', async (req, res) => {
         
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         
-        // Check if user exists (try both username and name columns)
+        // Check if user exists by email first (most reliable)
         let existingUser = null;
         try {
-            const result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+            const result = await pool.query('SELECT * FROM users WHERE email = $1', ['admin@hotel.com']);
             existingUser = result.rows[0];
-        } catch (e) {
-            if (e.message.includes('username')) {
+        } catch (e) {}
+        
+        // Also try by name
+        if (!existingUser) {
+            try {
                 const result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1)', [username]);
                 existingUser = result.rows[0];
-            }
+            } catch (e) {}
         }
         
         if (existingUser) {
-            // Update existing user password
-            try {
-                await pool.query('UPDATE users SET password = $1 WHERE LOWER(username) = LOWER($2)', [hashedPassword, username]);
-            } catch (e) {
-                await pool.query('UPDATE users SET password = $1 WHERE LOWER(name) = LOWER($2)', [hashedPassword, username]);
-            }
+            // Update existing user password by ID
+            await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, existingUser.id]);
             return res.json({ message: 'Password reset successfully' });
         } else {
             // Create new admin user - use unique email
