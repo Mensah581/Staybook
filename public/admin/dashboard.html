@@ -16,37 +16,56 @@
                 <span>Admin Panel</span>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="dashboard">
-                    <i class="fas fa-th-large"></i> Dashboard
-                </a>
-                <a href="#" class="nav-item" data-section="overview">
-                    <i class="fas fa-home"></i> Overview
-                </a>
-                <a href="#" class="nav-item" data-section="rooms">
-                    <i class="fas fa-bed"></i> Rooms
-                </a>
-                <a href="#" class="nav-item" data-section="bookings">
-                    <i class="fas fa-calendar-check"></i> Bookings
-                </a>
-                <a href="#" class="nav-item" data-section="discover">
-                    <i class="fas fa-compass"></i> Discover
-                </a>
-                <a href="#" class="nav-item" data-section="dining">
-                    <i class="fas fa-utensils"></i> Dining
-                </a>
-                <a href="#" class="nav-item" data-section="contact">
-                    <i class="fas fa-phone"></i> Contact
-                </a>
-                <a href="#" class="nav-item" data-section="media">
-                    <i class="fas fa-images"></i> Media Library
-                </a>
-                <a href="#" class="nav-item" data-section="settings">
-                    <i class="fas fa-cog"></i> Settings
-                </a>
+                <!-- MANAGEMENT -->
+                <div class="nav-group">
+                    <span class="nav-group-title">MANAGEMENT</span>
+                    <a href="#" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-th-large"></i> <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="bookings">
+                        <i class="fas fa-calendar-check"></i> <span>Bookings</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="rooms">
+                        <i class="fas fa-bed"></i> <span>Rooms</span>
+                    </a>
+                </div>
+                
+                <!-- WEBSITE CONTENT -->
+                <div class="nav-group">
+                    <span class="nav-group-title">WEBSITE</span>
+                    <a href="#" class="nav-item" data-section="overview">
+                        <i class="fas fa-home"></i> <span>Overview</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="discover">
+                        <i class="fas fa-compass"></i> <span>Discover</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="dining">
+                        <i class="fas fa-utensils"></i> <span>Dining</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="contact">
+                        <i class="fas fa-phone"></i> <span>Contact</span>
+                    </a>
+                </div>
+                
+                <!-- MEDIA -->
+                <div class="nav-group">
+                    <span class="nav-group-title">MEDIA</span>
+                    <a href="#" class="nav-item" data-section="media">
+                        <i class="fas fa-images"></i> <span>Media Library</span>
+                    </a>
+                </div>
+                
+                <!-- SYSTEM -->
+                <div class="nav-group">
+                    <span class="nav-group-title">SYSTEM</span>
+                    <a href="#" class="nav-item" data-section="settings">
+                        <i class="fas fa-cog"></i> <span>Settings</span>
+                    </a>
+                </div>
             </nav>
             <div class="sidebar-footer">
                 <a href="#" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>
             </div>
         </aside>
@@ -73,8 +92,11 @@
             <!-- Dashboard Section -->
             <section id="dashboard-section" class="content-section active">
                 <div class="content-area">
-                    <!-- Stats Grid -->
-                    <div class="stats-grid">
+                    <!-- Dashboard Subtitle -->
+                    <p class="dashboard-subtitle">Hotel Overview</p>
+                    
+                    <!-- Stats Grid - 3 Cards Only -->
+                    <div class="stats-grid stats-grid-3">
                         <div class="stat-card">
                             <div class="stat-icon primary">
                                 <i class="fas fa-bed"></i>
@@ -94,64 +116,22 @@
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon info">
-                                <i class="fas fa-images"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-label">Total Images</div>
-                                <div class="stat-value" id="stat-media">0</div>
-                            </div>
-                        </div>
-                        <div class="stat-card">
                             <div class="stat-icon warning">
-                                <i class="fas fa-layer-group"></i>
+                                <i class="fas fa-clock"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-label">Sections</div>
-                                <div class="stat-value" id="stat-sections">0</div>
+                                <div class="stat-label">Pending</div>
+                                <div class="stat-value" id="stat-pending">0</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Quick Actions -->
-                    <div class="quick-actions">
-                        <h3>Quick Actions</h3>
-                        <div class="actions-grid">
-                            <button class="action-btn" data-section="rooms">
-                                <i class="fas fa-plus"></i> Add Room
-                            </button>
-                            <button class="action-btn" data-section="media">
-                                <i class="fas fa-upload"></i> Upload Image
-                            </button>
-                            <button class="action-btn" data-section="bookings">
-                                <i class="fas fa-list"></i> View Bookings
-                            </button>
-                            <button class="action-btn" data-section="overview">
-                                <i class="fas fa-edit"></i> Edit Overview
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Bookings Table -->
-                    <div class="recent-bookings">
-                        <h3>
-                            Recent Bookings
-                            <span class="view-all-link" data-section="bookings">View All</span>
-                        </h3>
-                        <table class="bookings-table">
-                            <thead>
-                                <tr>
-                                    <th>Guest</th>
-                                    <th>Room</th>
-                                    <th>Check-in</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recent-bookings-body">
-                                <!-- Loaded dynamically -->
-                            </tbody>
-                        </table>
+                    <!-- Small Recent Activity List (max 5 lines) -->
+                    <div class="activity-section">
+                        <h3>Recent Activity</h3>
+                        <ul class="activity-list" id="activity-list">
+                            <li class="activity-empty">No recent activity</li>
+                        </ul>
                     </div>
                 </div>
             </section>

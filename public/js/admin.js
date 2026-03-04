@@ -198,76 +198,41 @@ async function loadDashboard() {
         
         document.getElementById('stat-rooms').textContent = stats.totalRooms || 0;
         document.getElementById('stat-bookings').textContent = stats.totalBookings || 0;
-        document.getElementById('stat-media').textContent = stats.totalMedia || 0;
-        document.getElementById('stat-sections').textContent = stats.totalSections || 0;
         
-        // Load recent bookings for the table
-        loadRecentBookings();
+        // Load pending count
+        const bookingsResponse = await fetch('/api/admin/bookings', { credentials: 'include' });
+        if (bookingsResponse.ok) {
+            const bookings = await bookingsResponse.json();
+            const pendingCount = bookings.filter(b => b.status === 'pending').length;
+            document.getElementById('stat-pending').textContent = pendingCount;
+            
+            // Load activity list
+            loadActivityList(bookings);
+        }
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
 }
 
-// Load Recent Bookings for dashboard table
-async function loadRecentBookings() {
-    try {
-        const response = await fetch('/api/admin/bookings', { credentials: 'include' });
-        if (response.status === 401) return;
-        
-        const bookings = await response.json();
-        const tbody = document.getElementById('recent-bookings-body');
-        
-        if (!tbody) return;
-        
-        if (!bookings || bookings.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 40px;">
-                        <div class="empty-state">
-                            <i class="fas fa-calendar-check"></i>
-                            <h4>No bookings yet</h4>
-                            <p>Bookings will appear here when guests make reservations.</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-        
-        // Show only first 5 recent bookings
-        const recentBookings = bookings.slice(0, 5);
-        
-        tbody.innerHTML = recentBookings.map(booking => `
-            <tr>
-                <td>
-                    <div style="font-weight: 500;">${booking.full_name}</div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">${booking.email}</div>
-                </td>
-                <td>${booking.room_title || 'N/A'}</td>
-                <td>${formatDate(booking.booking_date)}</td>
-                <td><span class="status-badge ${booking.status}">${booking.status}</span></td>
-                <td>
-                    <div class="table-actions">
-                        ${booking.status === 'pending' ? `
-                            <button onclick="updateBookingStatus(${booking.id}, 'approved')" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button onclick="updateBookingStatus(${booking.id}, 'cancelled')" title="Cancel" class="danger">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        ` : ''}
-                        ${booking.status === 'approved' ? `
-                            <button onclick="updateBookingStatus(${booking.id}, 'completed')" title="Mark Completed">
-                                <i class="fas fa-check-double"></i>
-                            </button>
-                        ` : ''}
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-    } catch (error) {
-        console.error('Error loading recent bookings:', error);
+// Load Activity List
+function loadActivityList(bookings) {
+    const container = document.getElementById('activity-list');
+    if (!container) return;
+    
+    if (!bookings || bookings.length === 0) {
+        container.innerHTML = '<li class="activity-empty">No recent activity</li>';
+        return;
     }
+    
+    // Show last 5 bookings as activity
+    const recentBookings = bookings.slice(0, 5);
+    
+    container.innerHTML = recentBookings.map(booking => `
+        <li>
+            <i class="fas fa-circle"></i>
+            <span><strong>${booking.full_name}</strong> - ${booking.room_title || 'Room'} (${booking.status})</span>
+        </li>
+    `).join('');
 }
 
 // Format date helper
