@@ -24,11 +24,11 @@ async function checkAuth() {
         }
         
         if (data.user) {
-            document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || data.user.username}`;
+            document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || data.user.username || 'Admin'}`;
         }
     } catch (error) {
         console.error('Auth check error:', error);
-        window.location.href = '/admin/login.html';
+        // Don't redirect on network error, just log
     }
 }
 
