@@ -296,6 +296,15 @@ async function editRoom(id) {
         document.getElementById('modal-desc').value = room.description || '';
         document.getElementById('modal-image').value = room.image_url || '';
         document.getElementById('modal-visible').checked = room.status === 'available';
+        document.getElementById('modal-price').value = room.price || 0;
+        document.getElementById('modal-amenities').value = room.amenities || '';
+        document.getElementById('modal-rating').value = room.rating || 0;
+        document.getElementById('modal-review-count').value = room.review_count || 0;
+        document.getElementById('modal-beds').value = room.beds || 1;
+        document.getElementById('modal-baths').value = room.baths || 1;
+        document.getElementById('modal-guests').value = room.guests || 2;
+        document.getElementById('modal-size').value = room.size || 25;
+        document.getElementById('modal-location').value = room.location || '';
         
         const preview = document.getElementById('modal-image-preview');
         if (room.image_url) {
@@ -305,12 +314,46 @@ async function editRoom(id) {
         }
         
         document.getElementById('modal-extra-fields').innerHTML = `
-            <div class="form-group">
-                <label>Price</label>
-                <input type="number" id="modal-price" value="${room.price || 0}" min="0" step="0.01">
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" id="modal-price" value="${room.price || 0}" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Rating (0-5)</label>
+                    <input type="number" id="modal-rating" value="${room.rating || 0}" min="0" max="5" step="0.1">
+                </div>
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Review Count</label>
+                    <input type="number" id="modal-review-count" value="${room.review_count || 0}" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="modal-location" value="${room.location || ''}" placeholder="e.g. City Center">
+                </div>
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Beds</label>
+                    <input type="number" id="modal-beds" value="${room.beds || 1}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Baths</label>
+                    <input type="number" id="modal-baths" value="${room.baths || 1}" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Guests</label>
+                    <input type="number" id="modal-guests" value="${room.guests || 2}" min="1">
+                </div>
             </div>
             <div class="form-group">
-                <label>Amenities</label>
+                <label>Size (m²)</label>
+                <input type="number" id="modal-size" value="${room.size || 25}" min="1">
+            </div>
+            <div class="form-group">
+                <label>Amenities (comma separated)</label>
                 <textarea id="modal-amenities" rows="2">${room.amenities || ''}</textarea>
             </div>
         `;
@@ -717,6 +760,70 @@ async function deleteMedia(id) {
 // Open Modal
 function openModal(type) {
     document.getElementById('edit-modal').classList.add('active');
+    
+    // Reset form
+    document.getElementById('modal-title-input').value = '';
+    document.getElementById('modal-desc').value = '';
+    document.getElementById('modal-image').value = '';
+    document.getElementById('modal-visible').checked = true;
+    document.getElementById('modal-image-preview').innerHTML = '';
+    
+    // Clear and set extra fields based on type
+    const extraFields = document.getElementById('modal-extra-fields');
+    extraFields.innerHTML = '';
+    
+    if (type === 'room') {
+        // Set modal title for new room
+        document.getElementById('modal-title').textContent = 'Add New Room';
+        
+        // Room-specific fields for new room
+        extraFields.innerHTML = `
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Price</label>
+                    <input type="number" id="modal-price" value="0" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Rating (0-5)</label>
+                    <input type="number" id="modal-rating" value="0" min="0" max="5" step="0.1">
+                </div>
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Review Count</label>
+                    <input type="number" id="modal-review-count" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="modal-location" value="" placeholder="e.g. City Center">
+                </div>
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label>Beds</label>
+                    <input type="number" id="modal-beds" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Baths</label>
+                    <input type="number" id="modal-baths" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Guests</label>
+                    <input type="number" id="modal-guests" value="2" min="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Size (m²)</label>
+                <input type="number" id="modal-size" value="25" min="1">
+            </div>
+            <div class="form-group">
+                <label>Amenities (comma separated)</label>
+                <textarea id="modal-amenities" rows="2" placeholder="WiFi, Air Conditioning, TV, Pool"></textarea>
+            </div>
+        `;
+    } else {
+        document.getElementById('modal-title').textContent = 'Add New ' + type.charAt(0).toUpperCase() + type.slice(1);
+    }
 }
 
 // Close Modal
@@ -749,6 +856,13 @@ async function saveModalForm(e) {
         data.price = document.getElementById('modal-price')?.value || 0;
         data.amenities = document.getElementById('modal-amenities')?.value || '';
         data.status = is_visible ? 'available' : 'unavailable';
+        data.rating = document.getElementById('modal-rating')?.value || 0;
+        data.review_count = document.getElementById('modal-review-count')?.value || 0;
+        data.beds = document.getElementById('modal-beds')?.value || 1;
+        data.baths = document.getElementById('modal-baths')?.value || 1;
+        data.guests = document.getElementById('modal-guests')?.value || 2;
+        data.size = document.getElementById('modal-size')?.value || 25;
+        data.location = document.getElementById('modal-location')?.value || '';
     } else if (editingType === 'discover' && editingItem) {
         url = `/api/admin/discover/${editingItem.id}`;
         method = 'PUT';
@@ -761,6 +875,19 @@ async function saveModalForm(e) {
         url = '/api/admin/discover';
     } else if (editingType === 'dining' && !editingItem) {
         url = '/api/admin/dining';
+    } else if (editingType === 'room' && !editingItem) {
+        // Creating new room
+        url = '/api/admin/rooms';
+        data.price = document.getElementById('modal-price')?.value || 0;
+        data.amenities = document.getElementById('modal-amenities')?.value || '';
+        data.status = is_visible ? 'available' : 'unavailable';
+        data.rating = document.getElementById('modal-rating')?.value || 0;
+        data.review_count = document.getElementById('modal-review-count')?.value || 0;
+        data.beds = document.getElementById('modal-beds')?.value || 1;
+        data.baths = document.getElementById('modal-baths')?.value || 1;
+        data.guests = document.getElementById('modal-guests')?.value || 2;
+        data.size = document.getElementById('modal-size')?.value || 25;
+        data.location = document.getElementById('modal-location')?.value || '';
     } else {
         showToast('Unknown editing type', 'error');
         return;

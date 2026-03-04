@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room Details - Grand Hotel</title>
+    <title>Room Details - Grand Horizon</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Top Black Bar -->
@@ -13,8 +15,8 @@
             <span class="hotel-name" id="hotel-name">Grand Horizon</span>
         </div>
         <div class="top-bar-right">
-            <a href="#">Sign In</a>
-            <a href="#">Join</a>
+            <a href="/admin/login.html">Sign In</a>
+            <a href="/admin/login.html">Join</a>
             <span class="menu-icon">☰</span>
         </div>
     </div>
@@ -38,30 +40,17 @@
             <a href="#">Discover</a>
             <a href="#">Dining</a>
             <a href="#">Contact</a>
-            <a href="#">Sign In</a>
-            <a href="#">Join</a>
+            <a href="/admin/login.html">Sign In</a>
+            <a href="/admin/login.html">Join</a>
         </div>
     </div>
 
-    <!-- Room Details -->
-    <main>
-        <div id="room-content">
-            <div style="text-align: center; padding: 3rem;">
-                <p>Loading room details...</p>
-            </div>
+    <!-- Room Details Content -->
+    <main id="room-content" style="min-height: 60vh; padding: 40px 8%;">
+        <div style="text-align: center; padding: 80px 24px;">
+            <p style="color: var(--text-muted);">Loading room details...</p>
         </div>
     </main>
-
-    <!-- Booking Section (Sticky Bottom) -->
-    <div class="booking-section" id="booking-section" style="display: none;">
-        <div class="booking-price">
-            <span class="amount" id="booking-price">$0</span>
-            <span class="period">/ night</span>
-        </div>
-        <button class="booking-btn" id="book-now-btn" onclick="openBookingModal()">
-            Book Now
-        </button>
-    </div>
 
     <!-- Booking Modal -->
     <div class="booking-modal" id="booking-modal">
@@ -97,23 +86,32 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="booking_date">Check-in Date *</label>
-                        <input type="date" id="booking_date" name="booking_date" required>
+                        <label for="checkin_date">Check-in Date *</label>
+                        <input type="date" id="checkin_date" name="checkin_date" required>
                     </div>
                     <div class="form-group">
-                        <label for="booking_time">Check-in Time *</label>
-                        <select id="booking_time" name="booking_time" required>
-                            <option value="">Select time</option>
-                            <option value="09:00">9:00 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="12:00">12:00 PM</option>
-                            <option value="13:00">1:00 PM</option>
-                            <option value="14:00">2:00 PM</option>
-                            <option value="15:00">3:00 PM</option>
-                            <option value="16:00">4:00 PM</option>
-                            <option value="17:00">5:00 PM</option>
-                            <option value="18:00">6:00 PM</option>
+                        <label for="checkout_date">Check-out Date *</label>
+                        <input type="date" id="checkout_date" name="checkout_date" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adults">Adults</label>
+                        <select id="adults" name="adults">
+                            <option value="1">1 Adult</option>
+                            <option value="2" selected>2 Adults</option>
+                            <option value="3">3 Adults</option>
+                            <option value="4">4 Adults</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="children">Children</label>
+                        <select id="children" name="children">
+                            <option value="0" selected>0 Children</option>
+                            <option value="1">1 Child</option>
+                            <option value="2">2 Children</option>
+                            <option value="3">3 Children</option>
                         </select>
                     </div>
                 </div>
@@ -131,35 +129,52 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-brand">
-                <div class="logo" id="footer-hotel-name">GRAND HORIZON</div>
-                <p id="footer-address">Accra, Ghana</p>
-                <p id="footer-phone">+233 20 123 4567</p>
+    <!-- Footer - Kimpton Style -->
+    <footer class="overview-footer">
+        <div class="container">
+            <!-- Social Section -->
+            <div class="footer-social-section">
+                <h3>Social Media</h3>
+                <div class="icons">
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                </div>
             </div>
-            <div class="footer-section">
-                <h4>Navigate</h4>
-                <a href="/">Overview</a>
-                <a href="/rooms.html">Rooms</a>
-                <a href="#">Discover</a>
-                <a href="#">Savor</a>
+            
+            <!-- Divider -->
+            <div class="footer-divider"></div>
+            
+            <!-- Links Grid -->
+            <div class="footer-links-grid">
+                <div class="footer-link-column">
+                    <h4>About Us</h4>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Customer Care</a>
+                    <a href="#">Our Philosophy</a>
+                    <a href="#">Sustainability</a>
+                    <a href="#">Terms & Conditions</a>
+                </div>
+                <div class="footer-link-column">
+                    <h4>Get In Touch</h4>
+                    <a href="#">Contact Us</a>
+                    <a href="tel:+233201234567">Call Us</a>
+                    <a href="#">Live Chat</a>
+                </div>
             </div>
-            <div class="footer-section">
-                <h4>Info</h4>
-                <p>Check In: <span id="checkin-time">2:00 PM</span></p>
-                <p>Check Out: <span id="checkout-time">12:00 PM</span></p>
+            
+            <!-- Bottom -->
+            <div class="footer-bottom">
+                <p>© <span id="copyright-year">2026</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
             </div>
-            <div class="footer-section">
-                <h4>Contact</h4>
-                <p id="footer-email">info@grandhorizon.com</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; <span id="copyright-year">2024</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Mobile Book Now Button -->
+    <div class="mobile-book" id="mobile-book-btn" style="display: none;">
+        <a href="#" onclick="openBookingModal(); return false;">BOOK NOW</a>
+    </div>
 
     <script>
         // Get room ID from URL
@@ -167,8 +182,10 @@
         const roomId = urlParams.get('id');
 
         let currentRoom = null;
+        let currentImageIndex = 0;
+        let roomImages = [];
 
-        // Load room details on page load
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             if (!roomId) {
                 window.location.href = '/rooms.html';
@@ -188,11 +205,23 @@
                 }
             });
             
-            // Set minimum date
+            // Set minimum dates
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('booking_date').min = today;
+            document.getElementById('checkin_date').min = today;
+            document.getElementById('checkout_date').min = today;
+            
+            // Checkout must be after checkin
+            document.getElementById('checkin_date').addEventListener('change', function() {
+                const checkinDate = this.value;
+                const checkoutInput = document.getElementById('checkout_date');
+                checkoutInput.min = checkinDate;
+                if (checkoutInput.value && checkoutInput.value <= checkinDate) {
+                    checkoutInput.value = '';
+                }
+            });
         });
 
+        // Load settings
         async function loadSettings() {
             try {
                 const response = await fetch('/api/settings');
@@ -201,22 +230,17 @@
                 if (settings.hotel_name) {
                     const name = settings.hotel_name.toUpperCase();
                     document.getElementById('hotel-name').textContent = name;
-                    document.getElementById('footer-hotel-name').textContent = name;
                     document.getElementById('company-name').textContent = settings.hotel_name;
                     document.title = settings.hotel_name + ' - Room Details';
                 }
                 
-                if (settings.hotel_address) document.getElementById('footer-address').textContent = settings.hotel_address;
-                if (settings.hotel_phone) document.getElementById('footer-phone').textContent = settings.hotel_phone;
-                if (settings.hotel_email) document.getElementById('footer-email').textContent = settings.hotel_email;
-                if (settings.checkin_time) document.getElementById('checkin-time').textContent = settings.checkin_time;
-                if (settings.checkout_time) document.getElementById('checkout-time').textContent = settings.checkout_time;
                 if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
         }
 
+        // Load room details
         async function loadRoomDetails() {
             try {
                 const response = await fetch(`/api/rooms/${roomId}`);
@@ -230,131 +254,277 @@
             } catch (error) {
                 console.error('Error loading room:', error);
                 document.getElementById('room-content').innerHTML = `
-                    <div class="error-message" style="margin: 2rem;">
-                        <p>Room not found. <a href="/rooms.html">Back to Rooms</a></p>
+                    <div style="text-align: center; padding: 80px 24px;">
+                        <h2>Room Not Found</h2>
+                        <p style="color: var(--text-muted); margin-top: 12px;">The room you're looking for doesn't exist.</p>
+                        <a href="/rooms.html" class="btn-room" style="margin-top: 24px; display: inline-block;">Back to Rooms</a>
                     </div>
                 `;
             }
         }
 
+        // Render room details
         function renderRoomDetails() {
             const room = currentRoom;
             const container = document.getElementById('room-content');
             
-            // Gallery images - use room images or placeholders
-            const images = room.images && room.images.length > 0 
-                ? room.images 
-                : [
-                    'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
-                    'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
-                    'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800'
-                ];
-
-            // Amenities
-            const amenities = room.amenities 
-                ? room.amenities.split(',').map(a => a.trim())
-                : ['WiFi', 'Air Conditioning', 'TV'];
+            // Build images array from room data
+            const defaultImages = [
+                'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
+                'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800',
+                'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
+                'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800'
+            ];
             
+            roomImages = (room.images && room.images.length > 0) 
+                ? room.images 
+                : (room.image_url ? [room.image_url, ...defaultImages] : defaultImages);
+            
+            // Amenities - parse from string or use array
+            let amenities = [];
+            if (room.amenities) {
+                if (typeof room.amenities === 'string') {
+                    amenities = room.amenities.split(',').map(a => a.trim()).filter(a => a);
+                } else if (Array.isArray(room.amenities)) {
+                    amenities = room.amenities;
+                }
+            }
+            
+            // Amenity icons mapping
             const amenityIcons = {
-                'wifi': '📶',
-                'ac': '❄️',
-                'tv': '📺',
-                'parking': '🅿️',
-                'pool': '🏊',
-                'gym': '🏋️',
-                'spa': '💆',
-                'restaurant': '🍽️',
-                'room service': '🛎️',
-                'mini bar': '🍷',
-                'balcony': '🌅',
-                'jacuzzi': '🛁'
+                'wifi': 'fa-wifi',
+                'wifi': 'fa-wifi',
+                'internet': 'fa-wifi',
+                'ac': 'fa-snowflake',
+                'air conditioning': 'fa-snowflake',
+                'tv': 'fa-tv',
+                'television': 'fa-tv',
+                'parking': 'fa-parking',
+                'pool': 'fa-swimming-pool',
+                'gym': 'fa-dumbbell',
+                'fitness': 'fa-dumbbell',
+                'spa': 'fa-spa',
+                'restaurant': 'fa-utensils',
+                'room service': 'fa-concierge-bell',
+                'mini bar': 'fa-wine-glass',
+                'bar': 'fa-glass-martini-alt',
+                'balcony': 'fa-door-open',
+                'terrace': 'fa-tree',
+                'jacuzzi': 'fa-bath',
+                'bath': 'fa-bath',
+                'safe': 'fa-safe',
+                'phone': 'fa-phone',
+                'laundry': 'fa-tshirt',
+                'breakfast': 'fa-mug-hot',
+                'coffee': 'fa-coffee',
+                'sea view': 'fa-water',
+                'ocean view': 'fa-water',
+                'city view': 'fa-city'
             };
-
-            container.innerHTML = `
-                <div class="room-detail-header">
-                    <img src="${images[0]}" alt="${room.title}" class="room-detail-image">
+            
+            function getAmenityIcon(amenity) {
+                const lower = amenity.toLowerCase();
+                for (const [key, icon] of Object.entries(amenityIcons)) {
+                    if (lower.includes(key)) return icon;
+                }
+                return 'fa-check';
+            }
+            
+            // Generate rating
+            const rating = room.rating || 0;
+            const reviewCount = room.review_count || 0;
+            let ratingHtml = '';
+            if (rating > 0) {
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < Math.floor(rating)) {
+                        starsHtml += '<i class="fas fa-star" style="color: var(--accent);"></i>';
+                    } else if (i === Math.floor(rating) && rating % 1 >= 0.5) {
+                        starsHtml += '<i class="fas fa-star-half-alt" style="color: var(--accent);"></i>';
+                    } else {
+                        starsHtml += '<i class="far fa-star" style="color: var(--border);"></i>';
+                    }
+                }
+                ratingHtml = `
+                    <div class="room-detail-rating">
+                        ${starsHtml}
+                        ${reviewCount > 0 ? `<span style="color: var(--text-muted); margin-left: 8px;">(${reviewCount} reviews)</span>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Price formatting
+            const priceFormatted = '$' + parseFloat(room.price || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            
+            // Room features
+            const beds = room.beds || 1;
+            const baths = room.baths || 1;
+            const guests = room.guests || 2;
+            const size = room.size || 25;
+            
+            // Build main image and thumbnail gallery
+            const mainImage = roomImages[0];
+            const thumbnails = roomImages.slice(0, 4).map((img, idx) => `
+                <div class="gallery-thumb ${idx === 0 ? 'active' : ''}" onclick="selectImage(${idx})">
+                    <img src="${img}" alt="Room image ${idx + 1}">
                 </div>
-                
-                <div class="room-detail-content">
-                    <!-- Gallery -->
-                    <div class="gallery-grid">
-                        ${images.slice(0, 3).map(img => `<img src="${img}" alt="${room.title}">`).join('')}
-                    </div>
-                    
-                    <h1 class="room-detail-title">${room.title}</h1>
-                    <p class="room-detail-location">📍 City Center, Downtown</p>
-                    <div class="room-detail-rating">★ 4.8 (128 reviews)</div>
-                    
-                    <div class="room-detail-section">
-                        <h3>Amenities</h3>
-                        <div class="amenities-grid">
-                            ${amenities.map(amenity => {
-                                const lowerAmenity = amenity.toLowerCase();
-                                const icon = Object.keys(amenityIcons).find(key => lowerAmenity.includes(key)) 
-                                    ? amenityIcons[Object.keys(amenityIcons).find(key => lowerAmenity.includes(key))] 
-                                    : '✓';
-                                return `<span class="amenity-tag">${icon} ${amenity}</span>`;
-                            }).join('')}
-                        </div>
-                    </div>
-
-                    <div class="room-detail-section">
-                        <h3>About This Room</h3>
-                        <p class="room-detail-description">${room.description || 'Experience comfort and luxury in our beautifully appointed room. Perfect for both business and leisure travelers.'}</p>
-                    </div>
-
-                    <div class="room-detail-section">
-                        <h3>Room Details</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
-                                <strong>Max Guests</strong>
-                                <p style="color: var(--gray);">2 Adults</p>
+            `).join('');
+            
+            // Render the page
+            container.innerHTML = `
+                <!-- Two Column Layout -->
+                <div class="room-details-layout">
+                    <!-- Left Column: Content -->
+                    <div class="room-details-left">
+                        <!-- Image Gallery -->
+                        <div class="room-gallery">
+                            <div class="gallery-main">
+                                <img id="main-image" src="${mainImage}" alt="${room.title}" style="width: 100%; height: 400px; object-fit: cover; border-radius: var(--radius-md);">
                             </div>
-                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
-                                <strong>Bed Type</strong>
-                                <p style="color: var(--gray);">King / Twin</p>
-                            </div>
-                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
-                                <strong>Size</strong>
-                                <p style="color: var(--gray);">45 m²</p>
-                            </div>
-                            <div style="padding: 1rem; background: var(--background); border-radius: var(--radius-sm);">
-                                <strong>Status</strong>
-                                <p style="color: ${room.status === 'available' ? 'var(--primary)' : '#EF4444'};">
-                                    ${room.status === 'available' ? 'Available' : 'Unavailable'}
-                                </p>
+                            <div class="gallery-thumbs">
+                                ${thumbnails}
                             </div>
                         </div>
+                        
+                        <!-- Room Title & Info -->
+                        <div class="room-info-header">
+                            <h1 class="room-detail-title">${room.title || 'Deluxe Room'}</h1>
+                            ${ratingHtml}
+                            <p class="room-detail-location"><i class="fas fa-map-marker-alt" style="color: var(--accent); margin-right: 6px;"></i> ${room.location || 'City Center'}</p>
+                        </div>
+                        
+                        <!-- Room Features Grid -->
+                        <div class="room-features-grid">
+                            <div class="feature-item">
+                                <i class="fas fa-bed"></i>
+                                <span>${beds} ${beds === 1 ? 'Bed' : 'Beds'}</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-user-friends"></i>
+                                <span>${guests} ${guests === 1 ? 'Guest' : 'Guests'}</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-ruler-combined"></i>
+                                <span>${size} m²</span>
+                            </div>
+                            ${baths ? `<div class="feature-item">
+                                <i class="fas fa-bath"></i>
+                                <span>${baths} ${baths === 1 ? 'Bath' : 'Baths'}</span>
+                            </div>` : ''}
+                        </div>
+                        
+                        <!-- About Section -->
+                        <div class="room-detail-section">
+                            <h3 class="section-title" style="font-size: 24px; margin-bottom: 16px;">About This Room</h3>
+                            <p class="room-detail-description">${room.description || 'Experience comfort and luxury in our beautifully appointed room. Perfect for both business and leisure travelers seeking a peaceful retreat.'}</p>
+                        </div>
+                        
+                        <!-- Amenities Section -->
+                        ${amenities.length > 0 ? `
+                        <div class="room-detail-section">
+                            <h3 class="section-title" style="font-size: 24px; margin-bottom: 20px;">Room Amenities</h3>
+                            <div class="amenities-grid-detail">
+                                ${amenities.map(amenity => `
+                                    <div class="amenity-item-detail">
+                                        <i class="fas ${getAmenityIcon(amenity)}"></i>
+                                        <span>${amenity}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- Booking Rules Section -->
+                        <div class="room-detail-section booking-rules-section">
+                            <h3 class="section-title" style="font-size: 24px; margin-bottom: 24px;">Booking Rules</h3>
+                            <div class="booking-rules-grid">
+                                <div class="booking-rules-column">
+                                    <h4 style="font-size: 14px; font-weight: 500; margin-bottom: 16px; color: var(--text-primary);">Check-In</h4>
+                                    <div class="rule-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Check-in from 2:00 PM</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <i class="fas fa-id-card"></i>
+                                        <span>Valid ID required</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Credit card on file</span>
+                                    </div>
+                                </div>
+                                <div class="booking-rules-column">
+                                    <h4 style="font-size: 14px; font-weight: 500; margin-bottom: 16px; color: var(--text-primary);">Check-Out</h4>
+                                    <div class="rule-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Check-out until 12:00 PM</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Late checkout subject to availability</span>
+                                    </div>
+                                    <div class="rule-item">
+                                        <i class="fas fa-key"></i>
+                                        <span>Return room key at lobby</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Spacer for mobile booking button -->
+                        <div style="height: 80px;"></div>
                     </div>
-
-                    <!-- Add some spacing at bottom for sticky booking -->
-                    <div style="height: 100px;"></div>
+                    
+                    <!-- Right Column: Booking Form (Sticky) -->
+                    <div class="room-details-right">
+                        <div class="booking-form-sticky">
+                            <div class="booking-price-display">
+                                <span class="price-amount">${priceFormatted}</span>
+                                <span class="price-period">/ night</span>
+                            </div>
+                            
+                            ${room.status === 'available' ? `
+                                <button class="booking-btn-full" onclick="openBookingModal()">
+                                    Book Now
+                                </button>
+                            ` : `
+                                <button class="booking-btn-full" disabled style="background: var(--text-muted); cursor: not-allowed;">
+                                    Currently Unavailable
+                                </button>
+                            `}
+                            
+                            <p style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 16px;">
+                                ${room.status === 'available' ? 'Free cancellation up to 24 hours before check-in' : 'This room is currently unavailable'}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             `;
-
-            // Show booking section
-            const bookingSection = document.getElementById('booking-section');
-            const bookNowBtn = document.getElementById('book-now-btn');
             
+            // Show mobile booking button if room is available
             if (room.status === 'available') {
-                bookingSection.style.display = 'flex';
-                document.getElementById('booking-price').textContent = `$${room.price}`;
-                bookNowBtn.textContent = 'Book Now';
-                bookNowBtn.disabled = false;
-            } else {
-                bookingSection.style.display = 'flex';
-                document.getElementById('booking-price').textContent = `$${room.price}`;
-                bookNowBtn.textContent = 'Currently Unavailable';
-                bookNowBtn.disabled = true;
+                document.getElementById('mobile-book-btn').style.display = 'block';
             }
-
+            
             // Set room ID in form
             document.getElementById('booking-room-id').value = room.id;
-
+            
             // Add form submission handler
             document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
         }
 
+        // Image gallery functions
+        function selectImage(index) {
+            currentImageIndex = index;
+            document.getElementById('main-image').src = roomImages[index];
+            
+            // Update active thumbnail
+            document.querySelectorAll('.gallery-thumb').forEach((thumb, idx) => {
+                thumb.classList.toggle('active', idx === index);
+            });
+        }
+
+        // Modal functions
         function openBookingModal() {
             document.getElementById('booking-modal').classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -365,6 +535,7 @@
             document.body.style.overflow = '';
         }
 
+        // Handle booking form submission
         async function handleBookingSubmit(e) {
             e.preventDefault();
             
@@ -372,12 +543,18 @@
             const messageDiv = document.getElementById('booking-message');
             const submitBtn = document.getElementById('submit-btn');
             
-            // Validate date
-            const bookingDate = form.booking_date.value;
+            // Validate dates
+            const checkinDate = form.checkin_date.value;
+            const checkoutDate = form.checkout_date.value;
             const today = new Date().toISOString().split('T')[0];
             
-            if (bookingDate < today) {
+            if (checkinDate < today) {
                 messageDiv.innerHTML = '<div class="error-message">Check-in date cannot be in the past.</div>';
+                return;
+            }
+            
+            if (!checkoutDate || checkoutDate <= checkinDate) {
+                messageDiv.innerHTML = '<div class="error-message">Check-out date must be after check-in date.</div>';
                 return;
             }
 
@@ -387,8 +564,11 @@
                 full_name: form.full_name.value,
                 phone: form.phone.value,
                 email: form.email.value,
-                booking_date: form.booking_date.value,
-                booking_time: form.booking_time.value,
+                booking_date: form.checkin_date.value,
+                booking_time: '14:00', // Default check-in time
+                checkout_date: form.checkout_date.value,
+                adults: parseInt(form.adults.value),
+                children: parseInt(form.children.value),
                 message: form.message.value
             };
 
@@ -408,14 +588,14 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    messageDiv.innerHTML = '<div class="success-message">🎉 Booking submitted successfully! We will contact you shortly.</div>';
+                    messageDiv.innerHTML = '<div class="success-message"><i class="fas fa-check-circle"></i> Booking submitted successfully! We will contact you shortly.</div>';
                     form.reset();
                     setTimeout(() => {
                         closeBookingModal();
                         messageDiv.innerHTML = '';
                     }, 3000);
                 } else {
-                    messageDiv.innerHTML = '<div class="error-message">' + result.error + '</div>';
+                    messageDiv.innerHTML = '<div class="error-message">' + (result.error || 'An error occurred') + '</div>';
                 }
             } catch (error) {
                 console.error('Error submitting booking:', error);

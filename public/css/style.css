@@ -413,6 +413,420 @@ h1, h2, h3, h4 { font-weight: 400; letter-spacing: 0.5px; }
     border-color: var(--text-primary);
 }
 
+/* ========== ROOM CARD FEATURES ========== */
+.room-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.room-features {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.room-features i {
+    margin-right: 4px;
+    color: var(--accent);
+}
+
+.room-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+}
+
+/* ========== ROOM DETAILS PAGE ========== */
+.room-details-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 8%;
+}
+
+.room-details-left {
+    min-width: 0;
+}
+
+.room-details-right {
+    position: relative;
+}
+
+/* Gallery */
+.room-gallery {
+    margin-bottom: 32px;
+}
+
+.gallery-main {
+    margin-bottom: 16px;
+}
+
+.gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.gallery-thumb {
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.gallery-thumb.active {
+    border-color: var(--accent);
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 70px;
+    object-fit: cover;
+}
+
+/* Room Info Header */
+.room-info-header {
+    margin-bottom: 24px;
+}
+
+.room-detail-title {
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.room-detail-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.room-detail-location {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* Room Features Grid */
+.room-features-grid {
+    display: flex;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+}
+
+.room-features-grid .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.room-features-grid .feature-item i {
+    color: var(--accent);
+    font-size: 14px;
+}
+
+/* Room Detail Sections */
+.room-detail-section {
+    margin-bottom: 40px;
+}
+
+.room-detail-description {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+/* Amenities Grid */
+.amenities-grid-detail {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.amenity-item-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.amenity-item-detail i {
+    color: var(--accent);
+    font-size: 14px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Booking Rules Section */
+.booking-rules-section {
+    background: var(--bg-secondary);
+    padding: 32px;
+    border-radius: var(--radius-md);
+}
+
+.booking-rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+}
+
+.booking-rules-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.rule-item i {
+    color: var(--accent);
+    font-size: 14px;
+    width: 20px;
+}
+
+/* Sticky Booking Form */
+.booking-form-sticky {
+    position: sticky;
+    top: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 28px;
+}
+
+.booking-price-display {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.booking-price-display .price-amount {
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.booking-price-display .price-period {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.booking-btn-full {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.booking-btn-full:hover:not(:disabled) {
+    background: var(--accent-dark);
+}
+
+/* Form Styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: var(--accent-dark);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success/Error Messages */
+.success-message {
+    padding: 14px 16px;
+    background: rgba(107, 155, 122, 0.1);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-sm);
+    color: var(--success);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.error-message {
+    padding: 14px 16px;
+    background: rgba(184, 107, 107, 0.1);
+    border: 1px solid var(--error);
+    border-radius: var(--radius-sm);
+    color: var(--error);
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .room-details-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-form-sticky {
+        position: static;
+    }
+    
+    .amenities-grid-detail {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .gallery-thumbs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .rooms-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .room-details-layout {
+        padding: 0 4%;
+    }
+    
+    .room-features-grid {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .amenities-grid-detail {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-rules-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .gallery-thumbs {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    
+    .gallery-thumb img {
+        height: 60px;
+    }
+    
+    .rooms-container {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ========== EMPTY STATE ========== */
 .empty-state {
     grid-column: 1 / -1;

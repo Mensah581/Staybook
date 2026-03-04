@@ -77,9 +77,29 @@ async function initializeDatabase() {
                 amenities TEXT,
                 status VARCHAR(50) DEFAULT 'available',
                 image_url TEXT,
+                rating DECIMAL(3, 2) DEFAULT 0,
+                review_count INTEGER DEFAULT 0,
+                beds INTEGER DEFAULT 1,
+                baths INTEGER DEFAULT 1,
+                guests INTEGER DEFAULT 2,
+                size INTEGER DEFAULT 25,
+                location VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add new columns if they don't exist (for existing databases)
+        try {
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS rating DECIMAL(3, 2) DEFAULT 0`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS beds INTEGER DEFAULT 1`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS baths INTEGER DEFAULT 1`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS guests INTEGER DEFAULT 2`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS size INTEGER DEFAULT 25`);
+            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS location VARCHAR(255)`);
+        } catch (e) {
+            // Columns may already exist
+        }
 
         // Create room_images table
         await pool.query(`
@@ -293,7 +313,15 @@ app.get('/api/hotel-info', async (req, res) => {
 app.get('/api/rooms', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
-        res.json(result.rows);
+        
+        // Get images for each room
+        const roomsWithImages = await Promise.all(result.rows.map(async (room) => {
+            const imagesResult = await pool.query('SELECT image_url FROM room_images WHERE room_id = $1', [room.id]);
+            room.images = imagesResult.rows.map(img => img.image_url);
+            return room;
+        }));
+        
+        res.json(roomsWithImages);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -306,7 +334,14 @@ app.get('/api/rooms/:id', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Room not found' });
         }
-        res.json(result.rows[0]);
+        
+        const room = result.rows[0];
+        
+        // Get images for this room
+        const imagesResult = await pool.query('SELECT image_url FROM room_images WHERE room_id = $1', [room.id]);
+        room.images = imagesResult.rows.map(img => img.image_url);
+        
+        res.json(room);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -448,10 +483,13 @@ app.get('/api/admin/rooms', requireAdmin, async (req, res) => {
 // Create room (admin)
 app.post('/api/admin/rooms', requireAdmin, async (req, res) => {
     try {
-        const { title, description, price, amenities, status, image_url } = req.body;
+        const { title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location } = req.body;
         const result = await pool.query(
-            'INSERT INTO rooms (title, description, price, amenities, status, image_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [title, description, price, amenities, status || 'available', image_url]
+            `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+            [title, description, price, amenities, status || 'available', image_url, 
+             rating || 0, review_count || 0, beds || 1, 
+             baths || 1, guests || 2, size || 25, location]
         );
         res.status(201).json({ message: 'Room created successfully', room: result.rows[0] });
     } catch (error) {
@@ -462,10 +500,12 @@ app.post('/api/admin/rooms', requireAdmin, async (req, res) => {
 // Update room (admin)
 app.put('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
     try {
-        const { title, description, price, amenities, status, image_url } = req.body;
+        const { title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location } = req.body;
         await pool.query(
-            'UPDATE rooms SET title = $1, description = $2, price = $3, amenities = $4, status = $5, image_url = $6 WHERE id = $7',
-            [title, description, price, amenities, status, image_url, req.params.id]
+            `UPDATE rooms SET title = $1, description = $2, price = $3, amenities = $4, status = $5, image_url = $6, 
+             rating = $7, review_count = $8, beds = $9, baths = $10, guests = $11, size = $12, location = $13 WHERE id = $14`,
+            [title, description, price, amenities, status, image_url, 
+             rating || 0, review_count || 0, beds || 1, baths || 1, guests || 2, size || 25, location, req.params.id]
         );
         res.json({ message: 'Room updated successfully' });
     } catch (error) {
