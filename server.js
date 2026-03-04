@@ -10,6 +10,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for Render
+app.set('trust proxy', 1);
+
 // PostgreSQL connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hotel_booking'
@@ -24,13 +27,13 @@ app.use('/uploads', express.static('uploads'));
 // Session configuration
 app.use(session({
     secret: 'hotel-booking-secret-key-2024',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: { 
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: false, // Set to false for now to test
-        sameSite: 'lax'
+        sameSite: 'none',
+        secure: true
     }
 }));
 

@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Check authentication - don't redirect, just get user info
 async function checkAuth() {
     try {
-        const response = await fetch('/api/admin/check', { credentials: 'same-origin' });
+        const response = await fetch('/api/admin/check', { credentials: 'include' });
         const data = await response.json();
         
         if (data.authenticated && data.user) {
@@ -153,7 +153,7 @@ function setupEventListeners() {
 // Load Dashboard
 async function loadDashboard() {
     try {
-        const response = await fetch('/api/admin/stats', { credentials: 'same-origin' });
+        const response = await fetch('/api/admin/stats', { credentials: 'include' });
         if (response.status === 401) {
             window.location.href = '/auth.html';
             return;
@@ -611,7 +611,7 @@ async function deleteDiningItem(id) {
 // Load Contact Settings
 async function loadContactSettings() {
     try {
-        const response = await fetch('/api/admin/contact', { credentials: 'same-origin' });
+        const response = await fetch('/api/admin/contact', { credentials: 'include' });
         if (response.status === 401) {
             window.location.href = '/auth.html';
             return;
@@ -668,7 +668,7 @@ async function saveContactSettings(e) {
 // Load Settings
 async function loadSettings() {
     try {
-        const response = await fetch('/api/settings', { credentials: 'same-origin' });
+        const response = await fetch('/api/settings', { credentials: 'include' });
         if (response.status === 401) {
             window.location.href = '/auth.html';
             return;
@@ -762,7 +762,7 @@ async function saveSettings(e) {
 // Load Media Library
 async function loadMediaLibrary() {
     try {
-        const response = await fetch('/api/admin/media', { credentials: 'same-origin' });
+        const response = await fetch('/api/admin/media', { credentials: 'include' });
         if (response.status === 401) {
             window.location.href = '/auth.html';
             return;
