@@ -443,7 +443,7 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-// Simple signup
+// Simple signup - first user becomes admin
 app.post('/api/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -460,12 +460,20 @@ app.post('/api/signup', async (req, res) => {
             return res.status(400).json({ error: 'Email already exists' });
         }
         
+        // Check if any users exist - first user is admin
+        const userCount = await pool.query('SELECT COUNT(*) FROM users');
+        const isFirstUser = parseInt(userCount.rows[0].count) === 0;
+        const role = isFirstUser ? 'admin' : 'user';
+        
         await pool.query(
             "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-            [name, email, hashedPassword, 'user']
+            [name, email, hashedPassword, role]
         );
         
-        res.json({ message: 'Signup successful' });
+        res.json({ 
+            message: isFirstUser ? 'Admin account created!' : 'Signup successful',
+            role: role
+        });
     } catch (error) {
         console.error('Signup error:', error);
         res.status(500).json({ error: error.message });
@@ -509,6 +517,15 @@ app.post('/api/login', async (req, res) => {
 // Check auth
 app.get('/api/check-auth', (req, res) => {
     if (req.session.user) {
+        res.json({ authenticated: true, user: req.session.user });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
+// Check admin auth
+app.get('/api/admin/check', (req, res) => {
+    if (req.session.user && req.session.user.role === 'admin') {
         res.json({ authenticated: true, user: req.session.user });
     } else {
         res.json({ authenticated: false });
