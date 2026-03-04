@@ -33,8 +33,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 html, body {
-    overflow-x: hidden;
     max-width: 100vw;
+    overflow-x: visible;
 }
 
 body {
@@ -1966,3 +1966,57 @@ footer {
 
 /* Login page specific overrides - hide default elements */
 .login-page, .login-container, .login-logo { display: none !important; }
+
+/* ========== CONTACT PAGE ========== */
+.contact-info-grid {
+    max-width: 800px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    padding: 0 20px;
+}
+
+.contact-info-card {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+}
+
+.contact-info-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.contact-info-card i {
+    font-size: 32px;
+    color: var(--accent);
+    margin-bottom: 16px;
+}
+
+.contact-info-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.contact-info-card p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .contact-info-grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px;
+    }
+    
+    .contact-info-card {
+        padding: 24px 20px;
+    }
+}
