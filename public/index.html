@@ -194,22 +194,30 @@
                 
                 if (settings.hotel_name) {
                     const name = settings.hotel_name.toUpperCase();
-                    document.getElementById('hotel-name').textContent = name;
-                    document.getElementById('footer-hotel-name').textContent = name;
-                    document.getElementById('company-name').textContent = settings.hotel_name;
+                    const hotelNameEl = document.getElementById('hotel-name');
+                    const companyNameEl = document.getElementById('company-name');
+                    if (hotelNameEl) hotelNameEl.textContent = name;
+                    if (companyNameEl) companyNameEl.textContent = settings.hotel_name;
                     document.title = settings.hotel_name + ' - Luxury Hotel';
                 }
                 
-                if (settings.hotel_phone) document.getElementById('footer-phone').textContent = settings.hotel_phone;
-                if (settings.hotel_email) document.getElementById('footer-email').textContent = settings.hotel_email;
+                const footerPhoneEl = document.getElementById('footer-phone');
+                const footerEmailEl = document.getElementById('footer-email');
+                const heroTitleEl = document.getElementById('hero-title');
+                const heroTextEl = document.getElementById('hero-text');
+                const heroEl = document.getElementById('overview-hero');
+                const copyrightYearEl = document.getElementById('copyright-year');
                 
-                if (settings.hero_title) document.getElementById('hero-title').textContent = settings.hero_title;
-                if (settings.hero_text) document.getElementById('hero-text').textContent = settings.hero_text;
-                if (settings.hero_image) {
-                    document.getElementById('overview-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${settings.hero_image}') center/cover`;
+                if (settings.hotel_phone && footerPhoneEl) footerPhoneEl.textContent = settings.hotel_phone;
+                if (settings.hotel_email && footerEmailEl) footerEmailEl.textContent = settings.hotel_email;
+                
+                if (settings.hero_title && heroTitleEl) heroTitleEl.textContent = settings.hero_title;
+                if (settings.hero_text && heroTextEl) heroTextEl.textContent = settings.hero_text;
+                if (settings.hero_image && heroEl) {
+                    heroEl.style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${settings.hero_image}') center/cover`;
                 }
                 
-                if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
+                if (settings.copyright_year && copyrightYearEl) copyrightYearEl.textContent = settings.copyright_year;
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
