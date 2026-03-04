@@ -3,45 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - Grand Hotel</title>
+    <title>Admin Login - Grand Horizon</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
-    <!-- Login Page -->
-    <div class="login-page">
-        <div class="login-container">
-            <div class="login-logo">
-                <a href="/" class="logo">
-                    <div class="logo-icon">🏨</div>
-                    <span id="hotel-name">Grand Hotel</span>
-                </a>
+<body class="admin-login-page">
+    <!-- Login Card -->
+    <div class="admin-login-card">
+        <div class="admin-login-header">
+            <p class="admin-login-title" id="hotel-name">Grand Horizon</p>
+            <h1 class="admin-login-heading">Admin</h1>
+            <p class="admin-login-subtitle">Sign in to manage your hotel</p>
+        </div>
+        
+        <div class="admin-login-exclusive">
+            Authorized Access Only
+        </div>
+        
+        <div id="message" class="admin-login-message"></div>
+        
+        <form id="login-form" class="admin-login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter username">
             </div>
-            <h1>Admin Login</h1>
-            <p>Sign in to manage rooms and bookings</p>
             
-            <div id="message"></div>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required 
-                           placeholder="Enter username">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required 
-                           placeholder="Enter password">
-                </div>
-                
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-                    Sign In
-                </button>
-            </form>
-            
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <a href="/" style="color: var(--gray);">← Back to Home</a>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
             </div>
+            
+            <button type="submit" class="admin-login-btn">
+                Sign In
+            </button>
+        </form>
+        
+        <div class="admin-login-back">
+            <a href="/">← Back to Website</a>
         </div>
     </div>
 
@@ -68,7 +66,7 @@
                 const settings = await response.json();
                 if (settings.hotel_name) {
                     document.getElementById('hotel-name').textContent = settings.hotel_name;
-                    document.title = settings.hotel_name + ' - Admin';
+                    document.title = settings.hotel_name + ' - Admin Login';
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -87,7 +85,7 @@
             const password = form.password.value;
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Signing in...';
+            submitBtn.textContent = 'Signing in...';
             
             try {
                 const response = await fetch('/api/admin/login', {
@@ -105,13 +103,13 @@
                 } else {
                     messageDiv.innerHTML = '<div class="error-message">' + result.error + '</div>';
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Sign In';
+                    submitBtn.textContent = 'Sign In';
                 }
             } catch (error) {
                 console.error('Login error:', error);
                 messageDiv.innerHTML = '<div class="error-message">An error occurred. Please try again.</div>';
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Sign In';
+                submitBtn.textContent = 'Sign In';
             }
         });
     </script>
