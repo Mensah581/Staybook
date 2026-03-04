@@ -15,17 +15,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Check authentication - don't redirect, just get user info
 async function checkAuth() {
     try {
-        const response = await fetch('/api/admin/check');
+        const response = await fetch('/api/admin/check', { credentials: 'same-origin' });
         const data = await response.json();
         
         if (data.authenticated && data.user) {
             document.getElementById('admin-name').textContent = `Welcome, ${data.user.name || 'Admin'}`;
         } else {
-            document.getElementById('admin-name').textContent = 'Welcome, Admin';
+            // Not authenticated, redirect to login
+            window.location.href = '/auth.html';
         }
     } catch (error) {
         console.error('Auth check error:', error);
-        document.getElementById('admin-name').textContent = 'Welcome, Admin';
+        window.location.href = '/auth.html';
     }
 }
 
@@ -152,7 +153,11 @@ function setupEventListeners() {
 // Load Dashboard
 async function loadDashboard() {
     try {
-        const response = await fetch('/api/admin/stats');
+        const response = await fetch('/api/admin/stats', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const stats = await response.json();
         
         document.getElementById('stat-rooms').textContent = stats.totalRooms || 0;
@@ -167,7 +172,11 @@ async function loadDashboard() {
 // Load Overview Blocks
 async function loadOverviewBlocks() {
     try {
-        const response = await fetch('/api/admin/overview-sections');
+        const response = await fetch('/api/admin/overview-sections', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const sections = await response.json();
         
         const container = document.getElementById('overview-blocks');
@@ -204,7 +213,11 @@ async function loadOverviewBlocks() {
 // Edit Overview Block
 async function editOverviewBlock(key) {
     try {
-        const response = await fetch('/api/admin/overview-sections');
+        const response = await fetch('/api/admin/overview-sections', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const sections = await response.json();
         const section = sections.find(s => s.section_key === key);
         
@@ -237,7 +250,11 @@ async function editOverviewBlock(key) {
 // Load Rooms
 async function loadRooms() {
     try {
-        const response = await fetch('/api/admin/rooms');
+        const response = await fetch('/api/admin/rooms', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const rooms = await response.json();
         
         const container = document.getElementById('rooms-list');
@@ -279,7 +296,11 @@ async function loadRooms() {
 // Edit Room
 async function editRoom(id) {
     try {
-        const response = await fetch('/api/admin/rooms');
+        const response = await fetch('/api/admin/rooms', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const rooms = await response.json();
         const room = rooms.find(r => r.id === id);
         
@@ -382,7 +403,11 @@ async function deleteRoom(id) {
 // Load Discover Items
 async function loadDiscoverItems() {
     try {
-        const response = await fetch('/api/admin/discover');
+        const response = await fetch('/api/admin/discover', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const items = await response.json();
         
         const container = document.getElementById('discover-list');
@@ -422,7 +447,11 @@ async function loadDiscoverItems() {
 // Edit Discover Item
 async function editDiscoverItem(id) {
     try {
-        const response = await fetch('/api/admin/discover');
+        const response = await fetch('/api/admin/discover', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const items = await response.json();
         const item = items.find(i => i.id === id);
         
@@ -473,7 +502,11 @@ async function deleteDiscoverItem(id) {
 // Load Dining Items
 async function loadDiningItems() {
     try {
-        const response = await fetch('/api/admin/dining');
+        const response = await fetch('/api/admin/dining', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const items = await response.json();
         
         const container = document.getElementById('dining-list');
@@ -514,7 +547,11 @@ async function loadDiningItems() {
 // Edit Dining Item
 async function editDiningItem(id) {
     try {
-        const response = await fetch('/api/admin/dining');
+        const response = await fetch('/api/admin/dining', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const items = await response.json();
         const item = items.find(i => i.id === id);
         
@@ -574,7 +611,11 @@ async function deleteDiningItem(id) {
 // Load Contact Settings
 async function loadContactSettings() {
     try {
-        const response = await fetch('/api/admin/contact');
+        const response = await fetch('/api/admin/contact', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const settings = await response.json();
         
         document.getElementById('contact-phone').value = settings.phone || '';
@@ -627,7 +668,11 @@ async function saveContactSettings(e) {
 // Load Settings
 async function loadSettings() {
     try {
-        const response = await fetch('/api/settings');
+        const response = await fetch('/api/settings', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const settings = await response.json();
         
         // Main settings
@@ -717,7 +762,11 @@ async function saveSettings(e) {
 // Load Media Library
 async function loadMediaLibrary() {
     try {
-        const response = await fetch('/api/admin/media');
+        const response = await fetch('/api/admin/media', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
         const media = await response.json();
         
         const container = document.getElementById('media-grid');
