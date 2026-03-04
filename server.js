@@ -48,10 +48,27 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+
+const fileFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Invalid file type. Only JPG, PNG, and WebP are allowed.'), false);
+    }
+};
+
+const upload = multer({ 
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
 
 // Database initialization
 async function initializeDatabase() {
@@ -489,6 +506,24 @@ app.post('/api/signup', async (req, res) => {
         console.error('Signup error:', error);
         res.status(500).json({ error: error.message });
     }
+});
+
+// Image upload endpoint (admin only)
+app.post('/api/upload', requireAdmin, (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            console.error('Upload error:', err);
+            return res.status(400).json({ error: err.message });
+        }
+        
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+        
+        // Return the URL path to the uploaded file
+        const imageUrl = '/uploads/' + req.file.filename;
+        res.json({ success: true, imageUrl });
+    });
 });
 
 // Simple login

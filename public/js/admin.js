@@ -141,6 +141,9 @@ function setupEventListeners() {
     
     document.getElementById('media-upload')?.addEventListener('change', handleMediaUpload);
     
+    // Image upload in modal
+    document.getElementById('modal-image')?.addEventListener('change', handleModalImageUpload);
+    
     // Forms
     document.getElementById('contact-form')?.addEventListener('submit', saveContactSettings);
     document.getElementById('settings-form')?.addEventListener('submit', saveSettings);
@@ -232,14 +235,17 @@ async function editOverviewBlock(key) {
         document.getElementById('modal-title').textContent = `Edit: ${section.title}`;
         document.getElementById('modal-title-input').value = section.title || '';
         document.getElementById('modal-desc').value = section.description || '';
-        document.getElementById('modal-image').value = section.image_url || '';
+        document.getElementById('modal-image').value = ''; // Clear file input
+        document.getElementById('modal-image-url').value = section.image_url || '';
         document.getElementById('modal-visible').checked = section.is_visible !== false;
         
         const preview = document.getElementById('modal-image-preview');
         if (section.image_url) {
-            preview.innerHTML = `<img src="${section.image_url}" alt="Preview">`;
+            preview.innerHTML = `<img src="${section.image_url}" alt="Preview" class="preview-image">`;
+            preview.parentElement.classList.add('has-image');
         } else {
             preview.innerHTML = '';
+            preview.parentElement.classList.remove('has-image');
         }
         
         document.getElementById('modal-extra-fields').innerHTML = '';
@@ -383,7 +389,8 @@ async function editRoom(id) {
         document.getElementById('modal-title').textContent = 'Edit Room';
         document.getElementById('modal-title-input').value = room.title || '';
         document.getElementById('modal-desc').value = room.description || '';
-        document.getElementById('modal-image').value = room.image_url || '';
+        document.getElementById('modal-image').value = ''; // Clear file input
+        document.getElementById('modal-image-url').value = room.image_url || '';
         document.getElementById('modal-visible').checked = room.status === 'available';
         document.getElementById('modal-price').value = room.price || 0;
         document.getElementById('modal-amenities').value = room.amenities || '';
@@ -397,9 +404,11 @@ async function editRoom(id) {
         
         const preview = document.getElementById('modal-image-preview');
         if (room.image_url) {
-            preview.innerHTML = `<img src="${room.image_url}" alt="Preview">`;
+            preview.innerHTML = `<img src="${room.image_url}" alt="Preview" class="preview-image">`;
+            preview.parentElement.classList.add('has-image');
         } else {
             preview.innerHTML = '';
+            preview.parentElement.classList.remove('has-image');
         }
         
         document.getElementById('modal-extra-fields').innerHTML = `
@@ -534,14 +543,17 @@ async function editDiscoverItem(id) {
         document.getElementById('modal-title').textContent = 'Edit Discover Item';
         document.getElementById('modal-title-input').value = item.title || '';
         document.getElementById('modal-desc').value = item.description || '';
-        document.getElementById('modal-image').value = item.image_url || '';
+        document.getElementById('modal-image').value = ''; // Clear file input
+        document.getElementById('modal-image-url').value = item.image_url || '';
         document.getElementById('modal-visible').checked = item.is_visible !== false;
         
         const preview = document.getElementById('modal-image-preview');
         if (item.image_url) {
-            preview.innerHTML = `<img src="${item.image_url}" alt="Preview">`;
+            preview.innerHTML = `<img src="${item.image_url}" alt="Preview" class="preview-image">`;
+            preview.parentElement.classList.add('has-image');
         } else {
             preview.innerHTML = '';
+            preview.parentElement.classList.remove('has-image');
         }
         
         document.getElementById('modal-extra-fields').innerHTML = '';
@@ -634,14 +646,17 @@ async function editDiningItem(id) {
         document.getElementById('modal-title').textContent = 'Edit Dining Option';
         document.getElementById('modal-title-input').value = item.title || '';
         document.getElementById('modal-desc').value = item.description || '';
-        document.getElementById('modal-image').value = item.image_url || '';
+        document.getElementById('modal-image').value = ''; // Clear file input
+        document.getElementById('modal-image-url').value = item.image_url || '';
         document.getElementById('modal-visible').checked = item.is_visible !== false;
         
         const preview = document.getElementById('modal-image-preview');
         if (item.image_url) {
-            preview.innerHTML = `<img src="${item.image_url}" alt="Preview">`;
+            preview.innerHTML = `<img src="${item.image_url}" alt="Preview" class="preview-image">`;
+            preview.parentElement.classList.add('has-image');
         } else {
             preview.innerHTML = '';
+            preview.parentElement.classList.remove('has-image');
         }
         
         document.getElementById('modal-extra-fields').innerHTML = `
@@ -893,6 +908,66 @@ async function handleMediaUpload(e) {
     e.target.value = '';
 }
 
+// Handle Modal Image Upload
+async function handleModalImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+        showToast('Invalid file type. Please select JPG, PNG, or WebP images.', 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('File too large. Maximum size is 5MB.', 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    // Show local preview immediately
+    const previewContainer = document.getElementById('modal-image-preview');
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        previewContainer.innerHTML = `<img src="${event.target.result}" alt="Preview" class="preview-image">`;
+        previewContainer.parentElement.classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload to server
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Store the uploaded URL
+            document.getElementById('modal-image-url').value = data.imageUrl;
+            showToast('Image uploaded successfully', 'success');
+        } else {
+            showToast('Failed to upload image', 'error');
+            e.target.value = '';
+            previewContainer.innerHTML = '';
+            previewContainer.parentElement.classList.remove('has-image');
+        }
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        showToast('Error uploading image', 'error');
+        e.target.value = '';
+        previewContainer.innerHTML = '';
+        previewContainer.parentElement.classList.remove('has-image');
+    }
+}
+
 // Delete Media
 async function deleteMedia(id) {
     if (!confirm('Are you sure you want to delete this image?')) return;
@@ -919,8 +994,13 @@ function openModal(type) {
     document.getElementById('modal-title-input').value = '';
     document.getElementById('modal-desc').value = '';
     document.getElementById('modal-image').value = '';
+    document.getElementById('modal-image-url').value = '';
     document.getElementById('modal-visible').checked = true;
-    document.getElementById('modal-image-preview').innerHTML = '';
+    
+    // Reset image preview
+    const previewContainer = document.getElementById('modal-image-preview');
+    previewContainer.innerHTML = '';
+    previewContainer.parentElement.classList.remove('has-image');
     
     // Clear and set extra fields based on type
     const extraFields = document.getElementById('modal-extra-fields');
@@ -993,7 +1073,8 @@ async function saveModalForm(e) {
     
     const title = document.getElementById('modal-title-input').value;
     const description = document.getElementById('modal-desc').value;
-    const image_url = document.getElementById('modal-image').value;
+    // Use the hidden URL field if set (from upload), otherwise use file input value
+    const image_url = document.getElementById('modal-image-url').value || document.getElementById('modal-image').value;
     const is_visible = document.getElementById('modal-visible').checked;
     
     let data = { title, description, image_url, is_visible };
