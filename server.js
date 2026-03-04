@@ -66,6 +66,13 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add username column if it doesn't exist (for existing databases)
+        try {
+            await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(100) UNIQUE`);
+        } catch (e) {
+            // Column may already exist
+        }
 
         // Create rooms table
         await pool.query(`
@@ -300,14 +307,18 @@ async function initializeDatabase() {
         console.log('Database tables created successfully');
 
         // Insert default admin if not exists
-        const adminExists = await pool.query("SELECT * FROM users WHERE username = 'kwesi Otabil'");
-        if (adminExists.rows.length === 0) {
-            const hashedPassword = await bcrypt.hash('Jiddel123@', 10);
-            await pool.query(
-                "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
-                ['Kwesi Otabil', 'kwesi Otabil', 'admin@hotel.com', hashedPassword, 'main_admin']
-            );
-            console.log('Default admin created: kwesi Otabil / Jiddel123@');
+        try {
+            const adminExists = await pool.query("SELECT * FROM users WHERE username = 'kwesi Otabil'");
+            if (adminExists.rows.length === 0) {
+                const hashedPassword = await bcrypt.hash('Jiddel123@', 10);
+                await pool.query(
+                    "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
+                    ['Kwesi Otabil', 'kwesi Otabil', 'admin@hotel.com', hashedPassword, 'main_admin']
+                );
+                console.log('Default admin created: kwesi Otabil / Jiddel123@');
+            }
+        } catch (adminError) {
+            console.log('Admin creation skipped:', adminError.message);
         }
 
         // Insert default settings if not exists
@@ -436,7 +447,19 @@ function requireAdmin(req, res, next) {
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        
+        // Try to find user by username or name (fallback for older databases)
+        let result;
+        try {
+            result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        } catch (queryError) {
+            // If username column doesn't exist, try name column
+            if (queryError.message.includes('username')) {
+                result = await pool.query('SELECT * FROM users WHERE name = $1', [username]);
+            } else {
+                throw queryError;
+            }
+        }
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Incorrect username or password' });
@@ -455,12 +478,13 @@ app.post('/api/admin/login', async (req, res) => {
             user: { 
                 id: user.id, 
                 name: user.name, 
-                username: user.username,
+                username: user.username || user.name,
                 role: user.role,
                 permissions: user.permissions
             } 
         });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: error.message });
     }
 });
