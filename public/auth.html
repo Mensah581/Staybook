@@ -256,10 +256,28 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showMessage(data.message || 'Account created! Please login.', 'success');
-                    setTimeout(() => {
-                        showLogin();
-                    }, 1500);
+                    // Auto login after signup
+                    const loginResponse = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const loginData = await loginResponse.json();
+                    
+                    if (loginResponse.ok) {
+                        if (loginData.user.role === 'main_admin' || loginData.user.role === 'admin') {
+                            window.location.href = '/admin/dashboard.html';
+                        } else {
+                            window.location.href = '/account.html';
+                        }
+                    } else {
+                        // If auto-login fails, show message
+                        showMessage('Account created! Please login.', 'success');
+                        setTimeout(() => {
+                            showLogin();
+                        }, 1500);
+                    }
                 } else {
                     showMessage(data.error || 'Signup failed', 'error');
                 }
