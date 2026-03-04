@@ -170,8 +170,8 @@
     </footer>
 
     <!-- Mobile Book Now Button -->
-    <div class="mobile-book" id="mobile-book-btn" style="display: none;">
-        <a href="#" onclick="openBookingModal(); return false;">BOOK NOW</a>
+    <div class="floating-book-btn" id="mobile-book-btn" style="display: none;">
+        <a href="#" onclick="openBookingModal(); return false;">Book Your Stay</a>
     </div>
 
     <script>
@@ -501,7 +501,14 @@
             
             // Show mobile booking button if room is available
             if (room.status === 'available') {
-                document.getElementById('mobile-book-btn').style.display = 'block';
+                const mobileBtn = document.getElementById('mobile-book-btn');
+                mobileBtn.style.display = 'flex';
+                mobileBtn.classList.add('visible');
+                
+                // Add click behavior
+                mobileBtn.addEventListener('click', () => {
+                    mobileBtn.classList.add('clicked');
+                });
             }
             
             // Set room ID in form

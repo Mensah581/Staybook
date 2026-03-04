@@ -181,8 +181,8 @@
     </footer>
 
     <!-- Mobile Book Now Button -->
-    <div class="mobile-book">
-        <a href="/rooms.html">BOOK NOW</a>
+    <div class="floating-book-btn" id="floating-book-btn">
+        <a href="/rooms.html">Book Your Stay</a>
     </div>
 
     <script>
@@ -215,6 +215,49 @@
             }
         }
 
+        // Floating Book Button - Scroll Trigger Logic
+        const floatingBtn = document.getElementById('floating-book-btn');
+        let btnClicked = false;
+        
+        function handleScroll() {
+            if (btnClicked) return;
+            
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = window.scrollY / scrollHeight;
+            
+            // Show button after 30% scroll
+            if (scrollPercent > 0.3) {
+                floatingBtn.classList.add('visible');
+            } else {
+                floatingBtn.classList.remove('visible');
+            }
+            
+            // Stop motion near footer (last 20% of page)
+            if (scrollPercent > 0.8) {
+                floatingBtn.classList.add('paused');
+            } else if (!floatingBtn.matches(':hover')) {
+                floatingBtn.classList.remove('paused');
+            }
+        }
+        
+        // Hover behavior - pause animation
+        floatingBtn?.addEventListener('mouseenter', () => {
+            floatingBtn.classList.add('paused');
+        });
+        
+        floatingBtn?.addEventListener('mouseleave', () => {
+            if (!btnClicked && !floatingBtn.matches(':hover')) {
+                floatingBtn.classList.remove('paused');
+            }
+        });
+        
+        // Click behavior - stop animation permanently
+        floatingBtn?.addEventListener('click', () => {
+            btnClicked = true;
+            floatingBtn.classList.add('clicked');
+            floatingBtn.classList.remove('visible');
+        });
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadHotelSettings();
@@ -229,6 +272,9 @@
                     document.getElementById('mobile-menu').classList.remove('active');
                 }
             });
+            
+            // Add scroll listener
+            window.addEventListener('scroll', handleScroll);
         });
     </script>
 </body>

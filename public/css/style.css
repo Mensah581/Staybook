@@ -1281,65 +1281,119 @@ footer {
     opacity: 0.6;
 }
 
-/* Mobile Book Now Button - Premium */
-.mobile-book {
+/* Premium Floating Book Button */
+.floating-book-btn {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background: #2F6F5F;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    letter-spacing: 2px;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 9999;
     
-    /* Premium elevation */
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    /* Pill shape */
+    border-radius: 50px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #2F6F5F 0%, #3D8573 100%);
     
-    /* iPhone safe-area */
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(60px + env(safe-area-inset-bottom));
+    /* Premium shadow */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     
-    /* Micro interaction */
-    transition: transform 0.15s ease, background-color 0.2s ease;
+    /* Initial state - hidden */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    
+    /* Floating animation - starts paused */
+    animation: floatHorizontal 16s ease-in-out infinite;
+    animation-play-state: paused;
 }
 
-.mobile-book:active {
-    transform: scale(0.98);
-    background-color: #1F4F3F;
+.floating-book-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    animation-play-state: running;
 }
 
-.mobile-book a {
+.floating-book-btn.paused {
+    animation-play-state: paused;
+}
+
+.floating-book-btn a {
     color: white;
     text-decoration: none;
-    text-transform: uppercase;
-    font-size: 14px;
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    line-height: 60px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+.floating-book-btn a::after {
+    content: '→';
+    transition: transform 0.3s ease;
+}
+
+.floating-book-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.floating-book-btn:hover a::after {
+    transform: translateX(4px);
+}
+
+/* Clicked - stop animation */
+.floating-book-btn.clicked {
+    animation: none !important;
+}
+
+/* Keyframes for horizontal floating */
+@keyframes floatHorizontal {
+    0%, 100% {
+        transform: translateX(-50%) translateX(0);
+    }
+    18.75% {
+        transform: translateX(-50%) translateX(25px);
+    }
+    56.25% {
+        transform: translateX(-50%) translateX(25px);
+    }
+    75% {
+        transform: translateX(-50%) translateX(0);
+    }
+}
+
+/* Mobile adjustments */
 @media (max-width: 768px) {
-    .mobile-book {
-        display: flex;
+    .floating-book-btn {
+        bottom: 20px;
+        padding: 14px 24px;
     }
-    body {
-        padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    
+    .floating-book-btn a {
+        font-size: 14px;
+    }
+    
+    @keyframes floatHorizontal {
+        0%, 100% {
+            transform: translateX(-50%) translateX(0);
+        }
+        18.75% {
+            transform: translateX(-50%) translateX(15px);
+        }
+        56.25% {
+            transform: translateX(-50%) translateX(15px);
+        }
+        75% {
+            transform: translateX(-50%) translateX(0);
+        }
     }
 }
 
-@media (min-width: 768px) {
-    .mobile-book {
-        display: none !important;
-    }
-    body {
-        padding-bottom: 0;
-    }
+/* Mobile Book Now Button - Premium */
+.mobile-book {
+    display: none;
 }
 
 /* Remove old footer styles */
