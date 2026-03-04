@@ -99,6 +99,9 @@ async function loadSectionData(section) {
         case 'rooms':
             loadRooms();
             break;
+        case 'bookings':
+            loadBookings();
+            break;
         case 'discover':
             loadDiscoverItems();
             break;
@@ -244,6 +247,74 @@ async function editOverviewBlock(key) {
         openModal('overview');
     } catch (error) {
         console.error('Error loading block:', error);
+    }
+}
+
+// Load Bookings
+async function loadBookings() {
+    try {
+        const response = await fetch('/api/admin/bookings', { credentials: 'include' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
+        const bookings = await response.json();
+        
+        const container = document.getElementById('bookings-list');
+        
+        if (!bookings || bookings.length === 0) {
+            container.innerHTML = '<p class="no-items">No bookings yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = bookings.map(booking => `
+            <div class="booking-card">
+                <div class="booking-info">
+                    <h3>${booking.full_name}</h3>
+                    <p><strong>Room:</strong> ${booking.room_title || 'N/A'}</p>
+                    <p><strong>Date:</strong> ${booking.booking_date}</p>
+                    <p><strong>Time:</strong> ${booking.booking_time}</p>
+                    <p><strong>Phone:</strong> ${booking.phone}</p>
+                    <p><strong>Email:</strong> ${booking.email}</p>
+                    ${booking.message ? `<p><strong>Message:</strong> ${booking.message}</p>` : ''}
+                </div>
+                <div class="booking-status">
+                    <span class="status-badge ${booking.status}">${booking.status}</span>
+                    <div class="booking-actions">
+                        ${booking.status === 'pending' ? `
+                            <button class="btn-primary" onclick="updateBookingStatus(${booking.id}, 'approved')">Approve</button>
+                            <button class="btn-danger" onclick="updateBookingStatus(${booking.id}, 'cancelled')">Cancel</button>
+                        ` : ''}
+                        ${booking.status === 'approved' ? `
+                            <button class="btn-primary" onclick="updateBookingStatus(${booking.id}, 'completed')">Mark Completed</button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading bookings:', error);
+    }
+}
+
+// Update booking status
+async function updateBookingStatus(id, status) {
+    try {
+        const response = await fetch(`/api/admin/bookings/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            showToast('Booking updated successfully', 'success');
+            loadBookings();
+        } else {
+            showToast('Failed to update booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating booking:', error);
     }
 }
 
