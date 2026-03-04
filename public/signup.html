@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Grand Horizon</title>
+    <title>Sign Up - Grand Horizon</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -17,7 +17,7 @@
             justify-content: center;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
-        .login-container {
+        .signup-container {
             background: white;
             padding: 48px;
             border-radius: 16px;
@@ -25,12 +25,12 @@
             max-width: 400px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-        .login-container h1 {
+        .signup-container h1 {
             margin: 0 0 8px;
             color: #1a1a2e;
             font-size: 28px;
         }
-        .login-container p {
+        .signup-container p {
             color: #666;
             margin: 0 0 32px;
         }
@@ -56,7 +56,7 @@
             outline: none;
             border-color: #c9a227;
         }
-        .login-btn {
+        .signup-btn {
             width: 100%;
             padding: 16px;
             background: #c9a227;
@@ -68,15 +68,15 @@
             cursor: pointer;
             transition: background 0.3s;
         }
-        .login-btn:hover {
+        .signup-btn:hover {
             background: #b8922a;
         }
-        .signup-link {
+        .login-link {
             text-align: center;
             margin-top: 24px;
             color: #666;
         }
-        .signup-link a {
+        .login-link a {
             color: #c9a227;
             text-decoration: none;
             font-weight: 500;
@@ -109,13 +109,18 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Welcome Back</h1>
-        <p>Login to your account</p>
+    <div class="signup-container">
+        <h1>Create Account</h1>
+        <p>Sign up for an account</p>
         
         <div id="message" class="message"></div>
         
-        <form id="login-form">
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+            </div>
+            
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required placeholder="Enter your email">
@@ -123,14 +128,14 @@
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Enter your password">
+                <input type="password" id="password" name="password" required placeholder="Create a password">
             </div>
             
-            <button type="submit" class="login-btn">Login</button>
+            <button type="submit" class="signup-btn">Sign Up</button>
         </form>
         
-        <div class="signup-link">
-            Don't have an account? <a href="#" onclick="showSignup(); return false;">Sign up</a>
+        <div class="login-link">
+            Already have an account? <a href="/admin/login.html">Login</a>
         </div>
         
         <div class="back-link">
@@ -139,49 +144,34 @@
     </div>
 
     <script>
-        // Check if already logged in
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                const response = await fetch('/api/check-auth');
-                const data = await response.json();
-                
-                if (data.authenticated) {
-                    window.location.href = '/admin/dashboard.html';
-                }
-            } catch (error) {
-                console.log('Not logged in');
-            }
-        });
-
-        // Login form
-        document.getElementById('login-form').addEventListener('submit', async function(e) {
+        document.getElementById('signup-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
             try {
-                const response = await fetch('/api/login', {
+                const response = await fetch('/api/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ name, email, password })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    window.location.href = '/admin/dashboard.html';
+                    showMessage('Account created! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin/login.html';
+                    }, 1500);
                 } else {
-                    showMessage(data.error || 'Login failed', 'error');
+                    showMessage(data.error || 'Signup failed', 'error');
                 }
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
             }
         });
-
-        function showSignup() {
-            window.location.href = '/signup.html';
-        }
 
         function showMessage(text, type) {
             const msg = document.getElementById('message');

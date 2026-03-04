@@ -443,49 +443,75 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-// Admin login
-app.post('/api/admin/login', async (req, res) => {
+// Simple signup
+app.post('/api/signup', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { name, email, password } = req.body;
         
-        // Try to find user by username, name, or email (case-insensitive)
-        let result;
-        try {
-            result = await pool.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1)', [username]);
-        } catch (queryError) {
-            // If username column doesn't exist, try name column
-            if (queryError.message.includes('username')) {
-                result = await pool.query('SELECT * FROM users WHERE LOWER(name) = LOWER($1) OR LOWER(email) = LOWER($1)', [username]);
-            } else {
-                throw queryError;
-            }
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Name, email and password required' });
         }
+        
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Check if email exists
+        const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+        
+        await pool.query(
+            "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
+            [name, email, hashedPassword, 'user']
+        );
+        
+        res.json({ message: 'Signup successful' });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
+// Simple login
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Incorrect username or password' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
-
+        
         const user = result.rows[0];
         const isValid = await bcrypt.compare(password, user.password);
-
+        
         if (!isValid) {
-            return res.status(401).json({ error: 'Incorrect username or password' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
-
+        
         req.session.user = user;
         res.json({ 
             message: 'Login successful', 
             user: { 
                 id: user.id, 
                 name: user.name, 
-                username: user.username || user.name,
-                role: user.role,
-                permissions: user.permissions
+                email: user.email,
+                role: user.role
             } 
         });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Check auth
+app.get('/api/check-auth', (req, res) => {
+    if (req.session.user) {
+        res.json({ authenticated: true, user: req.session.user });
+    } else {
+        res.json({ authenticated: false });
     }
 });
 
