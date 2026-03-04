@@ -15,8 +15,7 @@
             <span class="hotel-name" id="hotel-name">Grand Horizon</span>
         </div>
         <div class="top-bar-right">
-            <a href="/admin/login.html">Sign In</a>
-            <a href="/admin/login.html">Join</a>
+            <a href="/admin/login.html">Admin</a>
             <span class="menu-icon">☰</span>
         </div>
     </div>
@@ -40,8 +39,7 @@
             <a href="#">Discover</a>
             <a href="#">Dining</a>
             <a href="#">Contact</a>
-            <a href="/admin/login.html">Sign In</a>
-            <a href="/admin/login.html">Join</a>
+            <a href="/admin/login.html">Admin</a>
         </div>
     </div>
 
@@ -206,9 +204,16 @@
                 
                 if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
                 
-                // Rooms hero image
-                if (settings.hero_image) {
-                    document.getElementById('rooms-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${settings.hero_image}') center/cover`;
+                // Rooms hero - use rooms-specific settings or fallback to main hero
+                const roomsHeroTitle = settings.rooms_hero_title || 'Our Rooms';
+                const roomsHeroText = settings.rooms_hero_text || 'Thoughtfully designed spaces for your comfort';
+                const roomsHeroImage = settings.rooms_hero_image || settings.hero_image;
+                
+                document.getElementById('rooms-hero-title').textContent = roomsHeroTitle;
+                document.getElementById('rooms-hero-text').textContent = roomsHeroText;
+                
+                if (roomsHeroImage) {
+                    document.getElementById('rooms-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${roomsHeroImage}') center/cover`;
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
