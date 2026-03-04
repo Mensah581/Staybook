@@ -538,13 +538,13 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ message: 'Logout successful' });
 });
 
-// Complete admin reset - clears and creates fresh admin
+// Complete admin reset - clears and creates fresh admin with your email
 app.post('/api/admin/setup-fresh', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password required' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password required' });
         }
         
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -552,13 +552,13 @@ app.post('/api/admin/setup-fresh', async (req, res) => {
         // Delete all existing users
         await pool.query('DELETE FROM users');
         
-        // Create fresh admin user
+        // Create fresh admin user with your email
         await pool.query(
-            "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
-            [username, username, 'admin@hotel.com', hashedPassword, 'main_admin']
+            "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
+            ['Giddel Otabil', email, hashedPassword, 'main_admin']
         );
         
-        res.json({ message: 'Admin created successfully', username: username });
+        res.json({ message: 'Admin created successfully', email: email });
     } catch (error) {
         console.error('Setup error:', error);
         res.status(500).json({ error: error.message });
