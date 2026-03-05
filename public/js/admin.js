@@ -35,22 +35,36 @@ async function checkAuth() {
 
 // Setup mobile menu
 function setupMobileMenu() {
-    const mobileToggle = document.getElementById('mobile-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
+    const mobileToggle = document.getElementById('hamburger-btn');
+    const sidebar = document.getElementById('sidebar');
+    let overlay = document.getElementById('sidebar-overlay');
+    
+    // Create overlay if it doesn't exist
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebar-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:none;';
+        document.body.appendChild(overlay);
+    }
     
     if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
+        mobileToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // On mobile, toggle visibility
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.style.display = sidebar.classList.contains('mobile-open') ? 'block' : 'none';
+            } else {
+                // On desktop, toggle collapsed state
+                sidebar.classList.toggle('collapsed');
+            }
         });
         
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            overlay.style.display = 'none';
+        });
     }
 }
 
@@ -66,10 +80,10 @@ function setupNavigation() {
             switchSection(section);
             
             // Close mobile menu
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            if (sidebar) sidebar.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
+            if (sidebar) sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.style.display = 'none';
         });
     });
     
@@ -103,8 +117,10 @@ function switchSection(section) {
         dashboard: 'Dashboard',
         overview: 'Overview',
         rooms: 'Rooms',
+        bookings: 'Bookings',
         discover: 'Discover',
-        dining: 'Dining',
+        dining: 'Food Menu',
+        'dining-orders': 'Dining Orders',
         contact: 'Contact',
         media: 'Media Library',
         settings: 'Settings'
@@ -136,7 +152,10 @@ async function loadSectionData(section) {
             loadDiscoverItems();
             break;
         case 'dining':
-            loadDiningItems();
+            loadFoodItems();
+            break;
+        case 'dining-orders':
+            loadDiningOrders();
             break;
         case 'contact':
             loadContactSettings();
@@ -162,7 +181,7 @@ function setupEventListeners() {
     // Add buttons
     document.getElementById('add-room-btn')?.addEventListener('click', () => openModal('room'));
     document.getElementById('add-discover-btn')?.addEventListener('click', () => openModal('discover'));
-    document.getElementById('add-dining-btn')?.addEventListener('click', () => openModal('dining'));
+    document.getElementById('add-food-btn')?.addEventListener('click', () => openModal('food'));
     
     // Upload area
     document.getElementById('upload-area')?.addEventListener('click', () => {
@@ -664,7 +683,7 @@ async function deleteDiscoverItem(id) {
     }
 }
 
-// Load Dining Items
+// Load Dining Items (Restaurant Venues - for Discover page)
 async function loadDiningItems() {
     try {
         const response = await fetch('/api/admin/dining', { credentials: 'same-origin' });
@@ -706,6 +725,52 @@ async function loadDiningItems() {
         `).join('');
     } catch (error) {
         console.error('Error loading dining items:', error);
+    }
+}
+
+// Load Food Items (Menu items for Dining page)
+async function loadFoodItems() {
+    try {
+        const response = await fetch('/api/admin/food', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
+        const items = await response.json();
+        
+        const container = document.getElementById('food-list');
+        
+        if (items.length === 0) {
+            container.innerHTML = '<p class="no-items">No food items. Click "Add Food Item" to create one.</p>';
+            return;
+        }
+        
+        container.innerHTML = items.map(item => `
+            <div class="item-card">
+                <div class="item-image">
+                    ${item.image_url ? 
+                        `<img src="${item.image_url}" alt="${item.name}">` : 
+                        `<div class="no-image"><i class="fas fa-hamburger"></i></div>`
+                    }
+                </div>
+                <div class="item-content">
+                    <h3>${item.name}</h3>
+                    <p>${item.description ? item.description.substring(0, 60) + '...' : 'No description'}</p>
+                    <p><small>Category: ${item.category} | Price: ${item.price.toFixed(2)}</small></p>
+                    <p><small>Status: ${item.status} | Prep: ${item.prep_time || 'N/A'}</small></p>
+                    <div class="item-actions">
+                        <button class="btn-secondary" onclick="editFoodItem(${item.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-danger" onclick="deleteFoodItem(${item.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading food items:', error);
     }
 }
 
@@ -773,6 +838,169 @@ async function deleteDiningItem(id) {
     } catch (error) {
         console.error('Error deleting item:', error);
         showToast('Error deleting item', 'error');
+    }
+}
+
+// Edit Food Item
+async function editFoodItem(id) {
+    try {
+        const response = await fetch('/api/admin/food', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
+        const items = await response.json();
+        const item = items.find(i => i.id === id);
+        
+        if (!item) return;
+        
+        editingItem = item;
+        editingType = 'food';
+        
+        document.getElementById('modal-title').textContent = 'Edit Food Item';
+        document.getElementById('modal-title-input').value = item.name || '';
+        document.getElementById('modal-desc').value = item.description || '';
+        document.getElementById('modal-image').value = '';
+        document.getElementById('modal-image-url').value = item.image_url || '';
+        
+        const preview = document.getElementById('modal-image-preview');
+        if (item.image_url) {
+            preview.innerHTML = `<img src="${item.image_url}" alt="Preview" class="preview-image">`;
+            preview.parentElement.classList.add('has-image');
+        } else {
+            preview.innerHTML = '';
+            preview.parentElement.classList.remove('has-image');
+        }
+        
+        document.getElementById('modal-extra-fields').innerHTML = `
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price ($)</label>
+                    <input type="number" id="modal-price" value="${item.price || 0}" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="modal-category" class="form-input">
+                        <option value="Breakfast" ${item.category === 'Breakfast' ? 'selected' : ''}>Breakfast</option>
+                        <option value="Lunch" ${item.category === 'Lunch' ? 'selected' : ''}>Lunch</option>
+                        <option value="Dinner" ${item.category === 'Dinner' ? 'selected' : ''}>Dinner</option>
+                        <option value="Drinks" ${item.category === 'Drinks' ? 'selected' : ''}>Drinks</option>
+                        <option value="Desserts" ${item.category === 'Desserts' ? 'selected' : ''}>Desserts</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prep Time</label>
+                    <input type="text" id="modal-prep-time" value="${item.prep_time || ''}" placeholder="e.g., 15 min">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="modal-food-status" class="form-input">
+                        <option value="available" ${item.status === 'available' ? 'selected' : ''}>Available</option>
+                        <option value="unavailable" ${item.status === 'unavailable' ? 'selected' : ''}>Unavailable</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        
+        openModal('food');
+    } catch (error) {
+        console.error('Error loading food item:', error);
+    }
+}
+
+// Delete Food Item
+async function deleteFoodItem(id) {
+    if (!confirm('Are you sure you want to delete this food item?')) return;
+    
+    try {
+        const response = await fetch(`/api/admin/food/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            showToast('Food item deleted successfully', 'success');
+            loadFoodItems();
+        } else {
+            showToast('Failed to delete food item', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting food item:', error);
+        showToast('Error deleting food item', 'error');
+    }
+}
+
+// Load Dining Orders
+async function loadDiningOrders() {
+    try {
+        const response = await fetch('/api/admin/food/orders', { credentials: 'same-origin' });
+        if (response.status === 401) {
+            window.location.href = '/auth.html';
+            return;
+        }
+        const orders = await response.json();
+        
+        const tbody = document.getElementById('orders-tbody');
+        
+        if (!orders || orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No orders yet</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = orders.map(order => {
+            const statusClass = {
+                'pending': 'status-pending',
+                'preparing': 'status-preparing',
+                'delivered': 'status-delivered',
+                'completed': 'status-completed',
+                'cancelled': 'status-cancelled'
+            }[order.status] || '';
+            
+            const orderTime = new Date(order.ordered_at).toLocaleString();
+            
+            return `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.full_name || 'Guest'}</td>
+                    <td>${order.room_title || 'N/A'}</td>
+                    <td>${order.name}</td>
+                    <td>${order.quantity}</td>
+                    <td>${order.total_price.toFixed(2)}</td>
+                    <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                    <td>${orderTime}</td>
+                    <td>
+                        <select onchange="updateOrderStatus(${order.id}, this.value)" class="form-input" style="padding: 5px; font-size: 12px;">
+                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="preparing" ${order.status === 'preparing' ? 'selected' : ''}>Preparing</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading dining orders:', error);
+    }
+}
+
+// Update Order Status
+async function updateOrderStatus(orderId, status) {
+    try {
+        const response = await fetch(`/api/admin/food/orders/${orderId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        
+        if (response.ok) {
+            showToast('Order status updated', 'success');
+            loadDiningOrders();
+        } else {
+            showToast('Failed to update order status', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        showToast('Error updating order status', 'error');
     }
 }
 
@@ -1141,6 +1369,41 @@ function openModal(type) {
                 <textarea id="modal-amenities" rows="2" placeholder="WiFi, Air Conditioning, TV, Pool"></textarea>
             </div>
         `;
+    } else if (type === 'food') {
+        // Set modal title for new food item
+        document.getElementById('modal-title').textContent = 'Add Food Item';
+        
+        extraFields.innerHTML = `
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label for="modal-price">Price ($)</label>
+                    <input type="number" id="modal-price" value="0" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="modal-category">Category</label>
+                    <select id="modal-category" class="form-input">
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch" selected>Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Drinks">Drinks</option>
+                        <option value="Desserts">Desserts</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                    <label for="modal-prep-time">Prep Time</label>
+                    <input type="text" id="modal-prep-time" placeholder="e.g., 15 min">
+                </div>
+                <div class="form-group">
+                    <label for="modal-food-status">Status</label>
+                    <select id="modal-food-status" class="form-input">
+                        <option value="available" selected>Available</option>
+                        <option value="unavailable">Unavailable</option>
+                    </select>
+                </div>
+            </div>
+        `;
     } else {
         document.getElementById('modal-title').textContent = 'Add New ' + type.charAt(0).toUpperCase() + type.slice(1);
     }
@@ -1192,10 +1455,23 @@ async function saveModalForm(e) {
         method = 'PUT';
         data.opening_hours = document.getElementById('modal-hours')?.value || '';
         data.price_range = document.getElementById('modal-price-range')?.value || '';
+    } else if (editingType === 'food' && editingItem) {
+        url = `/api/admin/food/${editingItem.id}`;
+        method = 'PUT';
+        data.price = document.getElementById('modal-price')?.value || 0;
+        data.category = document.getElementById('modal-category')?.value || 'Lunch';
+        data.prep_time = document.getElementById('modal-prep-time')?.value || '';
+        data.status = document.getElementById('modal-food-status')?.value || 'available';
     } else if (editingType === 'discover' && !editingItem) {
         url = '/api/admin/discover';
     } else if (editingType === 'dining' && !editingItem) {
         url = '/api/admin/dining';
+    } else if (editingType === 'food' && !editingItem) {
+        url = '/api/admin/food';
+        data.price = document.getElementById('modal-price')?.value || 0;
+        data.category = document.getElementById('modal-category')?.value || 'Lunch';
+        data.prep_time = document.getElementById('modal-prep-time')?.value || '';
+        data.status = document.getElementById('modal-food-status')?.value || 'available';
     } else if (editingType === 'room' && !editingItem) {
         // Creating new room
         url = '/api/admin/rooms';

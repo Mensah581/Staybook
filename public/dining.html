@@ -6,16 +6,364 @@
     <title>Dining - Grand Horizon</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Dining Page Specific Styles */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .category-tab {
+            padding: 12px 24px;
+            border: 2px solid var(--accent, #c9a962);
+            background: transparent;
+            color: var(--text-dark, #1a1a1a);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 30px;
+        }
+
+        .category-tab:hover {
+            background: rgba(201, 169, 98, 0.1);
+        }
+
+        .category-tab.active {
+            background: var(--accent, #c9a962);
+            color: white;
+        }
+
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .food-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .food-card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .food-card-body {
+            padding: 20px;
+        }
+
+        .food-card-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(201, 169, 98, 0.15);
+            color: var(--accent, #c9a962);
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .food-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark, #1a1a1a);
+        }
+
+        .food-card-description {
+            font-size: 14px;
+            color: var(--text-muted, #666);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .food-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .food-card-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent, #c9a962);
+        }
+
+        .food-card-prep {
+            font-size: 12px;
+            color: var(--text-muted, #666);
+        }
+
+        .btn-order {
+            padding: 10px 24px;
+            background: var(--accent, #c9a962);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-order:hover {
+            background: #b8944f;
+            transform: scale(1.05);
+        }
+
+        .btn-order:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .guest-notice {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f8f8f8 0%, #fff 100%);
+            border-radius: 16px;
+            margin: 40px 0;
+        }
+
+        .guest-notice i {
+            font-size: 48px;
+            color: var(--accent, #c9a962);
+            margin-bottom: 20px;
+        }
+
+        .guest-notice h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--text-dark, #1a1a1a);
+        }
+
+        .guest-notice p {
+            color: var(--text-muted, #666);
+            margin-bottom: 20px;
+        }
+
+        .guest-notice .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--accent, #c9a962);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .guest-notice .btn:hover {
+            background: #b8944f;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 16px 30px;
+            border-radius: 30px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        /* Order Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .order-modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .order-modal h3 {
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .order-modal .food-info {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .order-modal .food-info img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .order-modal .food-details h4 {
+            margin-bottom: 5px;
+        }
+
+        .order-modal .food-details p {
+            color: var(--accent, #c9a962);
+            font-weight: 600;
+        }
+
+        .order-modal .quantity-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .order-modal .qty-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--accent, #c9a962);
+            background: white;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .order-modal .qty-btn:hover {
+            background: var(--accent, #c9a962);
+            color: white;
+        }
+
+        .order-modal .quantity {
+            font-size: 24px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .order-modal .order-total {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .order-modal .order-total span {
+            color: var(--accent, #c9a962);
+            font-weight: 700;
+        }
+
+        .order-modal .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .order-modal .btn-cancel,
+        .order-modal .btn-confirm {
+            flex: 1;
+            padding: 14px;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .order-modal .btn-cancel {
+            background: #f0f0f0;
+            border: none;
+            color: #666;
+        }
+
+        .order-modal .btn-confirm {
+            background: var(--accent, #c9a962);
+            border: none;
+            color: white;
+        }
+
+        .order-modal .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .order-modal .btn-confirm:hover {
+            background: #b8944f;
+        }
+    </style>
 </head>
 <body>
     <!-- Top Black Bar -->
     <div class="top-bar">
         <div class="top-bar-left">
-            <span class="hotel-name" id="hotel-name">Grand Horizon</span>
+            <span class="hotel-name" id="hotel-name">GRAND HORIZON</span>
         </div>
         <div class="top-bar-right">
-            <a href="/auth.html">Join Us</a>
+            <a href="/auth.html" id="auth-link">Join Us</a>
             <span class="menu-icon">☰</span>
         </div>
     </div>
@@ -44,7 +392,7 @@
     </div>
 
     <!-- Dining Hero Section -->
-    <section class="overview-hero dining-hero" id="dining-hero">
+    <section class="overview-hero" id="dining-hero" style="background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1920') center/cover;">
         <div class="hero-content">
             <h1 id="dining-hero-title">Dining</h1>
             <p id="dining-hero-text">Exquisite culinary experiences</p>
@@ -53,22 +401,84 @@
 
     <!-- Dining Content Section -->
     <section class="section" style="padding-top: 80px; padding-bottom: 100px;">
-        <div class="section-header">
-            <div>
-                <p class="section-label">Restaurants</p>
-                <h2 class="section-title">Dining Options</h2>
+        <div class="container">
+            <!-- Guest Notice (shown if not logged in) -->
+            <div id="guest-notice" class="guest-notice" style="display: none;">
+                <i class="fas fa-concierge-bell"></i>
+                <h3>Dining for In-House Guests</h3>
+                <p>Our room service and dining facilities are exclusively available to guests with active bookings.</p>
+                <a href="/rooms.html" class="btn">Book Your Stay</a>
             </div>
-            <p class="section-desc">Experience exceptional cuisine at our restaurants and bars.</p>
-        </div>
-        <div class="rooms-container" id="dining-container">
-            <div class="loading" style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-muted);">Loading dining options...</div>
+
+            <!-- Logged in but no booking notice -->
+            <div id="no-booking-notice" class="guest-notice" style="display: none;">
+                <i class="fas fa-key"></i>
+                <h3>No Active Booking Found</h3>
+                <p>You need an active booking to enjoy our dining services.</p>
+                <a href="/rooms.html" class="btn">Book Your Stay</a>
+            </div>
+
+            <!-- Food Content -->
+            <div id="food-content">
+                <div class="section-header">
+                    <div>
+                        <p class="section-label">Menu</p>
+                        <h2 class="section-title">Our Menu</h2>
+                    </div>
+                </div>
+
+                <!-- Category Tabs -->
+                <div class="category-tabs" id="category-tabs">
+                    <button class="category-tab active" data-category="all">All</button>
+                    <button class="category-tab" data-category="Breakfast">Breakfast</button>
+                    <button class="category-tab" data-category="Lunch">Lunch</button>
+                    <button class="category-tab" data-category="Dinner">Dinner</button>
+                    <button class="category-tab" data-category="Drinks">Drinks</button>
+                    <button class="category-tab" data-category="Desserts">Desserts</button>
+                </div>
+
+                <!-- Food Grid -->
+                <div class="food-grid" id="food-grid">
+                    <div class="loading" style="grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-muted);">
+                        Loading menu...
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Footer - Kimpton Style -->
+    <!-- Order Modal -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="order-modal">
+            <h3>Order Item</h3>
+            <div class="food-info">
+                <img src="" alt="" id="modal-food-image">
+                <div class="food-details">
+                    <h4 id="modal-food-name"></h4>
+                    <p id="modal-food-price"></p>
+                </div>
+            </div>
+            <div class="quantity-selector">
+                <button class="qty-btn" id="qty-minus">−</button>
+                <span class="quantity" id="qty-value">1</span>
+                <button class="qty-btn" id="qty-plus">+</button>
+            </div>
+            <div class="order-total">
+                Total: <span id="modal-total">$0.00</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="btn-cancel">Cancel</button>
+                <button class="btn-confirm" id="btn-confirm">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Footer -->
     <footer class="overview-footer">
         <div class="container">
-            <!-- Social Section -->
             <div class="footer-social-section">
                 <h3>Social Media</h3>
                 <div class="icons">
@@ -78,11 +488,7 @@
                     <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
                 </div>
             </div>
-            
-            <!-- Divider -->
             <div class="footer-divider"></div>
-            
-            <!-- Links Grid -->
             <div class="footer-links-grid">
                 <div class="footer-link-column">
                     <h4>About Us</h4>
@@ -99,8 +505,6 @@
                     <a href="#">Live Chat</a>
                 </div>
             </div>
-            
-            <!-- Bottom -->
             <div class="footer-bottom">
                 <p>© <span id="copyright-year">2026</span> <span id="company-name">Grand Horizon</span>. All rights reserved.</p>
             </div>
@@ -113,6 +517,13 @@
     </div>
 
     <script>
+        // State
+        let currentUser = null;
+        let activeBooking = null;
+        let allFoodItems = [];
+        let selectedFood = null;
+        let orderQuantity = 1;
+
         // Load hotel settings
         async function loadHotelSettings() {
             try {
@@ -128,69 +539,256 @@
                 
                 if (settings.copyright_year) document.getElementById('copyright-year').textContent = settings.copyright_year;
                 
-                // Dining hero - use dining-specific settings or fallback
-                const diningHeroTitle = settings.dining_hero_title || 'Dining';
-                const diningHeroText = settings.dining_hero_text || 'Exquisite culinary experiences';
                 const diningHeroImage = settings.dining_hero_image || settings.hero_image;
-                
-                document.getElementById('dining-hero-title').textContent = diningHeroTitle;
-                document.getElementById('dining-hero-text').textContent = diningHeroText;
-                
                 if (diningHeroImage) {
-                    document.getElementById('dining-hero').style.background = `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${diningHeroImage}') center/cover`;
+                    document.getElementById('dining-hero').style.background = 
+                        `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('${diningHeroImage}') center/cover`;
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
             }
         }
 
-        // Load dining items
-        async function loadDiningItems() {
+        // Check authentication and booking status
+        async function checkAuthAndBooking() {
             try {
-                const response = await fetch('/api/dining');
-                const items = await response.json();
-                
-                const container = document.getElementById('dining-container');
-                
-                if (!items || items.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-                                </svg>
-                            </div>
-                            <h3>No Dining Options</h3>
-                            <p>Check back soon for our dining offerings.</p>
-                        </div>
-                    `;
-                    return;
+                const response = await fetch('/api/user/me', { credentials: 'include' });
+                if (response.ok) {
+                    currentUser = await response.json();
+                    
+                    // Update auth link
+                    document.getElementById('auth-link').href = '/profile.html';
+                    document.getElementById('auth-link').textContent = 'My Profile';
+                    
+                    // Check for active booking
+                    await checkActiveBooking();
+                } else {
+                    showGuestNotice();
                 }
-                
-                container.innerHTML = items.filter(item => item.is_visible !== false).map(item => `
-                    <div class="room-card">
-                        <div class="room-image">
-                            <img src="${item.image_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600'}${!item.image_url ? '" crossorigin="anonymous"' : '"'}" alt="${item.title}" loading="lazy">
-                        </div>
-                        <div class="room-content">
-                            <h3 class="room-title">${item.title}</h3>
-                            <p class="room-description">${item.description ? item.description.substring(0, 80) + '...' : 'Experience exquisite dining.'}</p>
-                            ${item.opening_hours ? `<p style="font-size: 12px; color: var(--accent); margin-top: 8px;"><i class="far fa-clock"></i> ${item.opening_hours}</p>` : ''}
-                            <a href="#" class="btn-room">Learn More</a>
+            } catch (error) {
+                console.error('Auth check error:', error);
+                showGuestNotice();
+            }
+        }
+
+        // Check for active booking
+        async function checkActiveBooking() {
+            try {
+                const response = await fetch('/api/bookings/my-bookings', { credentials: 'include' });
+                if (response.ok) {
+                    const bookings = await response.json();
+                    
+                    // Find active booking (checked in, not checked out)
+                    const now = new Date();
+                    activeBooking = bookings.find(b => {
+                        const checkIn = new Date(b.check_in_date);
+                        const checkOut = new Date(b.check_out_date);
+                        return b.status === 'checked_in' || 
+                               (b.status === 'approved' && now >= checkIn && now <= checkOut);
+                    });
+                    
+                    if (activeBooking) {
+                        showFoodContent();
+                    } else {
+                        showNoBookingNotice();
+                    }
+                } else {
+                    showNoBookingNotice();
+                }
+            } catch (error) {
+                console.error('Booking check error:', error);
+                showNoBookingNotice();
+            }
+        }
+
+        // Show guest notice
+        function showGuestNotice() {
+            document.getElementById('guest-notice').style.display = 'block';
+            document.getElementById('food-content').style.display = 'none';
+        }
+
+        // Show no booking notice
+        function showNoBookingNotice() {
+            document.getElementById('no-booking-notice').style.display = 'block';
+            document.getElementById('food-content').style.display = 'none';
+        }
+
+        // Show food content
+        function showFoodContent() {
+            document.getElementById('guest-notice').style.display = 'none';
+            document.getElementById('no-booking-notice').style.display = 'none';
+            document.getElementById('food-content').style.display = 'block';
+        }
+
+        // Load food items
+        async function loadFoodItems() {
+            try {
+                const response = await fetch('/api/food');
+                allFoodItems = await response.json();
+                renderFoodItems(allFoodItems);
+            } catch (error) {
+                console.error('Error loading food items:', error);
+                document.getElementById('food-grid').innerHTML = 
+                    '<div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 60px;"><p>Error loading menu.</p></div>';
+            }
+        }
+
+        // Render food items
+        function renderFoodItems(items) {
+            const grid = document.getElementById('food-grid');
+            
+            if (!items || items.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                        <h3>No items available</h3>
+                        <p>Check back soon for our menu.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = items.filter(item => item.status === 'available').map(item => `
+                <div class="food-card">
+                    <img src="${item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'}" 
+                         alt="${item.name}" class="food-card-image" loading="lazy">
+                    <div class="food-card-body">
+                        <span class="food-card-category">${item.category}</span>
+                        <h3 class="food-card-title">${item.name}</h3>
+                        <p class="food-card-description">${item.description}</p>
+                        <div class="food-card-footer">
+                            <div>
+                                <div class="food-card-price">$${item.price.toFixed(2)}</div>
+                                ${item.prep_time ? `<div class="food-card-prep"><i class="far fa-clock"></i> ${item.prep_time}</div>` : ''}
+                            </div>
+                            <button class="btn-order" onclick="openOrderModal(${item.id})">
+                                Order
+                            </button>
                         </div>
                     </div>
-                `).join('');
-                
+                </div>
+            `).join('');
+        }
+
+        // Category filter
+        function setupCategoryFilter() {
+            const tabs = document.querySelectorAll('.category-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const category = tab.dataset.category;
+                    if (category === 'all') {
+                        renderFoodItems(allFoodItems);
+                    } else {
+                        const filtered = allFoodItems.filter(item => item.category === category);
+                        renderFoodItems(filtered);
+                    }
+                });
+            });
+        }
+
+        // Open order modal
+        function openOrderModal(foodId) {
+            selectedFood = allFoodItems.find(item => item.id === foodId);
+            if (!selectedFood) return;
+
+            orderQuantity = 1;
+            updateModalContent();
+            document.getElementById('order-modal').classList.add('active');
+        }
+
+        // Update modal content
+        function updateModalContent() {
+            if (!selectedFood) return;
+
+            document.getElementById('modal-food-image').src = selectedFood.image_url || 
+                'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600';
+            document.getElementById('modal-food-name').textContent = selectedFood.name;
+            document.getElementById('modal-food-price').textContent = '$' + selectedFood.price.toFixed(2);
+            document.getElementById('qty-value').textContent = orderQuantity;
+            document.getElementById('modal-total').textContent = '$' + (selectedFood.price * orderQuantity).toFixed(2);
+        }
+
+        // Quantity controls
+        function setupQuantityControls() {
+            document.getElementById('qty-minus').addEventListener('click', () => {
+                if (orderQuantity > 1) {
+                    orderQuantity--;
+                    updateModalContent();
+                }
+            });
+
+            document.getElementById('qty-plus').addEventListener('click', () => {
+                if (orderQuantity < 10) {
+                    orderQuantity++;
+                    updateModalContent();
+                }
+            });
+
+            document.getElementById('btn-cancel').addEventListener('click', closeOrderModal);
+            document.getElementById('order-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'order-modal') closeOrderModal();
+            });
+        }
+
+        // Close order modal
+        function closeOrderModal() {
+            document.getElementById('order-modal').classList.remove('active');
+            selectedFood = null;
+            orderQuantity = 1;
+        }
+
+        // Confirm order
+        async function confirmOrder() {
+            if (!selectedFood || !activeBooking) return;
+
+            try {
+                const response = await fetch('/api/food/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        food_item_id: selectedFood.id,
+                        quantity: orderQuantity
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('Order placed successfully! Added to your room bill.', 'success');
+                    closeOrderModal();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Failed to place order', 'error');
+                }
             } catch (error) {
-                console.error('Error loading dining items:', error);
-                document.getElementById('dining-container').innerHTML = '<div class="error-state" style="grid-column: 1/-1; text-align: center; padding: 60px;"><p>Error loading dining options.</p></div>';
+                console.error('Order error:', error);
+                showToast('Failed to place order', 'error');
             }
+        }
+
+        // Show toast
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadHotelSettings();
-            loadDiningItems();
+            checkAuthAndBooking();
+            loadFoodItems();
+            setupCategoryFilter();
+            setupQuantityControls();
+            
+            // Confirm order button
+            document.getElementById('btn-confirm').addEventListener('click', confirmOrder);
             
             // Mobile menu toggle
             document.querySelector('.menu-icon').addEventListener('click', () => {

@@ -53,7 +53,11 @@
                     </a>
                     <a href="#" class="nav-item" data-section="dining">
                         <i class="fas fa-utensils"></i>
-                        <span>Dining</span>
+                        <span>Food Menu</span>
+                    </a>
+                    <a href="#" class="nav-item" data-section="dining-orders">
+                        <i class="fas fa-receipt"></i>
+                        <span>Dining Orders</span>
                     </a>
                     <a href="#" class="nav-item" data-section="contact">
                         <i class="fas fa-phone"></i>
@@ -280,14 +284,55 @@
                 <!-- Dining Section -->
                 <section id="dining-section" class="content-section" style="display: none;">
                     <div class="section-header">
-                        <h2 class="section-title">Dining Options</h2>
-                        <button class="btn btn-primary" id="add-dining-btn">
+                        <h2 class="section-title">Food Menu Items</h2>
+                        <button class="btn btn-primary" id="add-food-btn">
                             <i class="fas fa-plus"></i>
-                            Add Dining
+                            Add Food Item
                         </button>
                     </div>
-                    <div id="dining-list" class="items-grid">
-                        <!-- Dining items loaded dynamically -->
+                    <div id="food-list" class="items-grid">
+                        <!-- Food items loaded dynamically -->
+                    </div>
+                </section>
+
+                <!-- Dining Orders Section -->
+                <section id="dining-orders-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Dining Orders</h2>
+                        <div class="filter-group">
+                            <select id="order-status-filter" class="form-input" style="width: 200px;">
+                                <option value="">All Orders</option>
+                                <option value="pending">Pending</option>
+                                <option value="preparing">Preparing</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table" id="orders-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Guest</th>
+                                            <th>Room</th>
+                                            <th>Item</th>
+                                            <th>Qty</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-tbody">
+                                        <!-- Orders loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -423,58 +468,40 @@
 
     <script src="/js/admin.js"></script>
     <script>
-        // Setup sidebar toggle
+        // Additional inline initialization (only for items not in admin.js)
         document.addEventListener('DOMContentLoaded', function() {
-            const hamburgerBtn = document.getElementById('hamburger-btn');
-            const sidebar = document.getElementById('sidebar');
-            const contentWrapper = document.getElementById('content-wrapper');
-            
-            hamburgerBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // On mobile, toggle visibility
-                if (window.innerWidth <= 1024) {
-                    sidebar.classList.toggle('mobile-open');
-                } else {
-                    // On desktop, toggle collapsed state
-                    sidebar.classList.toggle('collapsed');
-                }
-            });
-            
-            // Close mobile sidebar when clicking overlay
-            const overlay = document.createElement('div');
-            overlay.id = 'sidebar-overlay';
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:none;';
-            document.body.appendChild(overlay);
-            
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('mobile-open');
-                overlay.style.display = 'none';
-            });
-            
-            // Show overlay on mobile
-            const originalToggle = hamburgerBtn.onclick;
-            
-            // Setup profile dropdown
+            // Setup profile dropdown (if not already in admin.js)
             const profileDropdown = document.getElementById('profile-dropdown');
-            const profileBtn = profileDropdown.querySelector('.profile-btn');
-            
-            profileBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                profileDropdown.classList.toggle('open');
-            });
+            if (profileDropdown) {
+                const profileBtn = profileDropdown.querySelector('.profile-btn');
+                if (profileBtn) {
+                    profileBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        profileDropdown.classList.toggle('open');
+                    });
+                }
+            }
             
             document.addEventListener('click', function() {
-                profileDropdown.classList.remove('open');
+                const pd = document.getElementById('profile-dropdown');
+                if (pd) pd.classList.remove('open');
             });
             
-            // Setup modal close
-            document.getElementById('modal-close').addEventListener('click', closeModal);
-            document.getElementById('modal-cancel').addEventListener('click', closeModal);
-            
-            document.getElementById('edit-modal').addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
-            });
+            // Setup modal close (if not already in admin.js)
+            const modalClose = document.getElementById('modal-close');
+            if (modalClose && typeof closeModal === 'function') {
+                modalClose.addEventListener('click', closeModal);
+            }
+            const modalCancel = document.getElementById('modal-cancel');
+            if (modalCancel && typeof closeModal === 'function') {
+                modalCancel.addEventListener('click', closeModal);
+            }
+            const editModal = document.getElementById('edit-modal');
+            if (editModal) {
+                editModal.addEventListener('click', function(e) {
+                    if (e.target === this && typeof closeModal === 'function') closeModal();
+                });
+            }
         });
     </script>
 </body>

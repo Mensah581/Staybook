@@ -7,6 +7,27 @@
     box-sizing: border-box;
 }
 
+/* Content Section Styles */
+.content-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.content-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 :root {
     /* Primary Colors - Soft Blue */
     --primary: #3B82F6;
