@@ -678,6 +678,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Luxury Spa Experience',
                 short_description: 'Indulge in world-class spa treatments',
                 full_description: 'Rejuvenate your body and mind at our award-winning luxury spa. Featuring thermal pools, sauna, steam room, and a full range of therapeutic treatments including Swedish massage, deep tissue therapy, and signature hot stone treatments. Our expert therapists use premium organic products to ensure the most relaxing experience.',
+                description: 'Rejuvenate your body and mind at our award-winning luxury spa. Featuring thermal pools, sauna, steam room, and a full range of therapeutic treatments.',
                 image_url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800',
                 category: 'Facility',
                 is_visible: true
@@ -686,6 +687,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Private Beach Access',
                 short_description: 'Exclusive private beach with premium amenities',
                 full_description: 'Enjoy pristine white sand beaches with exclusive cabanas, sun loungers, and beach butler service. Our private beach offers crystal-clear waters, water sports equipment, and the perfect setting for sunset walks. Complimentary refreshments served throughout the day.',
+                description: 'Enjoy pristine white sand beaches with exclusive cabanas, sun loungers, and beach butler service.',
                 image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
                 category: 'Experience',
                 is_visible: true
@@ -694,6 +696,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Rooftop Sunset Lounge',
                 short_description: 'Panoramic views with handcrafted cocktails',
                 full_description: 'Experience breathtaking sunset views from our rooftop lounge. Featuring infinity pool, comfortable seating areas, and a full bar serving handcrafted cocktails and premium wines. Live acoustic music on select evenings. The perfect spot for romantic dinners or social gatherings.',
+                description: 'Experience breathtaking sunset views from our rooftop lounge with handcrafted cocktails.',
                 image_url: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800',
                 category: 'Experience',
                 is_visible: true
@@ -702,6 +705,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Guided City Tour',
                 short_description: 'Discover local culture and heritage',
                 full_description: 'Explore the citys rich cultural heritage with our expert-guided tours. Visit historic landmarks, local markets, and hidden gems. Tours available in multiple languages. Customizable itineraries include transportation, entrance fees, and knowledgeable local guides.',
+                description: 'Explore the citys rich cultural heritage with our expert-guided tours.',
                 image_url: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800',
                 category: 'Tour',
                 is_visible: true
@@ -710,6 +714,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Infinity Pool Experience',
                 short_description: 'Stunning infinity pool with poolside service',
                 full_description: 'Relax in our stunning infinity pool overlooking the ocean. Poolside service includes fresh towels, SPF sunscreen, and a full menu of refreshments. Private cabanas available for booking. Fitness classes including water aerobics held daily.',
+                description: 'Relax in our stunning infinity pool overlooking the ocean with poolside service.',
                 image_url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
                 category: 'Facility',
                 is_visible: true
@@ -718,6 +723,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Weekend Live Music Nights',
                 short_description: 'Entertainment with local and international artists',
                 full_description: 'Every weekend features live performances from talented local and international artists. From jazz ensembles to acoustic sets, enjoy exceptional music in our elegant lounge. Premium beverage packages and signature appetizers available.',
+                description: 'Every weekend features live performances from talented local and international artists.',
                 image_url: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800',
                 category: 'Event',
                 is_visible: true
@@ -726,6 +732,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Fitness & Wellness Center',
                 short_description: 'State-of-the-art gym and wellness programs',
                 full_description: 'Maintain your fitness routine at our fully-equipped fitness center. Features latest cardio and strength equipment, personal training services, yoga studio, and group fitness classes. Nutrition consultations and wellness programs available.',
+                description: 'Maintain your fitness routine at our fully-equipped fitness center.',
                 image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
                 category: 'Facility',
                 is_visible: true
@@ -734,6 +741,7 @@ app.post('/api/seed-content', async (req, res) => {
                 title: 'Private Yacht Experience',
                 short_description: 'Luxury yacht charter for exclusive adventures',
                 full_description: 'Embark on an unforgettable journey aboard our private yacht. Perfect for sunset cruises, island hopping, or fishing adventures. Includes professional crew, gourmet catering, and premium beverages. Customizable itineraries for special occasions.',
+                description: 'Embark on an unforgettable journey aboard our private yacht.',
                 image_url: 'https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800',
                 category: 'Experience',
                 is_visible: true
@@ -745,11 +753,21 @@ app.post('/api/seed-content', async (req, res) => {
         if (parseInt(existingDiscover.rows[0].count) === 0) {
             for (let i = 0; i < discoverItems.length; i++) {
                 const item = discoverItems[i];
-                await pool.query(
-                    `INSERT INTO discover_items (title, short_description, full_description, image_url, category, display_order, is_visible) 
-                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                    [item.title, item.short_description, item.full_description, item.image_url, item.category, i + 1, item.is_visible]
-                );
+                // Try to use full column names, fallback to description if they don't exist
+                try {
+                    await pool.query(
+                        `INSERT INTO discover_items (title, short_description, full_description, image_url, category, display_order, is_visible) 
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                        [item.title, item.short_description, item.full_description, item.image_url, item.category, i + 1, item.is_visible]
+                    );
+                } catch (colError) {
+                    // Fallback if columns don't exist
+                    await pool.query(
+                        `INSERT INTO discover_items (title, description, image_url, display_order, is_visible) 
+                         VALUES ($1, $2, $3, $4, $5)`,
+                        [item.title, item.description, item.image_url, i + 1, item.is_visible]
+                    );
+                }
             }
         }
         
@@ -897,19 +915,23 @@ app.post('/api/seed-content', async (req, res) => {
         ];
         
         // Check and add food items
-        const existingFood = await pool.query('SELECT COUNT(*) as count FROM food_items');
-        if (parseInt(existingFood.rows[0].count) === 0) {
-            for (let i = 0; i < foodItems.length; i++) {
-                const item = foodItems[i];
-                await pool.query(
-                    `INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order) 
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                    [item.name, item.description, item.price, item.category, item.image_url, item.status, item.prep_time, i + 1]
-                );
+        try {
+            const existingFood = await pool.query('SELECT COUNT(*) as count FROM food_items');
+            if (parseInt(existingFood.rows[0].count) === 0) {
+                for (let i = 0; i < foodItems.length; i++) {
+                    const item = foodItems[i];
+                    await pool.query(
+                        `INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order) 
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                        [item.name, item.description, item.price, item.category, item.image_url, item.status, item.prep_time, i + 1]
+                    );
+                }
             }
+        } catch (foodError) {
+            console.log('Food items table not available yet:', foodError.message);
         }
         
-        res.json({ message: 'Successfully seeded 8 discover items and 15 food items' });
+        res.json({ message: 'Successfully seeded content' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
