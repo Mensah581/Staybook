@@ -282,14 +282,26 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS discover_items (
                 id SERIAL PRIMARY KEY,
                 title VARCHAR(255) NOT NULL,
+                short_description TEXT,
+                full_description TEXT,
                 description TEXT,
                 image_url TEXT,
+                category VARCHAR(50),
                 display_order INTEGER DEFAULT 0,
                 is_visible BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add new columns if they don't exist
+        try {
+            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS short_description TEXT`);
+            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS full_description TEXT`);
+            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS category VARCHAR(50)`);
+        } catch (e) {
+            // Columns may already exist
+        }
 
         // Create dining_items table
         await pool.query(`
@@ -306,6 +318,13 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Add new columns to dining_items if they don't exist
+        try {
+            await pool.query(`ALTER TABLE dining_items ADD COLUMN IF NOT EXISTS category VARCHAR(50)`);
+        } catch (e) {
+            // Column may already exist
+        }
         
         // Create food_items table (for individual food dishes)
         await pool.query(`
