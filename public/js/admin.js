@@ -445,7 +445,7 @@ async function loadRooms() {
         container.innerHTML = rooms.map(room => `
             <div class="room-card">
                 ${room.image_url ? 
-                    `<img src="${room.image_url}" alt="${room.title}" class="room-image">` : 
+                    `<img src="${room.image_url}" alt="${room.title}" class="room-image" onerror="this.src='https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=600'">` : 
                     `<div class="room-image" style="display: flex; align-items: center; justify-content: center; background: var(--bg-hover);"><i class="fas fa-bed" style="font-size: 48px; color: var(--text-light);"></i></div>`
                 }
                 <div class="room-content">
