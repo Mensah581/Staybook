@@ -657,7 +657,7 @@
                         <p class="food-card-description">${item.description}</p>
                         <div class="food-card-footer">
                             <div>
-                                <div class="food-card-price">$${item.price.toFixed(2)}</div>
+                                <div class="food-card-price">${Number(item.price).toFixed(2)}</div>
                                 ${item.prep_time ? `<div class="food-card-prep"><i class="far fa-clock"></i> ${item.prep_time}</div>` : ''}
                             </div>
                             <button class="btn-order" onclick="openOrderModal(${item.id})">
