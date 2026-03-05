@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
@@ -73,6 +74,11 @@ const upload = multer({
 // Database initialization
 async function initializeDatabase() {
     try {
+        // Test connection first
+        const client = await pool.connect();
+        console.log('Database connected successfully');
+        client.release();
+        
         // Create users table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -451,18 +457,18 @@ async function initializeDatabase() {
         console.log('Database initialized successfully');
     } catch (error) {
         console.error('Error initializing database:', error);
+        console.log('Server will continue running. Some features may not work without database.');
     }
 }
 
-// Initialize database
-initializeDatabase();
+// Initialize database (non-blocking)
+initializeDatabase().catch(err => console.error('Database init failed:', err));
 
-// Helper function to run queries
-function query(sql, params = []) {
-    return pool.query(sql, params);
-}
-
-// Routes
+// Start server even if database fails
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log('Note: Database connection required for full functionality');
+});
 
 // Home page - get hotel info
 app.get('/api/hotel-info', async (req, res) => {
@@ -2207,9 +2213,4 @@ app.post('/api/user/logout', (req, res) => {
 // Serve index.html for root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Start server
-app.listen(PORT, () => {
-    console.log(`Hotel Booking System running on http://localhost:${PORT}`);
 });

@@ -1,8 +1,33 @@
 // Admin Dashboard JavaScript
 
+// Safe helper functions
+function safeMap(arr, callback) {
+    if (!Array.isArray(arr)) return '';
+    return arr.map(callback).join('');
+}
+
+function safeToFixed(value, decimals = 2) {
+    if (value === null || value === undefined) return '0.00';
+    return Number(value).toFixed(decimals);
+}
+
+function safeGet(obj, path, defaultValue = '') {
+    return path.split('.').reduce((o, k) => (o || {})[k], obj) ?? defaultValue;
+}
+
 let currentSection = 'dashboard';
 let editingItem = null;
 let editingType = null;
+
+// Global error handler to prevent blank pages
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    return false;
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,9 +45,11 @@ async function checkAuth() {
         const data = await response.json();
         
         if (data.authenticated && data.user) {
+            const adminName = document.getElementById('admin-name');
+            const adminAvatar = document.getElementById('admin-avatar');
             const name = data.user.name || 'Admin';
-            document.getElementById('admin-name').textContent = `Welcome, ${name}`;
-            document.getElementById('admin-avatar').textContent = name.charAt(0).toUpperCase();
+            if (adminName) adminName.textContent = `Welcome, ${name}`;
+            if (adminAvatar) adminAvatar.textContent = name.charAt(0).toUpperCase();
         } else {
             // Not authenticated, redirect to login
             window.location.href = '/auth.html';
@@ -125,7 +152,9 @@ function switchSection(section) {
         media: 'Media Library',
         settings: 'Settings'
     };
-    document.getElementById('page-title').textContent = titles[section] || section;
+    // Update page title
+    const pageTitle = document.getElementById('page-title');
+    if (pageTitle) pageTitle.textContent = titles[section] || section;
     
     currentSection = section;
     
@@ -215,15 +244,19 @@ async function loadDashboard() {
         }
         const stats = await response.json();
         
-        document.getElementById('stat-rooms').textContent = stats.totalRooms || 0;
-        document.getElementById('stat-bookings').textContent = stats.totalBookings || 0;
+        // Update stats display
+        const statRooms = document.getElementById('stat-rooms');
+        const statBookings = document.getElementById('stat-bookings');
+        if (statRooms) statRooms.textContent = stats.totalRooms || 0;
+        if (statBookings) statBookings.textContent = stats.totalBookings || 0;
         
         // Load pending count
         const bookingsResponse = await fetch('/api/admin/bookings', { credentials: 'include' });
         if (bookingsResponse.ok) {
             const bookings = await bookingsResponse.json();
             const pendingCount = bookings.filter(b => b.status === 'pending').length;
-            document.getElementById('stat-pending').textContent = pendingCount;
+            const statPending = document.getElementById('stat-pending');
+            if (statPending) statPending.textContent = pendingCount;
             
             // Load activity list
             loadActivityList(bookings);
@@ -246,12 +279,17 @@ function loadActivityList(bookings) {
     // Show last 5 bookings as activity
     const recentBookings = bookings.slice(0, 5);
     
-    container.innerHTML = recentBookings.map(booking => `
+    // Safe rendering with null checks
+    if (!recentBookings || !Array.isArray(recentBookings) || recentBookings.length === 0) {
+        container.innerHTML = '<li class="empty">No recent bookings</li>';
+    } else {
+        container.innerHTML = recentBookings.slice(0, 5).map(booking => `
         <li>
             <i class="fas fa-circle"></i>
-            <span><strong>${booking.full_name}</strong> - ${booking.room_title || 'Room'} (${booking.status})</span>
+            <span><strong>${booking.full_name || 'Guest'}</strong> - ${booking.room_title || 'Room'} (${booking.status || 'pending'})</span>
         </li>
     `).join('');
+    }
 }
 
 // Format date helper
@@ -272,8 +310,9 @@ async function loadOverviewBlocks() {
         const sections = await response.json();
         
         const container = document.getElementById('overview-blocks');
+        if (!container) return;
         
-        if (sections.length === 0) {
+        if (!sections || !Array.isArray(sections) || sections.length === 0) {
             container.innerHTML = '<p class="no-items">No sections configured.</p>';
             return;
         }
@@ -352,24 +391,31 @@ async function loadBookings() {
         }
         const bookings = await response.json();
         
-        const container = document.getElementById('bookings-list');
+        const bookingsList = document.getElementById('bookings-list');
+        const tbody = document.getElementById('bookings-tbody');
         
-        if (!bookings || bookings.length === 0) {
-            container.innerHTML = `
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 60px;">
-                        <div class="empty-state">
-                            <i class="fas fa-calendar-check"></i>
-                            <h4>No bookings yet</h4>
-                            <p>Bookings will appear here when guests make reservations.</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
+        if (!bookings || !Array.isArray(bookings) || bookings.length === 0) {
+            if (bookingsList) {
+                bookingsList.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 60px;">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-check"></i>
+                                <h4>No bookings yet</h4>
+                                <p>Bookings will appear here when guests make reservations.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            } else if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="7" class="no-items">No bookings found.</td></tr>';
+            }
             return;
         }
         
-        container.innerHTML = bookings.map(booking => `
+        if (!tbody) return;
+        
+        tbody.innerHTML = bookings.map(booking => `
             <tr>
                 <td>
                     <div style="font-weight: 500;">${booking.full_name}</div>
@@ -436,8 +482,9 @@ async function loadRooms() {
         const rooms = await response.json();
         
         const container = document.getElementById('rooms-list');
+        if (!container) return;
         
-        if (rooms.length === 0) {
+        if (!rooms || !Array.isArray(rooms) || rooms.length === 0) {
             container.innerHTML = '<p class="no-items">No rooms added yet. Click "Add Room" to get started.</p>';
             return;
         }
@@ -452,7 +499,7 @@ async function loadRooms() {
                     <h3 class="room-title">${room.title}</h3>
                     <p class="room-description">${room.description ? room.description.substring(0, 80) + '...' : 'No description'}</p>
                     <div class="room-meta">
-                        <div class="room-price">${parseFloat(room.price).toFixed(0)} <span>/ night</span></div>
+                        <div class="room-price">${safeToFixed(room.price, 0)} <span>/ night</span></div>
                         <span class="room-status ${room.status}">${room.status}</span>
                     </div>
                     <div class="room-actions">
@@ -592,8 +639,9 @@ async function loadDiscoverItems() {
         const items = await response.json();
         
         const container = document.getElementById('discover-list');
+        if (!container) return;
         
-        if (items.length === 0) {
+        if (!items || !Array.isArray(items) || items.length === 0) {
             container.innerHTML = '<p class="no-items">No discover items. Click "Add Item" to create one.</p>';
             return;
         }
@@ -694,8 +742,9 @@ async function loadDiningItems() {
         const items = await response.json();
         
         const container = document.getElementById('dining-list');
+        if (!container) return;
         
-        if (items.length === 0) {
+        if (!items || !Array.isArray(items) || items.length === 0) {
             container.innerHTML = '<p class="no-items">No dining options. Click "Add Restaurant" to create one.</p>';
             return;
         }
@@ -739,8 +788,9 @@ async function loadFoodItems() {
         const items = await response.json();
         
         const container = document.getElementById('food-list');
+        if (!container) return;
         
-        if (items.length === 0) {
+        if (!items || !Array.isArray(items) || items.length === 0) {
             container.innerHTML = '<p class="no-items">No food items. Click "Add Food Item" to create one.</p>';
             return;
         }
@@ -756,7 +806,7 @@ async function loadFoodItems() {
                 <div class="item-content">
                     <h3>${item.name}</h3>
                     <p>${item.description ? item.description.substring(0, 60) + '...' : 'No description'}</p>
-                    <p><small>Category: ${item.category} | Price: ${item.price.toFixed(2)}</small></p>
+                    <p><small>Category: ${item.category || 'N/A'} | Price: ${safeToFixed(item.price, 2)}</small></p>
                     <p><small>Status: ${item.status} | Prep: ${item.prep_time || 'N/A'}</small></p>
                     <div class="item-actions">
                         <button class="btn-secondary" onclick="editFoodItem(${item.id})">
@@ -939,8 +989,9 @@ async function loadDiningOrders() {
         const orders = await response.json();
         
         const tbody = document.getElementById('orders-tbody');
+        if (!tbody) return;
         
-        if (!orders || orders.length === 0) {
+        if (!orders || !Array.isArray(orders) || orders.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No orders yet</td></tr>';
             return;
         }
@@ -963,7 +1014,7 @@ async function loadDiningOrders() {
                     <td>${order.room_title || 'N/A'}</td>
                     <td>${order.name}</td>
                     <td>${order.quantity}</td>
-                    <td>${order.total_price.toFixed(2)}</td>
+                    <td>${safeToFixed(order.total_price, 2)}</td>
                     <td><span class="status-badge ${statusClass}">${order.status}</span></td>
                     <td>${orderTime}</td>
                     <td>
@@ -1166,8 +1217,9 @@ async function loadMediaLibrary() {
         const media = await response.json();
         
         const container = document.getElementById('media-grid');
+        if (!container) return;
         
-        if (media.length === 0) {
+        if (!media || !Array.isArray(media) || media.length === 0) {
             container.innerHTML = '<p class="no-items">No images uploaded. Use the upload area above.</p>';
             return;
         }
