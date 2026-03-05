@@ -151,16 +151,41 @@ async function initializeDatabase() {
                 booking_time VARCHAR(50) NOT NULL,
                 message TEXT,
                 status VARCHAR(50) DEFAULT 'pending',
+                check_in_date DATE,
+                check_out_date DATE,
+                booking_status VARCHAR(20) DEFAULT 'reserved',
+                payment_status VARCHAR(20) DEFAULT 'unpaid',
+                total_price DECIMAL(10,2),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-        // Add user_id column to bookings if it doesn't exist (for existing databases)
+        // Migration: Add new columns to bookings if they don't exist
         try {
             await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
         } catch (e) {
             // Column may already exist, ignore error
         }
+        
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS check_in_date DATE`);
+        } catch (e) {}
+        
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS check_out_date DATE`);
+        } catch (e) {}
+        
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_status VARCHAR(20) DEFAULT 'reserved'`);
+        } catch (e) {}
+        
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid'`);
+        } catch (e) {}
+        
+        try {
+            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2)`);
+        } catch (e) {}
 
         // Create settings table
         await pool.query(`
@@ -432,32 +457,38 @@ app.get('/api/rooms/:id/images', async (req, res) => {
     }
 });
 
+// Import availability service
+const { isRoomAvailable, calculateTotalPrice } = require('./services/availabilityService');
+
 // Create booking
 app.post('/api/bookings', async (req, res) => {
     try {
-        const { room_id, full_name, phone, email, booking_date, booking_time, message } = req.body;
+        const { room_id, full_name, phone, email, check_in_date, check_out_date, message } = req.body;
 
-        // Check if room is available
-        const room = await pool.query('SELECT status FROM rooms WHERE id = $1', [room_id]);
-        if (room.rows.length === 0) {
-            return res.status(404).json({ error: 'Room not found' });
-        }
-        if (room.rows[0].status !== 'available') {
-            return res.status(400).json({ error: 'Room is not available' });
+        // Check if room is available using the availability service
+        const available = await isRoomAvailable(room_id, check_in_date, check_out_date);
+        if (!available) {
+            return res.status(400).json({ error: 'Room not available for selected dates' });
         }
 
         // Check date is not in the past
         const today = new Date().toISOString().split('T')[0];
-        if (booking_date < today) {
-            return res.status(400).json({ error: 'Booking date cannot be in the past' });
+        if (check_in_date < today) {
+            return res.status(400).json({ error: 'Check-in date cannot be in the past' });
         }
 
         // Get user_id if user is logged in
         const userId = req.session.user ? req.session.user.id : null;
-        
+
+        // Calculate total price
+        const totalPrice = await calculateTotalPrice(room_id, check_in_date, check_out_date);
+
+        // Get room info for booking_time (default to noon)
+        const bookingTime = '12:00';
+
         const result = await pool.query(
-            'INSERT INTO bookings (user_id, room_id, full_name, phone, email, booking_date, booking_time, message, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [userId, room_id, full_name, phone, email, booking_date, booking_time, message, 'pending']
+            'INSERT INTO bookings (user_id, room_id, full_name, phone, email, booking_date, booking_time, message, check_in_date, check_out_date, booking_status, total_price, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
+            [userId, room_id, full_name, phone, email, check_in_date, bookingTime, message, check_in_date, check_out_date, 'reserved', totalPrice, 'pending']
         );
 
         res.status(201).json({ message: 'Booking submitted successfully', booking: result.rows[0] });
@@ -663,6 +694,61 @@ app.put('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
         const { status } = req.body;
         await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, req.params.id]);
         res.json({ message: 'Booking status updated' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Check-in guest (admin)
+app.patch('/api/admin/bookings/:id/checkin', requireAdmin, async (req, res) => {
+    try {
+        await pool.query(
+            "UPDATE bookings SET booking_status = 'checked_in', status = 'confirmed' WHERE id = $1",
+            [req.params.id]
+        );
+        res.json({ message: 'Guest checked in successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Check-out guest (admin)
+app.patch('/api/admin/bookings/:id/checkout', requireAdmin, async (req, res) => {
+    try {
+        await pool.query(
+            "UPDATE bookings SET booking_status = 'checked_out', status = 'completed' WHERE id = $1",
+            [req.params.id]
+        );
+        res.json({ message: 'Guest checked out successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get available rooms
+app.get('/api/rooms/available', async (req, res) => {
+    try {
+        const { checkIn, checkOut } = req.query;
+        
+        if (!checkIn || !checkOut) {
+            return res.status(400).json({ error: 'Check-in and check-out dates are required' });
+        }
+        
+        const query = `
+            SELECT * FROM rooms r
+            WHERE r.status = 'available'
+            AND NOT EXISTS (
+                SELECT 1 FROM bookings b
+                WHERE b.room_id = r.id
+                  AND b.booking_status != 'cancelled'
+                  AND b.booking_status != 'checked_out'
+                  AND b.check_in_date < $2
+                  AND b.check_out_date > $1
+            )
+        `;
+        
+        const result = await pool.query(query, [checkIn, checkOut]);
+        res.json(result.rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
