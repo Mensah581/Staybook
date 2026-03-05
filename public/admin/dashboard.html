@@ -100,6 +100,7 @@
                 </div>
                 <div class="navbar-right">
                     <div class="search-box">
+                        <label for="search-input" style="display: none;">Search</label>
                         <i class="fas fa-search"></i>
                         <input type="text" id="search-input" name="search" placeholder="Search...">
                     </div>
@@ -300,11 +301,11 @@
                             <form id="contact-form">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Phone Number</label>
+                                        <label class="form-label" for="contact-phone">Phone Number</label>
                                         <input type="text" class="form-input" id="contact-phone" placeholder="+1234567890">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Email</label>
+                                        <label class="form-label" for="contact-email">Email</label>
                                         <input type="email" class="form-input" id="contact-email" placeholder="info@hotel.com">
                                     </div>
                                 </div>
@@ -342,21 +343,21 @@
                             <form id="settings-form">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Hotel Name</label>
+                                        <label class="form-label" for="setting-hotel-name">Hotel Name</label>
                                         <input type="text" class="form-input" id="setting-hotel-name">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Company Name</label>
+                                        <label class="form-label" for="setting-company-name">Company Name</label>
                                         <input type="text" class="form-input" id="setting-company-name">
                                     </div>
                                 </div>
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label class="form-label">Check-in Time</label>
+                                        <label class="form-label" for="setting-checkin">Check-in Time</label>
                                         <input type="text" class="form-input" id="setting-checkin" placeholder="2:00 PM">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Check-out Time</label>
+                                        <label class="form-label" for="setting-checkout">Check-out Time</label>
                                         <input type="text" class="form-input" id="setting-checkout" placeholder="12:00 PM">
                                     </div>
                                 </div>
