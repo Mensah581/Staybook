@@ -441,6 +441,183 @@ app.get('/api/rooms', async (req, res) => {
     }
 });
 
+// Seed rooms (public - for initial setup only)
+app.post('/api/seed-rooms', async (req, res) => {
+    try {
+        // Check if rooms already exist
+        const existingRooms = await pool.query('SELECT COUNT(*) as count FROM rooms');
+        if (parseInt(existingRooms.rows[0].count) > 0) {
+            return res.json({ message: 'Rooms already exist, skipping seed' });
+        }
+        
+        const rooms = [
+            {
+                title: 'Deluxe King Room',
+                description: 'Spacious room with a comfortable king-size bed, modern amenities, and elegant decor. Perfect for couples or business travelers seeking luxury accommodation.',
+                price: 180,
+                amenities: 'King Bed, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Coffee Maker',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
+                rating: 4.8,
+                review_count: 124,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 35,
+                location: 'Floor 2-5'
+            },
+            {
+                title: 'Executive Suite',
+                description: 'Luxurious suite featuring a separate living area, bedroom with king bed, and premium amenities. Ideal for executives and those who appreciate extra space.',
+                price: 280,
+                amenities: 'King Bed, Living Room, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Bathtub, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
+                rating: 4.9,
+                review_count: 89,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 55,
+                location: 'Floor 6-8'
+            },
+            {
+                title: 'Standard Double Room',
+                description: 'Comfortable and affordable room with two double beds, perfect for families or groups. Features all essential amenities for a pleasant stay.',
+                price: 120,
+                amenities: '2 Double Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
+                rating: 4.5,
+                review_count: 256,
+                beds: 2,
+                baths: 1,
+                guests: 4,
+                size: 28,
+                location: 'Floor 1-3'
+            },
+            {
+                title: 'Presidential Suite',
+                description: 'The ultimate in luxury accommodation. This expansive suite features multiple rooms, panoramic views, private balcony, and exclusive amenities fit for royalty.',
+                price: 750,
+                amenities: 'King Bed, Living Room, Dining Room, Private Balcony, Jacuzzi, Free WiFi, Premium Mini Bar, Butlers Service, Home Theater',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
+                rating: 5.0,
+                review_count: 32,
+                beds: 1,
+                baths: 2,
+                guests: 2,
+                size: 120,
+                location: 'Top Floor'
+            },
+            {
+                title: 'Superior Twin Room',
+                description: 'Elegant room with two twin beds, perfect for friends or colleagues traveling together. Modern design with all necessary amenities.',
+                price: 140,
+                amenities: '2 Twin Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk, Safe',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800',
+                rating: 4.6,
+                review_count: 178,
+                beds: 2,
+                baths: 1,
+                guests: 2,
+                size: 30,
+                location: 'Floor 2-4'
+            },
+            {
+                title: 'Garden View Room',
+                description: 'Peaceful room overlooking our beautiful gardens. Features a private balcony where you can relax and enjoy the serene nature views.',
+                price: 160,
+                amenities: 'Queen Bed, Garden View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
+                rating: 4.7,
+                review_count: 145,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 32,
+                location: 'Ground Floor - Garden Wing'
+            },
+            {
+                title: 'Ocean View Deluxe',
+                description: 'Stunning room with breathtaking ocean views. Wake up to the sound of waves and enjoy spectacular sunsets from your private balcony.',
+                price: 220,
+                amenities: 'King Bed, Ocean View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Bathtub',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
+                rating: 4.8,
+                review_count: 167,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 40,
+                location: 'Ocean Wing - High Floor'
+            },
+            {
+                title: 'Family Suite',
+                description: 'Spacious suite designed for families. Features a master bedroom, second bedroom with bunk beds, living area, and child-friendly amenities.',
+                price: 350,
+                amenities: 'King Bed + Bunk Beds, Living Room, Kitchenette, Free WiFi, TV, Mini Bar, Air Conditioning, Bathtub, Kids Area',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1598928506311-c55ez361a17e?w=800',
+                rating: 4.9,
+                review_count: 78,
+                beds: 2,
+                baths: 2,
+                guests: 5,
+                size: 75,
+                location: 'Family Wing'
+            },
+            {
+                title: 'Junior Suite',
+                description: 'Elegant suite with an open-plan design, combining bedroom and living space. Perfect for short stays with a touch of luxury.',
+                price: 200,
+                amenities: 'Queen Bed, Living Area, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800',
+                rating: 4.6,
+                review_count: 134,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 45,
+                location: 'Floor 4-7'
+            },
+            {
+                title: 'Luxury Penthouse',
+                description: 'Exclusive penthouse suite on the top floor with 360-degree views, private terrace, and premium concierge service. The pinnacle of luxury accommodation.',
+                price: 500,
+                amenities: 'King Bed, Private Terrace, Living Room, Dining Area, Free WiFi, Premium Mini Bar, Butlers Service, Jacuzzi, Home Cinema',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800',
+                rating: 5.0,
+                review_count: 24,
+                beds: 1,
+                baths: 2,
+                guests: 2,
+                size: 95,
+                location: 'Penthouse Floor'
+            }
+        ];
+        
+        for (const room of rooms) {
+            await pool.query(
+                `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                [room.title, room.description, room.price, room.amenities, room.status, room.image_url, 
+                 room.rating, room.review_count, room.beds, room.baths, room.guests, room.size, room.location]
+            );
+        }
+        
+        res.json({ message: 'Successfully seeded 10 rooms' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get single room
 app.get('/api/rooms/:id', async (req, res) => {
     try {
@@ -1257,6 +1434,183 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
             totalMedia: parseInt(media.rows[0].total),
             totalSections: parseInt(sections.rows[0].total)
         });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Seed rooms (for initial setup) - Admin only
+app.post('/api/admin/seed-rooms', requireAdmin, async (req, res) => {
+    try {
+        // Check if rooms already exist
+        const existingRooms = await pool.query('SELECT COUNT(*) as count FROM rooms');
+        if (parseInt(existingRooms.rows[0].count) > 0) {
+            return res.json({ message: 'Rooms already exist, skipping seed' });
+        }
+        
+        const rooms = [
+            {
+                title: 'Deluxe King Room',
+                description: 'Spacious room with a comfortable king-size bed, modern amenities, and elegant decor. Perfect for couples or business travelers seeking luxury accommodation.',
+                price: 180,
+                amenities: 'King Bed, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Coffee Maker',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
+                rating: 4.8,
+                review_count: 124,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 35,
+                location: 'Floor 2-5'
+            },
+            {
+                title: 'Executive Suite',
+                description: 'Luxurious suite featuring a separate living area, bedroom with king bed, and premium amenities. Ideal for executives and those who appreciate extra space.',
+                price: 280,
+                amenities: 'King Bed, Living Room, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Bathtub, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
+                rating: 4.9,
+                review_count: 89,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 55,
+                location: 'Floor 6-8'
+            },
+            {
+                title: 'Standard Double Room',
+                description: 'Comfortable and affordable room with two double beds, perfect for families or groups. Features all essential amenities for a pleasant stay.',
+                price: 120,
+                amenities: '2 Double Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
+                rating: 4.5,
+                review_count: 256,
+                beds: 2,
+                baths: 1,
+                guests: 4,
+                size: 28,
+                location: 'Floor 1-3'
+            },
+            {
+                title: 'Presidential Suite',
+                description: 'The ultimate in luxury accommodation. This expansive suite features multiple rooms, panoramic views, private balcony, and exclusive amenities fit for royalty.',
+                price: 750,
+                amenities: 'King Bed, Living Room, Dining Room, Private Balcony, Jacuzzi, Free WiFi, Premium Mini Bar, Butlers Service, Home Theater',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
+                rating: 5.0,
+                review_count: 32,
+                beds: 1,
+                baths: 2,
+                guests: 2,
+                size: 120,
+                location: 'Top Floor'
+            },
+            {
+                title: 'Superior Twin Room',
+                description: 'Elegant room with two twin beds, perfect for friends or colleagues traveling together. Modern design with all necessary amenities.',
+                price: 140,
+                amenities: '2 Twin Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk, Safe',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800',
+                rating: 4.6,
+                review_count: 178,
+                beds: 2,
+                baths: 1,
+                guests: 2,
+                size: 30,
+                location: 'Floor 2-4'
+            },
+            {
+                title: 'Garden View Room',
+                description: 'Peaceful room overlooking our beautiful gardens. Features a private balcony where you can relax and enjoy the serene nature views.',
+                price: 160,
+                amenities: 'Queen Bed, Garden View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
+                rating: 4.7,
+                review_count: 145,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 32,
+                location: 'Ground Floor - Garden Wing'
+            },
+            {
+                title: 'Ocean View Deluxe',
+                description: 'Stunning room with breathtaking ocean views. Wake up to the sound of waves and enjoy spectacular sunsets from your private balcony.',
+                price: 220,
+                amenities: 'King Bed, Ocean View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Bathtub',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
+                rating: 4.8,
+                review_count: 167,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 40,
+                location: 'Ocean Wing - High Floor'
+            },
+            {
+                title: 'Family Suite',
+                description: 'Spacious suite designed for families. Features a master bedroom, second bedroom with bunk beds, living area, and child-friendly amenities.',
+                price: 350,
+                amenities: 'King Bed + Bunk Beds, Living Room, Kitchenette, Free WiFi, TV, Mini Bar, Air Conditioning, Bathtub, Kids Area',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1598928506311-c55ez361a17e?w=800',
+                rating: 4.9,
+                review_count: 78,
+                beds: 2,
+                baths: 2,
+                guests: 5,
+                size: 75,
+                location: 'Family Wing'
+            },
+            {
+                title: 'Junior Suite',
+                description: 'Elegant suite with an open-plan design, combining bedroom and living space. Perfect for short stays with a touch of luxury.',
+                price: 200,
+                amenities: 'Queen Bed, Living Area, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Work Desk',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800',
+                rating: 4.6,
+                review_count: 134,
+                beds: 1,
+                baths: 1,
+                guests: 2,
+                size: 45,
+                location: 'Floor 4-7'
+            },
+            {
+                title: 'Luxury Penthouse',
+                description: 'Exclusive penthouse suite on the top floor with 360-degree views, private terrace, and premium concierge service. The pinnacle of luxury accommodation.',
+                price: 500,
+                amenities: 'King Bed, Private Terrace, Living Room, Dining Area, Free WiFi, Premium Mini Bar, Butlers Service, Jacuzzi, Home Cinema',
+                status: 'available',
+                image_url: 'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800',
+                rating: 5.0,
+                review_count: 24,
+                beds: 1,
+                baths: 2,
+                guests: 2,
+                size: 95,
+                location: 'Penthouse Floor'
+            }
+        ];
+        
+        for (const room of rooms) {
+            await pool.query(
+                `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                [room.title, room.description, room.price, room.amenities, room.status, room.image_url, 
+                 room.rating, room.review_count, room.beds, room.baths, room.guests, room.size, room.location]
+            );
+        }
+        
+        res.json({ message: 'Successfully seeded 10 rooms' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
