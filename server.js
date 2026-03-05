@@ -1116,12 +1116,16 @@ app.post('/api/upload', requireAdmin, (req, res) => {
     });
 });
 
-// Simple login
+// Simple login - accepts email or username
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        // Try to find by email or username
+        const result = await pool.query(
+            'SELECT * FROM users WHERE email = $1 OR username = $1', 
+            [email]
+        );
         
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid email or password' });
