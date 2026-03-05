@@ -187,6 +187,20 @@ async function initializeDatabase() {
             await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2)`);
         } catch (e) {}
 
+        // Create indexes for performance
+        try {
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_room_dates ON bookings (room_id, check_in_date, check_out_date)`);
+        } catch (e) {}
+        try {
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings (booking_status)`);
+        } catch (e) {}
+        try {
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings (user_id)`);
+        } catch (e) {}
+        try {
+            await pool.query(`CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms (status)`);
+        } catch (e) {}
+
         // Create settings table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
@@ -460,6 +474,9 @@ app.get('/api/rooms/:id/images', async (req, res) => {
 // Import availability service
 const { isRoomAvailable, calculateTotalPrice } = require('./services/availabilityService');
 
+// Import email service
+const { sendBookingConfirmation, sendCancellationEmail, sendCheckInEmail } = require('./services/emailService');
+
 // Create booking
 app.post('/api/bookings', async (req, res) => {
     try {
@@ -491,7 +508,17 @@ app.post('/api/bookings', async (req, res) => {
             [userId, room_id, full_name, phone, email, check_in_date, bookingTime, message, check_in_date, check_out_date, 'reserved', totalPrice, 'pending']
         );
 
-        res.status(201).json({ message: 'Booking submitted successfully', booking: result.rows[0] });
+        const newBooking = result.rows[0];
+        
+        // Send confirmation email (non-blocking)
+        if (email) {
+            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [room_id]);
+            sendBookingConfirmation(newBooking, roomResult.rows[0]).catch(err => 
+                console.error('Failed to send confirmation email:', err)
+            );
+        }
+
+        res.status(201).json({ message: 'Booking submitted successfully', booking: newBooking });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -688,6 +715,41 @@ app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
     }
 });
 
+// Get bookings for calendar view (admin)
+app.get('/api/admin/bookings/calendar', requireAdmin, async (req, res) => {
+    try {
+        const { start, end } = req.query;
+        
+        let query = `
+            SELECT 
+                b.id,
+                b.room_id,
+                r.title as room_title,
+                b.full_name as customer_name,
+                b.check_in_date,
+                b.check_out_date,
+                b.booking_status
+            FROM bookings b
+            LEFT JOIN rooms r ON b.room_id = r.id
+            WHERE b.booking_status != 'cancelled'
+        `;
+        
+        const params = [];
+        
+        if (start && end) {
+            query += ` AND b.check_out_date >= $1 AND b.check_in_date <= $2`;
+            params.push(start, end);
+        }
+        
+        query += ` ORDER BY b.check_in_date`;
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Update booking status (admin)
 app.put('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
     try {
@@ -702,10 +764,27 @@ app.put('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
 // Check-in guest (admin)
 app.patch('/api/admin/bookings/:id/checkin', requireAdmin, async (req, res) => {
     try {
+        // Get booking details before updating
+        const bookingResult = await pool.query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
+        
+        if (bookingResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+        
         await pool.query(
             "UPDATE bookings SET booking_status = 'checked_in', status = 'confirmed' WHERE id = $1",
             [req.params.id]
         );
+        
+        // Send check-in email (non-blocking)
+        const bookingData = bookingResult.rows[0];
+        if (bookingData.email) {
+            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [bookingData.room_id]);
+            sendCheckInEmail(bookingData, roomResult.rows[0]).catch(err => 
+                console.error('Failed to send check-in email:', err)
+            );
+        }
+        
         res.json({ message: 'Guest checked in successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -720,6 +799,55 @@ app.patch('/api/admin/bookings/:id/checkout', requireAdmin, async (req, res) => 
             [req.params.id]
         );
         res.json({ message: 'Guest checked out successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Cancel booking (admin and user)
+app.patch('/api/bookings/:id/cancel', async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        
+        // Check if user owns the booking or is admin
+        const booking = await pool.query('SELECT * FROM bookings WHERE id = $1', [bookingId]);
+        
+        if (booking.rows.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+        
+        const isAdmin = req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin');
+        const isOwner = req.session.user && booking.rows[0].user_id === req.session.user.id;
+        
+        if (!isAdmin && !isOwner) {
+            return res.status(401).json({ error: 'Unauthorized to cancel this booking' });
+        }
+        
+        // Check business rule: prevent cancellation within 24 hours of check-in
+        const checkInDate = new Date(booking.rows[0].check_in_date);
+        const now = new Date();
+        const hoursUntilCheckIn = (checkInDate - now) / (1000 * 60 * 60);
+        
+        if (hoursUntilCheckIn < 24 && hoursUntilCheckIn > 0) {
+            return res.status(400).json({ error: 'Cannot cancel within 24 hours of check-in. Please contact the hotel directly.' });
+        }
+        
+        // Update booking status to cancelled
+        await pool.query(
+            "UPDATE bookings SET booking_status = 'cancelled', status = 'cancelled' WHERE id = $1",
+            [bookingId]
+        );
+        
+        // Send cancellation email (non-blocking)
+        const bookingData = booking.rows[0];
+        if (bookingData.email) {
+            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [bookingData.room_id]);
+            sendCancellationEmail(bookingData, roomResult.rows[0]).catch(err => 
+                console.error('Failed to send cancellation email:', err)
+            );
+        }
+        
+        res.json({ message: 'Booking cancelled successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
