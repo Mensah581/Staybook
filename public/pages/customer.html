@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking System - Customer Portal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/pages/customer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-hotel"></i> Hotel Booking
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#rooms" class="nav-link">Rooms</a></li>
+                <li><a href="#booking" class="nav-link">My Bookings</a></li>
+                <li><a href="#profile" class="nav-link">Profile</a></li>
+                <li><a href="#" id="logout-btn" class="nav-link">Logout</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="home-hero">
+                <div class="hero-content">
+                    <h1>Welcome to Our Hotel</h1>
+                    <p>Experience luxury and comfort like never before</p>
+                    <button class="btn btn-primary" onclick="scrollToSection('rooms')">Book Now</button>
+                </div>
+            </div>
+
+            <div class="quick-booking-card">
+                <h2>Quick Booking</h2>
+                <form id="quick-booking-form">
+                    <div class="form-group">
+                        <label>Check-in Date</label>
+                        <input type="date" id="quick-checkin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Check-out Date</label>
+                        <input type="date" id="quick-checkout" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Guests</label>
+                        <input type="number" id="quick-guests" min="1" max="10" value="2" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search Rooms</button>
+                </form>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-wifi"></i>
+                    <h3>Free WiFi</h3>
+                    <p>High-speed internet throughout the property</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-utensils"></i>
+                    <h3>Fine Dining</h3>
+                    <p>World-class restaurants and bars</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-dumbbell"></i>
+                    <h3>Gym & Spa</h3>
+                    <p>Relax and rejuvenate your body and mind</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-concierge-bell"></i>
+                    <h3>24/7 Service</h3>
+                    <p>Our staff is always ready to help</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rooms Section -->
+        <section id="rooms" class="section">
+            <div class="section-header">
+                <h2>Available Rooms</h2>
+                <p>Choose from our wide selection of luxurious accommodations</p>
+            </div>
+
+            <div class="search-filters">
+                <div class="filter-group">
+                    <label>Check-in</label>
+                    <input type="date" id="filter-checkin">
+                </div>
+                <div class="filter-group">
+                    <label>Check-out</label>
+                    <input type="date" id="filter-checkout">
+                </div>
+                <div class="filter-group">
+                    <label>Max Price</label>
+                    <input type="range" id="filter-price" min="50" max="1000" value="1000">
+                    <span id="price-display">$1000</span>
+                </div>
+                <button class="btn btn-primary" id="apply-filters">Search</button>
+            </div>
+
+            <div id="rooms-container" class="rooms-grid">
+                <!-- Rooms will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Booking Section -->
+        <section id="booking" class="section">
+            <div class="section-header">
+                <h2>My Bookings</h2>
+                <p>View and manage your reservations</p>
+            </div>
+
+            <div id="bookings-container" class="bookings-list">
+                <!-- Bookings will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile" class="section">
+            <div class="section-header">
+                <h2>My Profile</h2>
+                <p>Manage your account information</p>
+            </div>
+
+            <div class="profile-container">
+                <form id="profile-form" class="profile-form">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="profile-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="profile-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="profile-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="profile-address">
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="profile-city">
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" id="profile-country">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Room Details Modal -->
+    <div id="room-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body">
+                <div class="room-details">
+                    <img id="modal-room-image" src="" alt="Room">
+                    <div class="room-info">
+                        <h2 id="modal-room-title"></h2>
+                        <p id="modal-room-description"></p>
+                        <div class="room-specs">
+                            <span><i class="fas fa-bed"></i> <span id="modal-bedrooms"></span> Bedrooms</span>
+                            <span><i class="fas fa-bath"></i> <span id="modal-bathrooms"></span> Bathrooms</span>
+                            <span><i class="fas fa-users"></i> <span id="modal-max-guests"></span> Max Guests</span>
+                        </div>
+                        <div class="amenities">
+                            <h4>Amenities</h4>
+                            <ul id="modal-amenities"></ul>
+                        </div>
+                        <div class="price-section">
+                            <p class="price" id="modal-room-price"></p>
+                            <button class="btn btn-primary" id="book-room-btn">Book Room</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Form Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content modal-sm">
+            <span class="close">&times;</span>
+            <h2>Complete Your Booking</h2>
+            <form id="booking-form">
+                <input type="hidden" id="booking-room-id">
+                <div class="form-group">
+                    <label>Check-in Date</label>
+                    <input type="date" id="booking-checkin" required>
+                </div>
+                <div class="form-group">
+                    <label>Check-out Date</label>
+                    <input type="date" id="booking-checkout" required>
+                </div>
+                <div class="form-group">
+                    <label>Number of Guests</label>
+                    <input type="number" id="booking-guests" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Special Requests</label>
+                    <textarea id="booking-requests" rows="3" placeholder="Any special requests?"></textarea>
+                </div>
+                <div id="total-price" class="total-price"></div>
+                <button type="submit" class="btn btn-primary w-100">Proceed to Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content modal-sm">
+            <span class="close">&times;</span>
+            <h2>Payment Details</h2>
+            <form id="payment-form">
+                <input type="hidden" id="payment-booking-id">
+                <div id="payment-summary" class="payment-summary"></div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="payment-method" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="mobile_money">Mobile Money</option>
+                        <option value="cash">Pay at Hotel</option>
+                    </select>
+                </div>
+                <div id="card-fields" style="display: none;">
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" id="card-cvv" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Complete Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content modal-sm text-center">
+            <div style="font-size: 48px; color: #28a745; margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Booking Confirmed!</h2>
+            <p id="success-message"></p>
+            <div id="booking-reference" class="booking-reference"></div>
+            <button class="btn btn-primary" onclick="location.reload()">Return to Home</button>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="spinner" style="display: none;">
+        <div class="spinner-border"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/js/pages/customer.js"></script>
+</body>
+</html>

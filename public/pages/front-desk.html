@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Desk Dashboard - Hotel Booking System</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-hotel"></i>
+                <span>Front Desk</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-section="checkins">
+                    <i class="fas fa-sign-in-alt"></i> Check-ins
+                </a>
+                <a href="#" class="nav-item" data-section="checkouts">
+                    <i class="fas fa-sign-out-alt"></i> Check-outs
+                </a>
+                <a href="#" class="nav-item" data-section="bookings">
+                    <i class="fas fa-calendar"></i> All Bookings
+                </a>
+                <a href="#" class="nav-item" data-section="rooms">
+                    <i class="fas fa-bed"></i> Room Status
+                </a>
+            </nav>
+            <div class="logout">
+                <a href="#" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <h1>Front Desk Dashboard</h1>
+                <div class="header-right">
+                    <span id="current-time"></span>
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="user-name">Staff</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active">
+                <h2>Today's Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-sign-in-alt"></i></div>
+                        <div class="stat-content">
+                            <h3 id="today-checkins">0</h3>
+                            <p>Check-ins Today</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-sign-out-alt"></i></div>
+                        <div class="stat-content">
+                            <h3 id="today-checkouts">0</h3>
+                            <p>Check-outs Today</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                        <div class="stat-content">
+                            <h3 id="occupied-rooms">0</h3>
+                            <p>Occupied Rooms</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-door-closed"></i></div>
+                        <div class="stat-content">
+                            <h3 id="available-rooms">0</h3>
+                            <p>Available Rooms</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>Upcoming Check-ins</h3>
+                        <div id="upcoming-checkins" class="list"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Upcoming Check-outs</h3>
+                        <div id="upcoming-checkouts" class="list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Check-ins Section -->
+            <section id="checkins" class="section">
+                <h2>Today's Check-ins</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest Name</th>
+                            <th>Phone</th>
+                            <th>Room</th>
+                            <th>Guests</th>
+                            <th>Check-in Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checkins-tbody"></tbody>
+                </table>
+            </section>
+
+            <!-- Check-outs Section -->
+            <section id="checkouts" class="section">
+                <h2>Today's Check-outs</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest Name</th>
+                            <th>Phone</th>
+                            <th>Room</th>
+                            <th>Guests</th>
+                            <th>Check-out Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checkouts-tbody"></tbody>
+                </table>
+            </section>
+
+            <!-- Bookings Section -->
+            <section id="bookings" class="section">
+                <h2>All Bookings</h2>
+                <div class="filters">
+                    <input type="text" id="booking-search" placeholder="Search booking ID or guest name">
+                    <select id="booking-status">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="checked_in">Checked In</option>
+                        <option value="checked_out">Checked Out</option>
+                    </select>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Guest</th>
+                            <th>Room</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-tbody"></tbody>
+                </table>
+            </section>
+
+            <!-- Room Status Section -->
+            <section id="rooms" class="section">
+                <h2>Room Status Overview</h2>
+                <div class="rooms-grid">
+                    <div id="rooms-container" class="rooms-list"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Check-in Modal -->
+    <div id="checkin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Complete Check-in</h2>
+            <form id="checkin-form">
+                <input type="hidden" id="checkin-booking-id">
+                <div class="form-group">
+                    <label>Guest Name</label>
+                    <input type="text" id="checkin-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Room</label>
+                    <input type="text" id="checkin-room" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Number of Guests</label>
+                    <input type="number" id="checkin-guests" readonly>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Check-in</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Check-out Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Complete Check-out</h2>
+            <form id="checkout-form">
+                <input type="hidden" id="checkout-booking-id">
+                <div class="form-group">
+                    <label>Guest Name</label>
+                    <input type="text" id="checkout-name" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Room</label>
+                    <input type="text" id="checkout-room" readonly>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Check-out</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/js/pages/front-desk.js"></script>
+</body>
+</html>

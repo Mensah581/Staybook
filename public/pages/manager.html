@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Dashboard - Hotel Booking</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/pages/manager.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <i class="fas fa-hotel"></i>
+        <span>Manager</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active" data-section="dashboard">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-section="revenue">
+          <i class="fas fa-dollar-sign"></i>
+          <span>Revenue</span>
+        </a>
+        <a href="#" class="nav-item" data-section="occupancy">
+          <i class="fas fa-chart-line"></i>
+          <span>Occupancy</span>
+        </a>
+        <a href="#" class="nav-item" data-section="payments">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="#" class="nav-item" data-section="rooms">
+          <i class="fas fa-door-open"></i>
+          <span>Rooms</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="user-details">
+            <div class="user-name" id="user-name">Manager</div>
+            <div class="user-role">Manager</div>
+          </div>
+        </div>
+        <button class="btn btn-logout" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <h1>Manager Dashboard</h1>
+          <div id="current-date" class="current-date"></div>
+        </div>
+        <div class="header-right">
+          <i class="fas fa-bell notification-icon"></i>
+        </div>
+      </header>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Today's Revenue</div>
+              <div class="stat-value" id="today-revenue">GHS 0.00</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Occupancy Rate</div>
+              <div class="stat-value" id="occupancy-rate">0%</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Today's Check-ins</div>
+              <div class="stat-value" id="today-checkins">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+              <i class="fas fa-sign-out-alt"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-label">Today's Check-outs</div>
+              <div class="stat-value" id="today-checkouts">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-container">
+            <h3>Revenue This Week</h3>
+            <canvas id="revenue-chart"></canvas>
+          </div>
+
+          <div class="chart-container">
+            <h3>Occupancy Trend</h3>
+            <canvas id="occupancy-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h3>Total Bookings</h3>
+            <div class="metric-value" id="total-bookings">0</div>
+          </div>
+          <div class="metric-card">
+            <h3>Total Rooms</h3>
+            <div class="metric-value" id="total-rooms">0</div>
+          </div>
+          <div class="metric-card">
+            <h3>Occupied Rooms</h3>
+            <div class="metric-value" id="occupied-rooms">0</div>
+          </div>
+          <div class="metric-card">
+            <h3>Available Rooms</h3>
+            <div class="metric-value" id="available-rooms">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Revenue Section -->
+      <section id="revenue" class="section">
+        <div class="section-header">
+          <h2>Revenue Analysis</h2>
+          <div class="filter-group">
+            <select id="revenue-period">
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="revenue-content">
+          <div class="chart-container large">
+            <h3>Revenue by Day</h3>
+            <canvas id="revenue-detail-chart"></canvas>
+          </div>
+
+          <div class="revenue-summary">
+            <div class="summary-card">
+              <h3>Total Revenue</h3>
+              <div class="value" id="total-revenue">GHS 0.00</div>
+            </div>
+            <div class="summary-card">
+              <h3>Average per Booking</h3>
+              <div class="value" id="avg-revenue">GHS 0.00</div>
+            </div>
+            <div class="summary-card">
+              <h3>Number of Bookings</h3>
+              <div class="value" id="revenue-bookings">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="top-rooms">
+          <h3>Top 5 Rooms by Revenue</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Room Name</th>
+                <th>Bookings</th>
+                <th>Total Revenue</th>
+                <th>Average Price</th>
+              </tr>
+            </thead>
+            <tbody id="top-rooms-tbody">
+              <tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Occupancy Section -->
+      <section id="occupancy" class="section">
+        <div class="section-header">
+          <h2>Occupancy Analysis</h2>
+        </div>
+
+        <div class="occupancy-content">
+          <div class="chart-container large">
+            <h3>Occupancy Rate Trend</h3>
+            <canvas id="occupancy-trend-chart"></canvas>
+          </div>
+
+          <div class="occupancy-summary">
+            <div class="summary-card">
+              <h3>Current Occupancy</h3>
+              <div class="value" id="current-occupancy">0%</div>
+            </div>
+            <div class="summary-card">
+              <h3>Average This Week</h3>
+              <div class="value" id="avg-occupancy-week">0%</div>
+            </div>
+            <div class="summary-card">
+              <h3>Average This Month</h3>
+              <div class="value" id="avg-occupancy-month">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="room-status">
+          <h3>Room Status Overview</h3>
+          <div class="status-overview">
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);"></div>
+              <span>Available</span>
+              <div class="count" id="status-available">0</div>
+            </div>
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+              <span>Occupied</span>
+              <div class="count" id="status-occupied">0</div>
+            </div>
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #ffa502 0%, #ffb75d 100%);"></div>
+              <span>Maintenance</span>
+              <div class="count" id="status-maintenance">0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Payments Section -->
+      <section id="payments" class="section">
+        <div class="section-header">
+          <h2>Payment Methods Analysis</h2>
+        </div>
+
+        <div class="payments-content">
+          <div class="chart-container">
+            <h3>Payment Methods Distribution</h3>
+            <canvas id="payment-methods-chart"></canvas>
+          </div>
+
+          <div class="payment-summary">
+            <h3>Payment Summary</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Payment Method</th>
+                  <th>Count</th>
+                  <th>Total Amount</th>
+                  <th>Percentage</th>
+                </tr>
+              </thead>
+              <tbody id="payment-summary-tbody">
+                <tr><td colspan="4" style="text-align: center; padding: 30px;">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="payment-status">
+          <h3>Payment Status Overview</h3>
+          <div class="status-overview">
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);"></div>
+              <span>Completed</span>
+              <div class="count" id="status-completed">0</div>
+            </div>
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #ffc107 0%, #ffb75d 100%);"></div>
+              <span>Pending</span>
+              <div class="count" id="status-pending">0</div>
+            </div>
+            <div class="status-stat">
+              <div class="circle" style="background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);"></div>
+              <span>Failed</span>
+              <div class="count" id="status-failed">0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rooms Section -->
+      <section id="rooms" class="section">
+        <div class="section-header">
+          <h2>Room Statistics</h2>
+        </div>
+
+        <div class="rooms-content">
+          <div class="room-list">
+            <h3>All Rooms</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Room Name</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Guests</th>
+                  <th>Total Bookings</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="rooms-tbody">
+                <tr><td colspan="6" style="text-align: center; padding: 30px;">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/js/pages/manager.js"></script>
+</body>
+</html>

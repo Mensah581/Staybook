@@ -4,8 +4,9 @@
   "description": "Hotel/Apartment Booking System Version 1",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "server": "node backend/server.js"
   },
   "engines": {
     "node": ">=18.0.0"
