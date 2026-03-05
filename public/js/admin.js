@@ -931,7 +931,7 @@ async function deleteFoodItem(id) {
 // Load Dining Orders
 async function loadDiningOrders() {
     try {
-        const response = await fetch('/api/admin/food/orders', { credentials: 'same-origin' });
+        const response = await fetch('/api/admin/dining-orders', { credentials: 'same-origin' });
         if (response.status === 401) {
             window.location.href = '/auth.html';
             return;
@@ -986,7 +986,7 @@ async function loadDiningOrders() {
 // Update Order Status
 async function updateOrderStatus(orderId, status) {
     try {
-        const response = await fetch(`/api/admin/food/orders/${orderId}`, {
+        const response = await fetch(`/api/admin/dining-orders/${orderId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
