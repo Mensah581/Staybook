@@ -358,11 +358,18 @@ body {
     background: transparent;
     border-radius: var(--radius);
     cursor: pointer;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
     transition: var(--transition);
+}
+
+/* Show hamburger on mobile only */
+@media (max-width: 1024px) {
+    .hamburger-btn {
+        display: flex;
+    }
 }
 
 .hamburger-btn:hover {
@@ -1083,11 +1090,16 @@ textarea.form-input {
     }
     
     .content-wrapper {
-        margin-left: 0;
+        margin-left: 0 !important;
+        width: 100%;
     }
     
     .search-box {
         display: none;
+    }
+    
+    .hamburger-btn {
+        display: flex !important;
     }
 }
 
@@ -1101,7 +1113,7 @@ textarea.form-input {
     }
     
     .main-content {
-        padding: 20px;
+        padding: 15px;
     }
     
     .top-navbar {
@@ -1110,6 +1122,43 @@ textarea.form-input {
     
     .profile-info {
         display: none;
+    }
+    
+    /* Make content scrollable on mobile */
+    .content-wrapper {
+        overflow-x: hidden;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .section-header .btn {
+        width: 100%;
+    }
+    
+    /* Make cards responsive */
+    .room-card, .item-card {
+        width: 100%;
+    }
+    
+    /* Form adjustments */
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .card {
+        padding: 15px;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 8px 4px;
     }
 }
 
