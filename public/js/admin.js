@@ -1072,6 +1072,10 @@ async function deleteMedia(id) {
 function openModal(type) {
     document.getElementById('edit-modal').classList.add('active');
     
+    // Set editing type for save function
+    editingType = type;
+    editingItem = null;
+    
     // Reset form
     document.getElementById('modal-title-input').value = '';
     document.getElementById('modal-desc').value = '';
