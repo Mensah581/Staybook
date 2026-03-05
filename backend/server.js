@@ -1,20 +1,21 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
-const pool = require('./backend/config/db');
+const pool = require('./config/db');
 
 // Import routes
-const authRoutes = require('./backend/routes/auth');
-const roomRoutes = require('./backend/routes/rooms');
-const bookingRoutes = require('./backend/routes/bookings');
-const customerRoutes = require('./backend/routes/customers');
-const paymentRoutes = require('./backend/routes/payments');
-const adminRoutes = require('./backend/routes/admin');
+const authRoutes = require('./routes/auth');
+const roomRoutes = require('./routes/rooms');
+const bookingRoutes = require('./routes/bookings');
+const customerRoutes = require('./routes/customers');
+const paymentRoutes = require('./routes/payments');
+const adminRoutes = require('./routes/admin');
 
 // Import middleware
-const errorHandler = require('./backend/middleware/errorHandler');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,7 +50,7 @@ if (!fs.existsSync('./uploads')) {
 // Initialize database
 async function initializeDatabase() {
   try {
-    const schema = fs.readFileSync('./backend/database_schema.sql', 'utf8');
+    const schema = fs.readFileSync('./database_schema.sql', 'utf8');
     const statements = schema.split(';').filter(stmt => stmt.trim());
     
     for (const statement of statements) {
