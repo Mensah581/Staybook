@@ -3,100 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Grand Hotel</title>
+    <title>Admin Dashboard - Grand Horizon Suites</title>
     <link rel="stylesheet" href="/css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="admin-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>Grand Hotel</h2>
-                <span>Admin Panel</span>
+                <div class="sidebar-logo">
+                    <i class="fas fa-hotel"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h2>Grand Horizon</h2>
+                    <span>Admin Panel</span>
+                </div>
             </div>
+            
             <nav class="sidebar-nav">
                 <!-- MANAGEMENT -->
                 <div class="nav-group">
-                    <span class="nav-group-title">MANAGEMENT</span>
+                    <span class="nav-group-title">Management</span>
                     <a href="#" class="nav-item active" data-section="dashboard">
-                        <i class="fas fa-th-large"></i> <span>Dashboard</span>
+                        <i class="fas fa-th-large"></i>
+                        <span>Dashboard</span>
                     </a>
                     <a href="#" class="nav-item" data-section="bookings">
-                        <i class="fas fa-calendar-check"></i> <span>Bookings</span>
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Bookings</span>
                     </a>
                     <a href="#" class="nav-item" data-section="rooms">
-                        <i class="fas fa-bed"></i> <span>Rooms</span>
+                        <i class="fas fa-bed"></i>
+                        <span>Rooms</span>
                     </a>
                 </div>
                 
-                <!-- WEBSITE CONTENT -->
+                <!-- WEBSITE -->
                 <div class="nav-group">
-                    <span class="nav-group-title">WEBSITE</span>
+                    <span class="nav-group-title">Website</span>
                     <a href="#" class="nav-item" data-section="overview">
-                        <i class="fas fa-home"></i> <span>Overview</span>
+                        <i class="fas fa-home"></i>
+                        <span>Overview</span>
                     </a>
                     <a href="#" class="nav-item" data-section="discover">
-                        <i class="fas fa-compass"></i> <span>Discover</span>
+                        <i class="fas fa-compass"></i>
+                        <span>Discover</span>
                     </a>
                     <a href="#" class="nav-item" data-section="dining">
-                        <i class="fas fa-utensils"></i> <span>Dining</span>
+                        <i class="fas fa-utensils"></i>
+                        <span>Dining</span>
                     </a>
                     <a href="#" class="nav-item" data-section="contact">
-                        <i class="fas fa-phone"></i> <span>Contact</span>
+                        <i class="fas fa-phone"></i>
+                        <span>Contact</span>
                     </a>
                 </div>
                 
                 <!-- MEDIA -->
                 <div class="nav-group">
-                    <span class="nav-group-title">MEDIA</span>
+                    <span class="nav-group-title">Media</span>
                     <a href="#" class="nav-item" data-section="media">
-                        <i class="fas fa-images"></i> <span>Media Library</span>
+                        <i class="fas fa-images"></i>
+                        <span>Media Library</span>
                     </a>
                 </div>
                 
                 <!-- SYSTEM -->
                 <div class="nav-group">
-                    <span class="nav-group-title">SYSTEM</span>
+                    <span class="nav-group-title">System</span>
                     <a href="#" class="nav-item" data-section="settings">
-                        <i class="fas fa-cog"></i> <span>Settings</span>
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
                     </a>
                 </div>
             </nav>
+            
             <div class="sidebar-footer">
-                <a href="#" id="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                <a href="#" class="logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
                 </a>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="content-wrapper">
-            <!-- Mobile Overlay -->
-            <div class="sidebar-overlay" id="sidebar-overlay"></div>
-            
-            <!-- Header -->
-            <header class="content-header">
-                <div style="display: flex; align-items: center; gap: 16px;">
-                    <button class="mobile-toggle" id="mobile-toggle">
+        <main class="content-wrapper" id="content-wrapper">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="navbar-left">
+                    <button class="hamburger-btn" id="hamburger-btn">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h1 class="page-title" id="page-title">Dashboard</h1>
                 </div>
-                <div class="header-right">
-                    <span class="admin-name" id="admin-name">Welcome, Admin</span>
-                    <div class="admin-avatar" id="admin-avatar">A</div>
+                <div class="navbar-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search...">
+                    </div>
+                    <button class="nav-icon-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge"></span>
+                    </button>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <button class="profile-btn">
+                            <div class="profile-avatar" id="admin-avatar">A</div>
+                            <div class="profile-info">
+                                <div class="profile-name" id="admin-name">Admin</div>
+                                <div class="profile-role">Administrator</div>
+                            </div>
+                            <i class="fas fa-chevron-down" style="font-size: 12px; color: var(--text-light);"></i>
+                        </button>
+                        <div class="profile-dropdown-menu">
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user"></i>
+                                <span>My Profile</span>
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                            <a href="#" class="dropdown-item" id="dropdown-logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            <!-- Dashboard Section -->
-            <section id="dashboard-section" class="content-section active">
-                <div class="content-area">
-                    <!-- Dashboard Subtitle -->
-                    <p class="dashboard-subtitle">Hotel Overview</p>
-                    
-                    <!-- Stats Grid - 3 Cards Only -->
-                    <div class="stats-grid stats-grid-3">
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon primary">
                                 <i class="fas fa-bed"></i>
@@ -108,6 +151,15 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-label">Available Rooms</div>
+                                <div class="stat-value" id="stat-available">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
                                 <i class="fas fa-calendar-check"></i>
                             </div>
                             <div class="stat-content">
@@ -116,318 +168,290 @@
                             </div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-icon warning">
-                                <i class="fas fa-clock"></i>
+                            <div class="stat-icon danger">
+                                <i class="fas fa-users"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-label">Pending</div>
-                                <div class="stat-value" id="stat-pending">0</div>
+                                <div class="stat-label">Guests</div>
+                                <div class="stat-value" id="stat-guests">0</div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Small Recent Activity List (max 5 lines) -->
-                    <div class="activity-section">
-                        <h3>Recent Activity</h3>
-                        <ul class="activity-list" id="activity-list">
-                            <li class="activity-empty">No recent activity</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Overview Section -->
-            <section id="overview-section" class="content-section">
-                <div class="section-header">
-                    <h2>Overview Sections</h2>
-                    <p>Manage content blocks for the homepage</p>
-                </div>
-                <div id="overview-blocks" class="blocks-grid">
-                    <!-- Blocks loaded dynamically -->
-                </div>
-            </section>
+                    <!-- Recent Bookings -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Bookings</h3>
+                            <button class="btn btn-ghost btn-sm">View All</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Guest</th>
+                                            <th>Room</th>
+                                            <th>Check-in</th>
+                                            <th>Check-out</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-bookings">
+                                        <tr>
+                                            <td colspan="5" class="loading" style="text-align: center; padding: 40px;">Loading bookings...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Rooms Section -->
-            <section id="rooms-section" class="content-section">
-                <div class="section-header">
-                    <h2>Rooms Management</h2>
-                    <button class="btn-primary" id="add-room-btn">
-                        <i class="fas fa-plus"></i> Add Room
-                    </button>
-                </div>
-                <div id="rooms-list" class="items-grid">
-                    <!-- Rooms loaded dynamically -->
-                </div>
-            </section>
+                <!-- Rooms Section -->
+                <section id="rooms-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Rooms Management</h2>
+                        <button class="btn btn-primary" id="add-room-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Room
+                        </button>
+                    </div>
+                    <div id="rooms-list" class="items-grid">
+                        <!-- Rooms loaded dynamically -->
+                    </div>
+                </section>
 
-            <!-- Bookings Section -->
-            <section id="bookings-section" class="content-section">
-                <div class="section-header">
-                    <h2>All Bookings</h2>
-                </div>
-                <div class="bookings-card">
-                    <table class="bookings-table">
-                        <thead>
-                            <tr>
-                                <th>Guest</th>
-                                <th>Room</th>
-                                <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Phone</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookings-list">
-                                <!-- Bookings loaded dynamically -->
-                            </tbody>
-                        </table>
+                <!-- Bookings Section -->
+                <section id="bookings-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Bookings Management</h2>
                     </div>
-                </div>
-            </section>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Guest</th>
+                                            <th>Room</th>
+                                            <th>Check-in</th>
+                                            <th>Check-out</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="all-bookings">
+                                        <tr>
+                                            <td colspan="7" class="loading" style="text-align: center; padding: 40px;">Loading bookings...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Discover Section -->
-            <section id="discover-section" class="content-section">
-                <div class="section-header">
-                    <h2>Discover Items</h2>
-                    <button class="btn-primary" id="add-discover-btn">
-                        <i class="fas fa-plus"></i> Add Item
-                    </button>
-                </div>
-                <div id="discover-list" class="items-grid">
-                    <!-- Items loaded dynamically -->
-                </div>
-            </section>
+                <!-- Overview Section -->
+                <section id="overview-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Overview Sections</h2>
+                    </div>
+                    <div id="overview-list" class="items-grid">
+                        <!-- Overview items loaded dynamically -->
+                    </div>
+                </section>
 
-            <!-- Dining Section -->
-            <section id="dining-section" class="content-section">
-                <div class="section-header">
-                    <h2>Dining Options</h2>
-                    <button class="btn-primary" id="add-dining-btn">
-                        <i class="fas fa-plus"></i> Add Restaurant
-                    </button>
-                </div>
-                <div id="dining-list" class="items-grid">
-                    <!-- Items loaded dynamically -->
-                </div>
-            </section>
+                <!-- Discover Section -->
+                <section id="discover-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Discover Items</h2>
+                        <button class="btn btn-primary" id="add-discover-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Item
+                        </button>
+                    </div>
+                    <div id="discover-list" class="items-grid">
+                        <!-- Discover items loaded dynamically -->
+                    </div>
+                </section>
 
-            <!-- Contact Section -->
-            <section id="contact-section" class="content-section">
-                <div class="section-header">
-                    <h2>Contact Settings</h2>
-                </div>
-                <form id="contact-form" class="admin-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contact-phone">Phone Number</label>
-                            <input type="tel" id="contact-phone" name="phone" autocomplete="tel">
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-email">Email</label>
-                            <input type="email" id="contact-email" name="email" autocomplete="email">
-                        </div>
+                <!-- Dining Section -->
+                <section id="dining-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Dining Options</h2>
+                        <button class="btn btn-primary" id="add-dining-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Dining
+                        </button>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="contact-whatsapp">WhatsApp</label>
-                            <input type="tel" id="contact-whatsapp" name="whatsapp" autocomplete="tel">
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-map">Map Embed Link</label>
-                            <input type="url" id="contact-map" name="map_link" autocomplete="off">
-                        </div>
+                    <div id="dining-list" class="items-grid">
+                        <!-- Dining items loaded dynamically -->
                     </div>
-                    <div class="form-group">
-                        <label for="contact-address">Address</label>
-                        <textarea id="contact-address" name="address" rows="2" autocomplete="street-address"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact-facebook">Social Media Links</label>
-                        <div class="form-row">
-                            <input type="text" id="contact-facebook" placeholder="Facebook" name="facebook_link" autocomplete="off">
-                            <input type="text" id="contact-instagram" placeholder="Instagram" name="instagram_link" autocomplete="off">
-                            <input type="text" id="contact-twitter" placeholder="Twitter" name="twitter_link" autocomplete="off">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">Save Contact Settings</button>
-                </form>
-            </section>
+                </section>
 
-            <!-- Media Library Section -->
-            <section id="media-section" class="content-section">
-                <div class="section-header">
-                    <h2>Media Library</h2>
-                    <div class="upload-area" id="upload-area">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Drag & drop images here or click to upload</p>
-                        <input type="file" id="media-upload" accept="image/*" hidden>
+                <!-- Contact Section -->
+                <section id="contact-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Contact Settings</h2>
                     </div>
-                </div>
-                <div id="media-grid" class="media-grid">
-                    <!-- Media loaded dynamically -->
-                </div>
-            </section>
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="contact-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="text" class="form-input" id="contact-phone" placeholder="+1234567890">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-input" id="contact-email" placeholder="info@hotel.com">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-input" id="contact-address" rows="3"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Contact</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Settings Section -->
-            <section id="settings-section" class="content-section">
-                <div class="section-header">
-                    <h2>Site Settings</h2>
-                </div>
-                <form id="settings-form" class="admin-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-hotel-name">Hotel Name</label>
-                            <input type="text" id="setting-hotel-name" name="hotel_name" autocomplete="organization-title">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-company-name">Company Name</label>
-                            <input type="text" id="setting-company-name" name="company_name" autocomplete="organization">
+                <!-- Media Section -->
+                <section id="media-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Media Library</h2>
+                        <button class="btn btn-primary" id="upload-media-btn">
+                            <i class="fas fa-upload"></i>
+                            Upload
+                        </button>
+                    </div>
+                    <div id="media-list" class="items-grid">
+                        <!-- Media loaded dynamically -->
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="content-section" style="display: none;">
+                    <div class="section-header">
+                        <h2 class="section-title">Hotel Settings</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="settings-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Hotel Name</label>
+                                        <input type="text" class="form-input" id="setting-hotel-name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Company Name</label>
+                                        <input type="text" class="form-input" id="setting-company-name">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">Check-in Time</label>
+                                        <input type="text" class="form-input" id="setting-checkin" placeholder="2:00 PM">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Check-out Time</label>
+                                        <input type="text" class="form-input" id="setting-checkout" placeholder="12:00 PM">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Settings</button>
+                            </form>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-hero-title">Hero Title</label>
-                            <input type="text" id="setting-hero-title" name="hero_title" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-hero-text">Hero Subtitle</label>
-                            <input type="text" id="setting-hero-text" name="hero_text" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-hero-image">Hero Image URL</label>
-                        <input type="url" id="setting-hero-image" name="hero_image" autocomplete="off">
-                    </div>
-                    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 500;">Rooms Page Hero</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-rooms-hero-title">Rooms Hero Title</label>
-                            <input type="text" id="setting-rooms-hero-title" name="rooms_hero_title" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-rooms-hero-text">Rooms Hero Subtitle</label>
-                            <input type="text" id="setting-rooms-hero-text" name="rooms_hero_text" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-rooms-hero-image">Rooms Hero Image URL</label>
-                        <input type="url" id="setting-rooms-hero-image" name="rooms_hero_image" autocomplete="off">
-                    </div>
-                    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 500;">Discover Page Hero</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-discover-hero-title">Discover Hero Title</label>
-                            <input type="text" id="setting-discover-hero-title" name="discover_hero_title" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-discover-hero-text">Discover Hero Subtitle</label>
-                            <input type="text" id="setting-discover-hero-text" name="discover_hero_text" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-discover-hero-image">Discover Hero Image URL</label>
-                        <input type="url" id="setting-discover-hero-image" name="discover_hero_image" autocomplete="off">
-                    </div>
-                    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 500;">Dining Page Hero</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-dining-hero-title">Dining Hero Title</label>
-                            <input type="text" id="setting-dining-hero-title" name="dining_hero_title" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-dining-hero-text">Dining Hero Subtitle</label>
-                            <input type="text" id="setting-dining-hero-text" name="dining_hero_text" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-dining-hero-image">Dining Hero Image URL</label>
-                        <input type="url" id="setting-dining-hero-image" name="dining_hero_image" autocomplete="off">
-                    </div>
-                    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 500;">Contact Page Hero</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-contact-hero-title">Contact Hero Title</label>
-                            <input type="text" id="setting-contact-hero-title" name="contact_hero_title" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-contact-hero-text">Contact Hero Subtitle</label>
-                            <input type="text" id="setting-contact-hero-text" name="contact_hero_text" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-contact-hero-image">Contact Hero Image URL</label>
-                        <input type="url" id="setting-contact-hero-image" name="contact_hero_image" autocomplete="off">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="setting-checkin">Check-in Time</label>
-                            <input type="text" id="setting-checkin" name="checkin_time" autocomplete="off">
-                        </div>
-                        <div class="form-group">
-                            <label for="setting-checkout">Check-out Time</label>
-                            <input type="text" id="setting-checkout" name="checkout_time" autocomplete="off">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="setting-copyright">Copyright Year</label>
-                        <input type="text" id="setting-copyright" name="copyright_year" autocomplete="off">
-                    </div>
-                    <button type="submit" class="btn-primary">Save Settings</button>
-                </form>
-            </section>
+                </section>
+            </div>
         </main>
-    </div>
 
-    <!-- Modal for editing -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close">&times;</span>
-            <h2 id="modal-title">Edit Item</h2>
-            <form id="modal-form">
-                <div class="form-group">
-                    <label for="modal-title-input">Title</label>
-                    <input type="text" id="modal-title-input" required autocomplete="off">
+        <!-- Modal for editing -->
+        <div class="modal-overlay" id="edit-modal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-title">Edit Item</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
                 </div>
-                <div class="form-group">
-                    <label for="modal-desc">Description</label>
-                    <textarea id="modal-desc" rows="3" autocomplete="off"></textarea>
+                <div class="modal-body">
+                    <form id="modal-form">
+                        <div class="form-group">
+                            <label class="form-label" for="modal-title-input">Title</label>
+                            <input type="text" class="form-input" id="modal-title-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="modal-desc">Description</label>
+                            <textarea class="form-input" id="modal-desc" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Image</label>
+                            <div class="image-upload-container" id="image-upload-trigger">
+                                <input type="file" id="modal-image" accept="image/*">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">Click to upload image</div>
+                                <p class="upload-hint">JPG, PNG, WebP - max 5MB</p>
+                            </div>
+                            <input type="hidden" id="modal-image-url">
+                            <div class="image-preview" id="modal-image-preview"></div>
+                        </div>
+                        <div id="modal-extra-fields">
+                            <!-- Extra fields for rooms -->
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" id="modal-visible" checked>
+                                <span>Visible</span>
+                            </label>
+                        </div>
+                    </form>
                 </div>
-                <div class="form-group">
-                    <label for="modal-image">Image</label>
-                    <div class="image-upload-container">
-                        <input type="file" id="modal-image" accept="image/jpeg,image/jpg,image/png,image/webp">
-                        <input type="hidden" id="modal-image-url" value="">
-                        <div id="modal-image-preview" class="image-preview"></div>
-                        <p class="upload-hint">Click to select image (JPG, PNG, WebP - max 5MB)</p>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="modal-form">Save Changes</button>
                 </div>
-                <div class="form-group" id="modal-extra-fields">
-                    <!-- Extra fields for rooms/dining -->
-                </div>
-                <div class="form-group">
-                    <label for="modal-visible">
-                        <input type="checkbox" id="modal-visible"> Visible
-                    </label>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Changes</button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Toast notification -->
-    <div id="toast" class="toast"></div>
+        <!-- Toast Notification -->
+        <div class="toast" id="toast"></div>
+    </div>
 
     <script src="/js/admin.js"></script>
     <script>
+        // Setup sidebar toggle
         document.addEventListener('DOMContentLoaded', function() {
-            loadDashboard();
-            setupNavigation();
-            setupEventListeners();
-            checkAuth();
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const sidebar = document.getElementById('sidebar');
+            const contentWrapper = document.getElementById('content-wrapper');
+            
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+            });
+            
+            // Setup profile dropdown
+            const profileDropdown = document.getElementById('profile-dropdown');
+            const profileBtn = profileDropdown.querySelector('.profile-btn');
+            
+            profileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('open');
+            });
+            
+            document.addEventListener('click', function() {
+                profileDropdown.classList.remove('open');
+            });
+            
+            // Setup modal close
+            document.getElementById('modal-close').addEventListener('click', closeModal);
+            document.getElementById('modal-cancel').addEventListener('click', closeModal);
+            
+            document.getElementById('edit-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
         });
     </script>
 </body>

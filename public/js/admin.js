@@ -424,23 +424,23 @@ async function loadRooms() {
         }
         
         container.innerHTML = rooms.map(room => `
-            <div class="item-card">
-                <div class="item-image">
-                    ${room.image_url ? 
-                        `<img src="${room.image_url}" alt="${room.title}">` : 
-                        `<div class="no-image"><i class="fas fa-bed"></i></div>`
-                    }
-                    <span class="item-badge ${room.status}">${room.status}</span>
-                </div>
-                <div class="item-content">
-                    <h3>${room.title}</h3>
-                    <p>${room.description ? room.description.substring(0, 60) + '...' : 'No description'}</p>
-                    <div class="item-price">$${parseFloat(room.price).toFixed(0)} / night</div>
-                    <div class="item-actions">
-                        <button class="btn-secondary" onclick="editRoom(${room.id})">
+            <div class="room-card">
+                ${room.image_url ? 
+                    `<img src="${room.image_url}" alt="${room.title}" class="room-image">` : 
+                    `<div class="room-image" style="display: flex; align-items: center; justify-content: center; background: var(--bg-hover);"><i class="fas fa-bed" style="font-size: 48px; color: var(--text-light);"></i></div>`
+                }
+                <div class="room-content">
+                    <h3 class="room-title">${room.title}</h3>
+                    <p class="room-description">${room.description ? room.description.substring(0, 80) + '...' : 'No description'}</p>
+                    <div class="room-meta">
+                        <div class="room-price">${parseFloat(room.price).toFixed(0)} <span>/ night</span></div>
+                        <span class="room-status ${room.status}">${room.status}</span>
+                    </div>
+                    <div class="room-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editRoom(${room.id})">
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button class="btn-danger" onclick="deleteRoom(${room.id})">
+                        <button class="btn btn-danger btn-sm" onclick="deleteRoom(${room.id})">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
