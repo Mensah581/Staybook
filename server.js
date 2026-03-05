@@ -306,6 +306,38 @@ async function initializeDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+        
+        // Create food_items table (for individual food dishes)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS food_items (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                price DECIMAL(10, 2) NOT NULL,
+                category VARCHAR(50),
+                image_url TEXT,
+                status VARCHAR(50) DEFAULT 'available',
+                prep_time VARCHAR(50),
+                display_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // Create dining_orders table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS dining_orders (
+                id SERIAL PRIMARY KEY,
+                booking_id INTEGER REFERENCES bookings(id),
+                food_item_id INTEGER REFERENCES food_items(id),
+                quantity INTEGER DEFAULT 1,
+                total_price DECIMAL(10, 2),
+                status VARCHAR(50) DEFAULT 'pending',
+                ordered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
         // Create contact_settings table
         await pool.query(`
@@ -613,6 +645,252 @@ app.post('/api/seed-rooms', async (req, res) => {
         }
         
         res.json({ message: 'Successfully seeded 10 rooms' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Seed discover and dining items (public - for initial setup only)
+app.post('/api/seed-content', async (req, res) => {
+    try {
+        // Seed Discover Items
+        const discoverItems = [
+            {
+                title: 'Luxury Spa Experience',
+                short_description: 'Indulge in world-class spa treatments',
+                full_description: 'Rejuvenate your body and mind at our award-winning luxury spa. Featuring thermal pools, sauna, steam room, and a full range of therapeutic treatments including Swedish massage, deep tissue therapy, and signature hot stone treatments. Our expert therapists use premium organic products to ensure the most relaxing experience.',
+                image_url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800',
+                category: 'Facility',
+                is_visible: true
+            },
+            {
+                title: 'Private Beach Access',
+                short_description: 'Exclusive private beach with premium amenities',
+                full_description: 'Enjoy pristine white sand beaches with exclusive cabanas, sun loungers, and beach butler service. Our private beach offers crystal-clear waters, water sports equipment, and the perfect setting for sunset walks. Complimentary refreshments served throughout the day.',
+                image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
+                category: 'Experience',
+                is_visible: true
+            },
+            {
+                title: 'Rooftop Sunset Lounge',
+                short_description: 'Panoramic views with handcrafted cocktails',
+                full_description: 'Experience breathtaking sunset views from our rooftop lounge. Featuring infinity pool, comfortable seating areas, and a full bar serving handcrafted cocktails and premium wines. Live acoustic music on select evenings. The perfect spot for romantic dinners or social gatherings.',
+                image_url: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800',
+                category: 'Experience',
+                is_visible: true
+            },
+            {
+                title: 'Guided City Tour',
+                short_description: 'Discover local culture and heritage',
+                full_description: 'Explore the citys rich cultural heritage with our expert-guided tours. Visit historic landmarks, local markets, and hidden gems. Tours available in multiple languages. Customizable itineraries include transportation, entrance fees, and knowledgeable local guides.',
+                image_url: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800',
+                category: 'Tour',
+                is_visible: true
+            },
+            {
+                title: 'Infinity Pool Experience',
+                short_description: 'Stunning infinity pool with poolside service',
+                full_description: 'Relax in our stunning infinity pool overlooking the ocean. Poolside service includes fresh towels, SPF sunscreen, and a full menu of refreshments. Private cabanas available for booking. Fitness classes including water aerobics held daily.',
+                image_url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
+                category: 'Facility',
+                is_visible: true
+            },
+            {
+                title: 'Weekend Live Music Nights',
+                short_description: 'Entertainment with local and international artists',
+                full_description: 'Every weekend features live performances from talented local and international artists. From jazz ensembles to acoustic sets, enjoy exceptional music in our elegant lounge. Premium beverage packages and signature appetizers available.',
+                image_url: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800',
+                category: 'Event',
+                is_visible: true
+            },
+            {
+                title: 'Fitness & Wellness Center',
+                short_description: 'State-of-the-art gym and wellness programs',
+                full_description: 'Maintain your fitness routine at our fully-equipped fitness center. Features latest cardio and strength equipment, personal training services, yoga studio, and group fitness classes. Nutrition consultations and wellness programs available.',
+                image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
+                category: 'Facility',
+                is_visible: true
+            },
+            {
+                title: 'Private Yacht Experience',
+                short_description: 'Luxury yacht charter for exclusive adventures',
+                full_description: 'Embark on an unforgettable journey aboard our private yacht. Perfect for sunset cruises, island hopping, or fishing adventures. Includes professional crew, gourmet catering, and premium beverages. Customizable itineraries for special occasions.',
+                image_url: 'https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800',
+                category: 'Experience',
+                is_visible: true
+            }
+        ];
+        
+        // Check and add discover items
+        const existingDiscover = await pool.query('SELECT COUNT(*) as count FROM discover_items');
+        if (parseInt(existingDiscover.rows[0].count) === 0) {
+            for (let i = 0; i < discoverItems.length; i++) {
+                const item = discoverItems[i];
+                await pool.query(
+                    `INSERT INTO discover_items (title, short_description, full_description, image_url, category, display_order, is_visible) 
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                    [item.title, item.short_description, item.full_description, item.image_url, item.category, i + 1, item.is_visible]
+                );
+            }
+        }
+        
+        // Seed Food Items
+        const foodItems = [
+            // Breakfast
+            {
+                name: 'English Breakfast Platter',
+                description: 'Full English breakfast with eggs, bacon, sausage, beans, mushrooms, tomatoes, and toast',
+                price: 18.99,
+                category: 'Breakfast',
+                image_url: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800',
+                status: 'available',
+                prep_time: '15 min'
+            },
+            {
+                name: 'Continental Breakfast',
+                description: 'Fresh pastries, fruits, yogurt, cereals, and premium coffee selection',
+                price: 14.99,
+                category: 'Breakfast',
+                image_url: 'https://images.unsplash.com/photo-1495147466023-ac5c588e2e94?w=800',
+                status: 'available',
+                prep_time: '10 min'
+            },
+            // Lunch
+            {
+                name: 'Grilled Salmon Steak',
+                description: 'Fresh Atlantic salmon with herb butter, roasted vegetables, and lemon dill sauce',
+                price: 28.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800',
+                status: 'available',
+                prep_time: '20 min'
+            },
+            {
+                name: 'Ribeye Steak Deluxe',
+                description: '12oz prime ribeye with truffle mash, grilled asparagus, and red wine reduction',
+                price: 42.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800',
+                status: 'available',
+                prep_time: '25 min'
+            },
+            {
+                name: 'Chicken Alfredo Pasta',
+                description: 'Creamy fettuccine Alfredo with grilled chicken breast and parmesan',
+                price: 22.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=800',
+                status: 'available',
+                prep_time: '18 min'
+            },
+            {
+                name: 'Margherita Pizza',
+                description: 'Fresh mozzarella, tomatoes, basil, and extra virgin olive oil on thin crust',
+                price: 18.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=800',
+                status: 'available',
+                prep_time: '15 min'
+            },
+            {
+                name: 'Seafood Platter',
+                description: 'Fresh lobster, shrimp, crab, and seasonal fish with dipping sauces',
+                price: 65.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1553247407-23251ce81f59?w=800',
+                status: 'available',
+                prep_time: '30 min'
+            },
+            {
+                name: 'Club Sandwich',
+                description: 'Triple-decker with turkey, bacon, lettuce, tomato, and mayo with fries',
+                price: 16.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800',
+                status: 'available',
+                prep_time: '12 min'
+            },
+            {
+                name: 'Caesar Salad',
+                description: 'Romaine lettuce, croutons, parmesan, and classic Caesar dressing',
+                price: 12.99,
+                category: 'Lunch',
+                image_url: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800',
+                status: 'available',
+                prep_time: '8 min'
+            },
+            // Desserts
+            {
+                name: 'Fresh Fruit Bowl',
+                description: 'Seasonal fresh fruits with honey and yogurt drizzle',
+                price: 9.99,
+                category: 'Desserts',
+                image_url: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800',
+                status: 'available',
+                prep_time: '5 min'
+            },
+            {
+                name: 'Chocolate Lava Cake',
+                description: 'Warm chocolate cake with molten center, vanilla ice cream, and berry compote',
+                price: 12.99,
+                category: 'Desserts',
+                image_url: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=800',
+                status: 'available',
+                prep_time: '15 min'
+            },
+            {
+                name: 'Cheesecake',
+                description: 'New York style cheesecake with strawberry topping and whipped cream',
+                price: 10.99,
+                category: 'Desserts',
+                image_url: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800',
+                status: 'available',
+                prep_time: '5 min'
+            },
+            // Drinks
+            {
+                name: 'Fresh Orange Juice',
+                description: 'Freshly squeezed orange juice, served cold',
+                price: 5.99,
+                category: 'Drinks',
+                image_url: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=800',
+                status: 'available',
+                prep_time: '3 min'
+            },
+            {
+                name: 'Cappuccino',
+                description: 'Premium espresso with steamed milk foam, dusted with cocoa',
+                price: 4.99,
+                category: 'Drinks',
+                image_url: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800',
+                status: 'available',
+                prep_time: '3 min'
+            },
+            {
+                name: 'Signature Cocktail',
+                description: 'House signature cocktail with premium spirits and fresh ingredients',
+                price: 14.99,
+                category: 'Drinks',
+                image_url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800',
+                status: 'available',
+                prep_time: '5 min'
+            }
+        ];
+        
+        // Check and add food items
+        const existingFood = await pool.query('SELECT COUNT(*) as count FROM food_items');
+        if (parseInt(existingFood.rows[0].count) === 0) {
+            for (let i = 0; i < foodItems.length; i++) {
+                const item = foodItems[i];
+                await pool.query(
+                    `INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order) 
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                    [item.name, item.description, item.price, item.category, item.image_url, item.status, item.prep_time, i + 1]
+                );
+            }
+        }
+        
+        res.json({ message: 'Successfully seeded 8 discover items and 15 food items' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -1146,6 +1424,99 @@ app.get('/api/dining', async (req, res) => {
     }
 });
 
+// Get food items (public)
+app.get('/api/food', async (req, res) => {
+    try {
+        const { category } = req.query;
+        let query = 'SELECT * FROM food_items';
+        const params = [];
+        
+        if (category) {
+            query += ' WHERE category = $1 AND status = $2';
+            params.push(category, 'available');
+        } else {
+            query += ' WHERE status = $1';
+            params.push('available');
+        }
+        
+        query += ' ORDER BY display_order';
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Create dining order (for logged-in guests with active booking)
+app.post('/api/food/orders', requireUser, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { food_item_id, quantity } = req.body;
+        
+        if (!food_item_id || !quantity) {
+            return res.status(400).json({ error: 'Food item and quantity are required' });
+        }
+        
+        // Get the food item
+        const foodResult = await pool.query('SELECT * FROM food_items WHERE id = $1', [food_item_id]);
+        if (foodResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Food item not found' });
+        }
+        
+        const foodItem = foodResult.rows[0];
+        
+        // Check if user has an active booking
+        const bookingResult = await pool.query(
+            `SELECT * FROM bookings WHERE user_id = $1 AND booking_status IN ('reserved', 'checked_in') AND check_out_date >= CURRENT_DATE`,
+            [userId]
+        );
+        
+        if (bookingResult.rows.length === 0) {
+            return res.status(403).json({ error: 'No active booking found. Dining services are only available for in-house guests.' });
+        }
+        
+        const booking = bookingResult.rows[0];
+        const totalPrice = parseFloat(foodItem.price) * quantity;
+        
+        // Create the order
+        const orderResult = await pool.query(
+            `INSERT INTO dining_orders (booking_id, food_item_id, quantity, total_price, status) 
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [booking.id, food_item_id, quantity, totalPrice, 'pending']
+        );
+        
+        res.status(201).json({ 
+            message: 'Order placed successfully', 
+            order: orderResult.rows[0],
+            food_item: foodItem
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get user's dining orders
+app.get('/api/food/orders/my', requireUser, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        
+        const result = await pool.query(
+            `SELECT do.*, fi.name, fi.description, fi.price, fi.image_url, fi.category, b.check_in_date, b.check_out_date
+             FROM dining_orders do
+             JOIN food_items fi ON do.food_item_id = fi.id
+             JOIN bookings b ON do.booking_id = b.id
+             WHERE b.user_id = $1
+             ORDER BY do.ordered_at DESC`,
+            [userId]
+        );
+        
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get discover items (public)
 app.get('/api/discover', async (req, res) => {
     try {
@@ -1336,6 +1707,98 @@ app.delete('/api/admin/dining/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         await pool.query('DELETE FROM dining_items WHERE id = $1', [id]);
         res.json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get food items (admin)
+app.get('/api/admin/food', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM food_items ORDER BY display_order');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add food item
+app.post('/api/admin/food', requireAdmin, async (req, res) => {
+    try {
+        const { name, description, price, category, image_url, status, prep_time } = req.body;
+        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM food_items');
+        const newOrder = (maxOrder.rows[0].max || 0) + 1;
+        
+        const result = await pool.query(`
+            INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+        `, [name, description, price, category, image_url, status || 'available', prep_time, newOrder]);
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update food item
+app.put('/api/admin/food/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, description, price, category, image_url, status, prep_time, display_order } = req.body;
+        
+        await pool.query(`
+            UPDATE food_items 
+            SET name = $1, description = $2, price = $3, category = $4, image_url = $5, status = $6, prep_time = $7, display_order = $8, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $9
+        `, [name, description, price, category, image_url, status, prep_time, display_order, id]);
+        
+        res.json({ message: 'Item updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete food item
+app.delete('/api/admin/food/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM food_items WHERE id = $1', [id]);
+        res.json({ message: 'Item deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get dining orders (admin)
+app.get('/api/admin/dining-orders', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT do.*, fi.name as food_name, fi.category as food_category, fi.price as unit_price, 
+                    b.full_name as guest_name, b.room_id, r.title as room_title
+             FROM dining_orders do
+             JOIN food_items fi ON do.food_item_id = fi.id
+             JOIN bookings b ON do.booking_id = b.id
+             LEFT JOIN rooms r ON b.room_id = r.id
+             ORDER BY do.ordered_at DESC`
+        );
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update dining order status (admin)
+app.put('/api/admin/dining-orders/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        
+        await pool.query(
+            `UPDATE dining_orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+            [status, id]
+        );
+        
+        res.json({ message: 'Order status updated successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
