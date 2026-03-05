@@ -105,6 +105,25 @@ body {
     width: var(--sidebar-collapsed);
 }
 
+/* Mobile sidebar - shown as overlay */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+    }
+    
+    .content-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
 .sidebar-header {
     padding: 24px;
     border-bottom: 1px solid var(--border);

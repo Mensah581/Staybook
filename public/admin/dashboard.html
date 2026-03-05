@@ -101,7 +101,7 @@
                 <div class="navbar-right">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Search...">
+                        <input type="text" id="search-input" name="search" placeholder="Search...">
                     </div>
                     <button class="nav-icon-btn">
                         <i class="fas fa-bell"></i>
@@ -428,9 +428,31 @@
             const sidebar = document.getElementById('sidebar');
             const contentWrapper = document.getElementById('content-wrapper');
             
-            hamburgerBtn.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
+            hamburgerBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // On mobile, toggle visibility
+                if (window.innerWidth <= 1024) {
+                    sidebar.classList.toggle('mobile-open');
+                } else {
+                    // On desktop, toggle collapsed state
+                    sidebar.classList.toggle('collapsed');
+                }
             });
+            
+            // Close mobile sidebar when clicking overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'sidebar-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;display:none;';
+            document.body.appendChild(overlay);
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                overlay.style.display = 'none';
+            });
+            
+            // Show overlay on mobile
+            const originalToggle = hamburgerBtn.onclick;
             
             // Setup profile dropdown
             const profileDropdown = document.getElementById('profile-dropdown');
