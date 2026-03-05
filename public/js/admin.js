@@ -1221,16 +1221,19 @@ async function saveModalForm(e) {
             body: JSON.stringify(data)
         });
         
+        const result = await response.json();
+        
         if (response.ok) {
             showToast('Saved successfully', 'success');
             closeModal();
             loadSectionData(currentSection);
         } else {
-            showToast('Failed to save', 'error');
+            console.error('Save error:', result);
+            showToast(result.error || 'Failed to save', 'error');
         }
     } catch (error) {
         console.error('Error saving:', error);
-        showToast('Error saving', 'error');
+        showToast('Error saving: ' + error.message, 'error');
     }
 }
 
