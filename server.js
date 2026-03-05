@@ -495,10 +495,18 @@ app.get('/api/rooms', async (req, res) => {
 // Seed rooms (public - for initial setup only)
 app.post('/api/seed-rooms', async (req, res) => {
     try {
+        const force = req.body.force === true;
+        
         // Check if rooms already exist
         const existingRooms = await pool.query('SELECT COUNT(*) as count FROM rooms');
-        if (parseInt(existingRooms.rows[0].count) > 0) {
-            return res.json({ message: 'Rooms already exist, skipping seed' });
+        if (parseInt(existingRooms.rows[0].count) > 0 && !force) {
+            return res.json({ message: 'Rooms already exist, skipping seed. Add force=true to reseed.' });
+        }
+        
+        // Delete existing rooms if force
+        if (force) {
+            await pool.query('DELETE FROM room_images');
+            await pool.query('DELETE FROM rooms');
         }
         
         const rooms = [
@@ -672,6 +680,15 @@ app.post('/api/seed-rooms', async (req, res) => {
 // Seed discover and dining items (public - for initial setup only)
 app.post('/api/seed-content', async (req, res) => {
     try {
+        const force = req.body.force === true;
+        
+        // Delete existing discover and food items if force
+        if (force) {
+            await pool.query('DELETE FROM dining_orders');
+            await pool.query('DELETE FROM food_items');
+            await pool.query('DELETE FROM discover_items');
+        }
+        
         // Seed Discover Items
         const discoverItems = [
             {
@@ -748,9 +765,9 @@ app.post('/api/seed-content', async (req, res) => {
             }
         ];
         
-        // Check and add discover items
+        // Check and add discover items (skip if exists and not forcing)
         const existingDiscover = await pool.query('SELECT COUNT(*) as count FROM discover_items');
-        if (parseInt(existingDiscover.rows[0].count) === 0) {
+        if (force || parseInt(existingDiscover.rows[0].count) === 0) {
             for (let i = 0; i < discoverItems.length; i++) {
                 const item = discoverItems[i];
                 // Try to use full column names, fallback to description if they don't exist
@@ -917,7 +934,7 @@ app.post('/api/seed-content', async (req, res) => {
         // Check and add food items
         try {
             const existingFood = await pool.query('SELECT COUNT(*) as count FROM food_items');
-            if (parseInt(existingFood.rows[0].count) === 0) {
+            if (force || parseInt(existingFood.rows[0].count) === 0) {
                 for (let i = 0; i < foodItems.length; i++) {
                     const item = foodItems[i];
                     await pool.query(
