@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Grand Horizon</title>
+    <title>Admin Login - Grand Horizon</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -71,16 +71,6 @@
         .login-btn:hover {
             background: #b8922a;
         }
-        .signup-link {
-            text-align: center;
-            margin-top: 24px;
-            color: #666;
-        }
-        .signup-link a {
-            color: #c9a227;
-            text-decoration: none;
-            font-weight: 500;
-        }
         .back-link {
             text-align: center;
             margin-top: 16px;
@@ -110,15 +100,15 @@
 </head>
 <body>
     <div class="login-container">
-        <h1>Welcome Back</h1>
-        <p>Login to your account</p>
+        <h1>Admin Login</h1>
+        <p>Enter your credentials to access the admin panel</p>
         
         <div id="message" class="message"></div>
         
         <form id="login-form">
             <div class="form-group">
-                <label for="email">Email / Username</label>
-                <input type="text" id="email" name="email" required placeholder="Enter your email or username">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
             </div>
             
             <div class="form-group">
@@ -129,27 +119,23 @@
             <button type="submit" class="login-btn">Login</button>
         </form>
         
-        <div class="signup-link">
-            Don't have an account? <a href="#" onclick="showSignup(); return false;">Sign up</a>
-        </div>
-        
         <div class="back-link">
             <a href="/">← Back to Website</a>
         </div>
     </div>
 
     <script>
-        // Check if already logged in
+        // Check if already logged in as admin
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                const response = await fetch('/api/check-auth');
+                const response = await fetch('/api/admin/check-auth');
                 const data = await response.json();
                 
                 if (data.authenticated) {
                     window.location.href = '/admin/dashboard.html';
                 }
             } catch (error) {
-                console.log('Not logged in');
+                console.log('Not logged in as admin');
             }
         });
 
@@ -157,15 +143,15 @@
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
             try {
-                const response = await fetch('/api/login', {
+                const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
                 
                 const data = await response.json();
@@ -179,10 +165,6 @@
                 showMessage('Error: ' + error.message, 'error');
             }
         });
-
-        function showSignup() {
-            window.location.href = '/signup.html';
-        }
 
         function showMessage(text, type) {
             const msg = document.getElementById('message');

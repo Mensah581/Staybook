@@ -17,7 +17,8 @@ app.set('trust proxy', 1);
 
 // PostgreSQL connection
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hotel_booking'
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hotel_booking',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Middleware
@@ -27,16 +28,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
-// Session configuration
+// Session configuration (simple - no cookie complexity)
 app.use(session({
-    secret: 'hotel-booking-secret-key-2024',
-    resave: true,
-    saveUninitialized: true,
-    cookie: { 
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        sameSite: 'lax'
-    }
+    secret: 'hotel_secret_key_2024',
+    resave: false,
+    saveUninitialized: false
 }));
 
 // Ensure uploads directory exists
@@ -80,26 +76,28 @@ async function initializeDatabase() {
         console.log('Database connected successfully');
         client.release();
         
-        // Create users table
+        // Create admins table (simple - username & password only)
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS admins (
                 id SERIAL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
                 username VARCHAR(100) UNIQUE NOT NULL,
-                email VARCHAR(255),
-                password VARCHAR(255) NOT NULL,
-                role VARCHAR(50) DEFAULT 'admin',
-                permissions JSONB DEFAULT '{"overview": true, "rooms": true, "discover": true, "dining": true, "contact": true, "media": true, "settings": false, "users": false}',
+                password TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
         
-        // Add username column if it doesn't exist (for existing databases)
-        try {
-            await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(100) UNIQUE`);
-        } catch (e) {
-            // Column may already exist
-        }
+        // Create users table (for customers)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                phone VARCHAR(50),
+                role VARCHAR(50) DEFAULT 'customer',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
         // Create rooms table
         await pool.query(`
@@ -431,16 +429,16 @@ async function initializeDatabase() {
 
         console.log('Database tables created successfully');
 
-        // Insert default admin if not exists
+        // Insert default admin if not exists (simple admins table)
         try {
-            const adminExists = await pool.query("SELECT * FROM users WHERE username = 'kwesi Otabil'");
+            const adminExists = await pool.query("SELECT * FROM admins WHERE username = 'kwesi'");
             if (adminExists.rows.length === 0) {
-                const hashedPassword = await bcrypt.hash('Jiddel123@', 10);
+                const hashedPassword = await bcrypt.hash('kwesi123', 10);
                 await pool.query(
-                    "INSERT INTO users (name, username, email, password, role) VALUES ($1, $2, $3, $4, $5)",
-                    ['Kwesi Otabil', 'kwesi Otabil', 'admin@hotel.com', hashedPassword, 'main_admin']
+                    "INSERT INTO admins (username, password) VALUES ($1, $2)",
+                    ['kwesi', hashedPassword]
                 );
-                console.log('Default admin created: kwesi Otabil / Jiddel123@');
+                console.log('Default admin created: kwesi / kwesi123');
             }
         } catch (adminError) {
             console.log('Admin creation skipped:', adminError.message);
@@ -1044,10 +1042,10 @@ app.post('/api/bookings', async (req, res) => {
     }
 });
 
-// Admin middleware
+// Admin middleware - simple session check for adminId
 function requireAdmin(req, res, next) {
-    if (!req.session.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'main_admin')) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    if (!req.session.adminId) {
+        return res.status(401).json({ error: 'Unauthorized - Admin access required' });
     }
     next();
 }
@@ -1155,6 +1153,69 @@ app.post('/api/login', async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin login - username and password only (uses admins table)
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password required' });
+        }
+        
+        const result = await pool.query('SELECT * FROM admins WHERE username = $1', [username]);
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        
+        const admin = result.rows[0];
+        const isValid = await bcrypt.compare(password, admin.password);
+        
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid username or password' });
+        }
+        
+        req.session.adminId = admin.id;
+        req.session.adminUsername = admin.username;
+        
+        res.json({ 
+            message: 'Admin login successful', 
+            admin: { 
+                id: admin.id, 
+                username: admin.username
+            } 
+        });
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin logout
+app.post('/api/admin/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Logout failed' });
+        }
+        res.json({ message: 'Logged out successfully' });
+    });
+});
+
+// Check admin auth
+app.get('/api/admin/check-auth', (req, res) => {
+    if (req.session.adminId) {
+        res.json({ 
+            authenticated: true, 
+            admin: { 
+                id: req.session.adminId, 
+                username: req.session.adminUsername 
+            } 
+        });
+    } else {
+        res.json({ authenticated: false });
     }
 });
 
