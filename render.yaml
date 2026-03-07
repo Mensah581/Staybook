@@ -8,6 +8,9 @@ services:
       - key: DATABASE_URL
         value: postgresql://staybook_db_user:HDdqk52YPsXNv7r3lbtpnLKPIBNybX1s@dpg-d6in92ogjchc73df731g-a/staybook_db
         sync: false
+      - key: JWT_SECRET
+        value: hotel_booking_secret_key_2024
+        sync: false
       - key: NODE_ENV
         value: production
         sync: false

@@ -3,6 +3,7 @@ require('dotenv').config();
 const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,50 @@ app.get('/', (req, res) => {
     res.json({
         message: "Hotel Booking Backend API Running"
     });
+});
+
+// Login endpoint
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password required' });
+        }
+        
+        // Find user in database
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+        
+        const user = result.rows[0];
+        
+        // Compare password
+        const isValid = await bcrypt.compare(password, user.password);
+        
+        if (!isValid) {
+            return res.status(401).json({ message: 'Invalid username or password' });
+        }
+        
+        // Generate JWT token
+        const token = jwt.sign(
+            { user_id: user.id, username: user.username, role: user.role },
+            process.env.JWT_SECRET || 'hotel_booking_secret_key_2024',
+            { expiresIn: '24h' }
+        );
+        
+        res.json({
+            message: 'Login successful',
+            token,
+            role: user.role,
+            username: user.username
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // ===================== ROOMS SYSTEM =====================
