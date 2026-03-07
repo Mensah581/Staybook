@@ -8,6 +8,29 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Role-based middleware
+function authorizeRole(allowedRoles) {
+    return (req, res, next) => {
+        const token = req.headers['authorization']?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
+        
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hotel_booking_secret_key_2024');
+            req.user = decoded;
+            
+            if (!allowedRoles.includes(decoded.role)) {
+                return res.status(403).json({ message: 'Access denied' });
+            }
+            
+            next();
+        } catch (err) {
+            return res.status(401).json({ message: 'Invalid token' });
+        }
+    };
+}
+
 // Trust proxy for Render
 app.set('trust proxy', 1);
 
@@ -76,8 +99,8 @@ app.post('/api/auth/login', async (req, res) => {
 
 // ===================== ROOMS SYSTEM =====================
 
-// Get all rooms
-app.get('/api/rooms', async (req, res) => {
+// Get all rooms (admin, manager, frontdesk)
+app.get('/api/rooms', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
         res.json(result.rows);
@@ -87,8 +110,8 @@ app.get('/api/rooms', async (req, res) => {
     }
 });
 
-// Get single room
-app.get('/api/rooms/:id', async (req, res) => {
+// Get single room (admin, manager, frontdesk)
+app.get('/api/rooms/:id', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query('SELECT * FROM rooms WHERE id = $1', [id]);
@@ -141,8 +164,8 @@ app.get('/api/rooms/:id/availability', async (req, res) => {
     }
 });
 
-// Create room
-app.post('/api/rooms', async (req, res) => {
+// Create room (admin only)
+app.post('/api/rooms', authorizeRole(['admin']), async (req, res) => {
     try {
         const { title, description, price, amenities, status, beds, baths, guests, size, location } = req.body;
         
@@ -163,8 +186,8 @@ app.post('/api/rooms', async (req, res) => {
     }
 });
 
-// Update room
-app.put('/api/rooms/:id', async (req, res) => {
+// Update room (admin only)
+app.put('/api/rooms/:id', authorizeRole(['admin']), async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, price, amenities, status, beds, baths, guests, size, location } = req.body;
@@ -187,8 +210,8 @@ app.put('/api/rooms/:id', async (req, res) => {
     }
 });
 
-// Delete room
-app.delete('/api/rooms/:id', async (req, res) => {
+// Delete room (admin only)
+app.delete('/api/rooms/:id', authorizeRole(['admin']), async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -203,8 +226,8 @@ app.delete('/api/rooms/:id', async (req, res) => {
 
 // ===================== BOOKINGS (PLACEHOLDER) =====================
 
-// Create booking (with availability check)
-app.post('/api/bookings', async (req, res) => {
+// Create booking (admin, manager, frontdesk)
+app.post('/api/bookings', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const { room_id, guest_name, guest_email, guest_phone, check_in, check_out } = req.body;
         
@@ -249,8 +272,8 @@ app.post('/api/bookings', async (req, res) => {
     }
 });
 
-// Get all bookings
-app.get('/api/bookings', async (req, res) => {
+// Get all bookings (admin, manager, frontdesk)
+app.get('/api/bookings', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const { room_id, status, date_from, date_to } = req.query;
         let query = `
@@ -296,8 +319,8 @@ app.get('/api/bookings', async (req, res) => {
     }
 });
 
-// Get single booking
-app.get('/api/bookings/:id', async (req, res) => {
+// Get single booking (admin, manager, frontdesk)
+app.get('/api/bookings/:id', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const { id } = req.params;
         const result = await pool.query(`
@@ -318,8 +341,8 @@ app.get('/api/bookings/:id', async (req, res) => {
     }
 });
 
-// Update booking
-app.put('/api/bookings/:id', async (req, res) => {
+// Update booking (admin, manager, frontdesk)
+app.put('/api/bookings/:id', authorizeRole(['admin', 'manager', 'frontdesk']), async (req, res) => {
     try {
         const { id } = req.params;
         const { guest_name, guest_email, guest_phone, check_in, check_out, status } = req.body;
@@ -374,8 +397,8 @@ app.put('/api/bookings/:id', async (req, res) => {
     }
 });
 
-// Delete/cancel booking
-app.delete('/api/bookings/:id', async (req, res) => {
+// Delete/cancel booking (admin, manager)
+app.delete('/api/bookings/:id', authorizeRole(['admin', 'manager']), async (req, res) => {
     try {
         const { id } = req.params;
         
