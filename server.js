@@ -58,6 +58,43 @@ app.get('/api/rooms/:id', async (req, res) => {
     }
 });
 
+// Check room availability for dates
+// Returns bookings if room is booked, empty if available
+app.get('/api/rooms/:id/availability', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { check_in, check_out } = req.query;
+        
+        if (!check_in || !check_out) {
+            return res.status(400).json({ error: 'check_in and check_out dates are required' });
+        }
+        
+        // SQL: Find overlapping bookings
+        // Room is NOT available if: new_check_in < existing_check_out AND new_check_out > existing_check_in
+        const result = await pool.query(`
+            SELECT * FROM bookings
+            WHERE room_id = $1
+              AND status = 'confirmed'
+              AND $2 < check_out
+              AND $3 > check_in
+        `, [id, check_in, check_out]);
+        
+        // If no rows returned, room is available
+        const isAvailable = result.rows.length === 0;
+        
+        res.json({
+            room_id: id,
+            check_in,
+            check_out,
+            is_available: isAvailable,
+            conflicting_bookings: result.rows
+        });
+    } catch (error) {
+        console.error('Error checking availability:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Create room
 app.post('/api/rooms', async (req, res) => {
     try {
