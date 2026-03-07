@@ -17,7 +17,7 @@ app.set('trust proxy', 1);
 
 // PostgreSQL connection
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/hotel_booking',
+    connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -25,10 +25,9 @@ const pool = new Pool({
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
-// Session configuration (simple - no cookie complexity)
+// Session configuration
 app.use(session({
     secret: 'hotel_secret_key_2024',
     resave: false,
@@ -40,7 +39,7 @@ if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads');
 }
 
-// Multer configuration for file uploads
+// Multer configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -51,32 +50,29 @@ const storage = multer.diskStorage({
     }
 });
 
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Invalid file type. Only JPG, PNG, and WebP are allowed.'), false);
-    }
-};
+const upload = multer({ storage });
 
-const upload = multer({ 
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    }
+// API root - backend status
+app.get('/', (req, res) => {
+    res.json({
+        message: "Hotel Booking Backend API Running",
+        version: "1.0.0",
+        endpoints: {
+            rooms: "/api/rooms",
+            availableRooms: "/api/rooms/available",
+            adminRooms: "/api/admin/rooms"
+        }
+    });
 });
 
 // Database initialization
 async function initializeDatabase() {
     try {
-        // Test connection first
         const client = await pool.connect();
         console.log('Database connected successfully');
         client.release();
         
-        // Create admins table (simple - username & password only)
+        // Create admins table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS admins (
                 id SERIAL PRIMARY KEY,
@@ -86,7 +82,7 @@ async function initializeDatabase() {
             )
         `);
         
-        // Create users table (for customers)
+        // Create users table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -98,7 +94,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
+        
         // Create rooms table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS rooms (
@@ -120,19 +116,6 @@ async function initializeDatabase() {
             )
         `);
         
-        // Add new columns if they don't exist (for existing databases)
-        try {
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS rating DECIMAL(3, 2) DEFAULT 0`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS beds INTEGER DEFAULT 1`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS baths INTEGER DEFAULT 1`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS guests INTEGER DEFAULT 2`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS size INTEGER DEFAULT 25`);
-            await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS location VARCHAR(255)`);
-        } catch (e) {
-            // Columns may already exist
-        }
-
         // Create room_images table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS room_images (
@@ -142,294 +125,95 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
+        
         // Create bookings table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS bookings (
                 id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-                room_id INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
+                room_id INTEGER REFERENCES rooms(id),
                 full_name VARCHAR(255) NOT NULL,
-                phone VARCHAR(50) NOT NULL,
-                email VARCHAR(255) NOT NULL,
+                phone VARCHAR(50),
+                email VARCHAR(255),
                 booking_date DATE NOT NULL,
-                booking_time VARCHAR(50) NOT NULL,
+                booking_time TIME,
+                check_in DATE,
+                check_out DATE,
+                guests INTEGER DEFAULT 1,
+                total_price DECIMAL(10, 2),
                 message TEXT,
                 status VARCHAR(50) DEFAULT 'pending',
-                check_in_date DATE,
-                check_out_date DATE,
-                booking_status VARCHAR(20) DEFAULT 'reserved',
-                payment_status VARCHAR(20) DEFAULT 'unpaid',
-                total_price DECIMAL(10,2),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
-        // Migration: Add new columns to bookings if they don't exist
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL`);
-        } catch (e) {
-            // Column may already exist, ignore error
-        }
         
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS check_in_date DATE`);
-        } catch (e) {}
-        
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS check_out_date DATE`);
-        } catch (e) {}
-        
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_status VARCHAR(20) DEFAULT 'reserved'`);
-        } catch (e) {}
-        
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status VARCHAR(20) DEFAULT 'unpaid'`);
-        } catch (e) {}
-        
-        try {
-            await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS total_price DECIMAL(10,2)`);
-        } catch (e) {}
-
-        // Create indexes for performance
-        try {
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_room_dates ON bookings (room_id, check_in_date, check_out_date)`);
-        } catch (e) {}
-        try {
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings (booking_status)`);
-        } catch (e) {}
-        try {
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings (user_id)`);
-        } catch (e) {}
-        try {
-            await pool.query(`CREATE INDEX IF NOT EXISTS idx_rooms_status ON rooms (status)`);
-        } catch (e) {}
-
         // Create settings table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER PRIMARY KEY DEFAULT 1,
-                hotel_name VARCHAR(255) DEFAULT 'Grand Horizon Suites',
-                hotel_tagline TEXT,
-                hotel_phone VARCHAR(50),
-                hotel_email VARCHAR(255),
-                hotel_address TEXT,
-                
-                hero_title VARCHAR(255),
-                hero_text TEXT,
-                hero_image TEXT,
-                
-                rooms_hero_title VARCHAR(255),
-                rooms_hero_text TEXT,
-                rooms_hero_image TEXT,
-                
-                discover_hero_title VARCHAR(255),
-                discover_hero_text TEXT,
-                discover_hero_image TEXT,
-                
-                dining_hero_title VARCHAR(255),
-                dining_hero_text TEXT,
-                dining_hero_image TEXT,
-                
-                contact_hero_title VARCHAR(255),
-                contact_hero_text TEXT,
-                contact_hero_image TEXT,
-                
-                about_title VARCHAR(255),
-                about_text TEXT,
-                about_image TEXT,
-                checkin_time VARCHAR(50),
-                checkout_time VARCHAR(50),
-                front_desk_hours VARCHAR(100),
-                copyright_year VARCHAR(10),
-                company_name VARCHAR(255),
+                id SERIAL PRIMARY KEY,
+                key VARCHAR(100) UNIQUE NOT NULL,
+                value TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
         
-        // Add new columns if they don't exist (for existing databases)
-        try {
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_title VARCHAR(255)`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_text TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS rooms_hero_image TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_title VARCHAR(255)`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_text TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS discover_hero_image TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_title VARCHAR(255)`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_text TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS dining_hero_image TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_title VARCHAR(255)`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_text TEXT`);
-            await pool.query(`ALTER TABLE settings ADD COLUMN IF NOT EXISTS contact_hero_image TEXT`);
-        } catch (e) {
-            // Columns may already exist
-        }
-
-        // Create overview_sections table (8 blocks for Overview page)
+        // Create dining table
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS overview_sections (
-                id SERIAL PRIMARY KEY,
-                section_key VARCHAR(50) UNIQUE NOT NULL,
-                title VARCHAR(255),
-                description TEXT,
-                image_url TEXT,
-                display_order INTEGER DEFAULT 0,
-                is_visible BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Create discover_items table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS discover_items (
-                id SERIAL PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
-                short_description TEXT,
-                full_description TEXT,
-                description TEXT,
-                image_url TEXT,
-                category VARCHAR(50),
-                display_order INTEGER DEFAULT 0,
-                is_visible BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        
-        // Add new columns if they don't exist
-        try {
-            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS short_description TEXT`);
-            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS full_description TEXT`);
-            await pool.query(`ALTER TABLE discover_items ADD COLUMN IF NOT EXISTS category VARCHAR(50)`);
-        } catch (e) {
-            // Columns may already exist
-        }
-
-        // Create dining_items table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS dining_items (
+            CREATE TABLE IF NOT EXISTS dining (
                 id SERIAL PRIMARY KEY,
                 title VARCHAR(255) NOT NULL,
                 description TEXT,
                 image_url TEXT,
-                opening_hours VARCHAR(100),
-                price_range VARCHAR(50),
-                display_order INTEGER DEFAULT 0,
-                is_visible BOOLEAN DEFAULT true,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                price DECIMAL(10, 2),
+                category VARCHAR(100),
+                available BOOLEAN DEFAULT true,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
         
-        // Add new columns to dining_items if they don't exist
-        try {
-            await pool.query(`ALTER TABLE dining_items ADD COLUMN IF NOT EXISTS category VARCHAR(50)`);
-        } catch (e) {
-            // Column may already exist
-        }
-        
-        // Create food_items table (for individual food dishes)
+        // Create discover table
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS food_items (
+            CREATE TABLE IF NOT EXISTS discover (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                category VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // Create food table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS food (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
                 price DECIMAL(10, 2) NOT NULL,
-                category VARCHAR(50),
+                category VARCHAR(100),
                 image_url TEXT,
-                status VARCHAR(50) DEFAULT 'available',
-                prep_time VARCHAR(50),
-                display_order INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        
-        // Create dining_orders table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS dining_orders (
-                id SERIAL PRIMARY KEY,
-                booking_id INTEGER REFERENCES bookings(id),
-                food_item_id INTEGER REFERENCES food_items(id),
-                quantity INTEGER DEFAULT 1,
-                total_price DECIMAL(10, 2),
-                status VARCHAR(50) DEFAULT 'pending',
-                ordered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Create contact_settings table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS contact_settings (
-                id INTEGER PRIMARY KEY DEFAULT 1,
-                phone VARCHAR(50),
-                email VARCHAR(255),
-                address TEXT,
-                map_link TEXT,
-                live_chat_enabled BOOLEAN DEFAULT false,
-                contact_form_email VARCHAR(255),
-                facebook_link VARCHAR(255),
-                instagram_link VARCHAR(255),
-                twitter_link VARCHAR(255),
-                whatsapp VARCHAR(50),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Create media_library table
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS media_library (
-                id SERIAL PRIMARY KEY,
-                filename VARCHAR(255) NOT NULL,
-                original_name VARCHAR(255),
-                file_path TEXT NOT NULL,
-                file_size INTEGER,
-                mime_type VARCHAR(100),
-                alt_text VARCHAR(255),
-                is_used BOOLEAN DEFAULT false,
+                available BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
-        // Insert default overview sections
-        const overviewSections = [
-            { key: 'hero', title: 'Hero Section', order: 1 },
-            { key: 'elegant_spaces', title: 'Elegant Spaces', order: 2 },
-            { key: 'culinary', title: 'Culinary Experience', order: 3 },
-            { key: 'spa_wellness', title: 'Spa & Wellness', order: 4 },
-            { key: 'dining', title: 'Dining Experience', order: 5 },
-            { key: 'modern_elegance', title: 'Modern Elegance', order: 6 },
-            { key: 'signature_restaurant', title: 'Signature Restaurant', order: 7 },
-            { key: 'poolside_lunch', title: 'Poolside Lunch', order: 8 }
-        ];
         
-        for (const section of overviewSections) {
-            const exists = await pool.query('SELECT * FROM overview_sections WHERE section_key = $1', [section.key]);
-            if (exists.rows.length === 0) {
-                await pool.query(
-                    'INSERT INTO overview_sections (section_key, title, display_order) VALUES ($1, $2, $3)',
-                    [section.key, section.title, section.order]
-                );
-            }
-        }
-
-        // Insert default contact settings if not exists
-        const contactExist = await pool.query('SELECT * FROM contact_settings WHERE id = 1');
-        if (contactExist.rows.length === 0) {
-            await pool.query(
-                "INSERT INTO contact_settings (id, phone, email, address) VALUES (1, '+233 20 123 4567', 'info@hotel.com', 'Accra, Ghana')"
-            );
-        }
-
+        // Create orders table for food
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS orders (
+                id SERIAL PRIMARY KEY,
+                order_number VARCHAR(50) UNIQUE NOT NULL,
+                customer_name VARCHAR(255),
+                customer_phone VARCHAR(50),
+                items JSONB,
+                total_amount DECIMAL(10, 2),
+                status VARCHAR(50) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
         console.log('Database tables created successfully');
-
-        // Insert default admin if not exists (simple admins table)
+        
+        // Insert default admin if not exists
         try {
             const adminExists = await pool.query("SELECT * FROM admins WHERE username = 'kwesi'");
             if (adminExists.rows.length === 0) {
@@ -443,518 +227,32 @@ async function initializeDatabase() {
         } catch (adminError) {
             console.log('Admin creation skipped:', adminError.message);
         }
-
-        // Insert default settings if not exists
-        const settingsExist = await pool.query("SELECT * FROM settings WHERE id = 1");
-        if (settingsExist.rows.length === 0) {
-            await pool.query(
-                "INSERT INTO settings (id, hotel_name, hero_title, hero_text, checkin_time, checkout_time, copyright_year, company_name) VALUES (1, 'Grand Horizon Suites', 'Luxury Accommodations in the Heart of the City', 'Experience comfort and elegance at Grand Horizon Suites', '2:00 PM', '12:00 PM', $1, 'Grand Horizon Suites')",
-                [new Date().getFullYear()]
-            );
-        }
-
+        
         console.log('Database initialized successfully');
     } catch (error) {
-        console.error('Error initializing database:', error);
-        console.log('Server will continue running. Some features may not work without database.');
+        console.error('Database initialization error:', error.message);
     }
 }
 
 // Initialize database (non-blocking)
 initializeDatabase().catch(err => console.error('Database init failed:', err));
 
-// Start server even if database fails
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log('Note: Database connection required for full functionality');
-});
-
-// Home page - get hotel info
-app.get('/api/hotel-info', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM settings WHERE id = 1');
-        res.json(result.rows[0] || { hotel_name: 'Grand Hotel' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// ===================== ROOM ENDPOINTS =====================
 
 // Get all rooms (public)
 app.get('/api/rooms', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
-        
-        // Get images for each room
-        const roomsWithImages = await Promise.all(result.rows.map(async (room) => {
-            const imagesResult = await pool.query('SELECT image_url FROM room_images WHERE room_id = $1', [room.id]);
-            room.images = imagesResult.rows.map(img => img.image_url);
-            return room;
-        }));
-        
-        res.json(roomsWithImages);
+        const result = await pool.query(`
+            SELECT r.*, 
+                   COALESCE(array_agg(ri.image_url) FILTER (WHERE ri.image_url IS NOT NULL), ARRAY[]::text[]) as images
+            FROM rooms r
+            LEFT JOIN room_images ri ON r.id = ri.room_id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        `);
+        res.json(result.rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Seed rooms (public - for initial setup only)
-app.post('/api/seed-rooms', async (req, res) => {
-    try {
-        const force = req.body.force === true;
-        
-        // Check if rooms already exist
-        const existingRooms = await pool.query('SELECT COUNT(*) as count FROM rooms');
-        if (parseInt(existingRooms.rows[0].count) > 0 && !force) {
-            return res.json({ message: 'Rooms already exist, skipping seed. Add force=true to reseed.' });
-        }
-        
-        // Delete existing rooms if force
-        if (force) {
-            await pool.query('DELETE FROM room_images');
-            await pool.query('DELETE FROM rooms');
-        }
-        
-        const rooms = [
-            {
-                title: 'Deluxe King Room',
-                description: 'Spacious room with a comfortable king-size bed, modern amenities, and elegant decor. Perfect for couples or business travelers seeking luxury accommodation.',
-                price: 180,
-                amenities: 'King Bed, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Coffee Maker',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
-                rating: 4.8,
-                review_count: 124,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 35,
-                location: 'Floor 2-5'
-            },
-            {
-                title: 'Executive Suite',
-                description: 'Luxurious suite featuring a separate living area, bedroom with king bed, and premium amenities. Ideal for executives and those who appreciate extra space.',
-                price: 280,
-                amenities: 'King Bed, Living Room, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Bathtub, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
-                rating: 4.9,
-                review_count: 89,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 55,
-                location: 'Floor 6-8'
-            },
-            {
-                title: 'Standard Double Room',
-                description: 'Comfortable and affordable room with two double beds, perfect for families or groups. Features all essential amenities for a pleasant stay.',
-                price: 120,
-                amenities: '2 Double Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
-                rating: 4.5,
-                review_count: 256,
-                beds: 2,
-                baths: 1,
-                guests: 4,
-                size: 28,
-                location: 'Floor 1-3'
-            },
-            {
-                title: 'Presidential Suite',
-                description: 'The ultimate in luxury accommodation. This expansive suite features multiple rooms, panoramic views, private balcony, and exclusive amenities fit for royalty.',
-                price: 750,
-                amenities: 'King Bed, Living Room, Dining Room, Private Balcony, Jacuzzi, Free WiFi, Premium Mini Bar, Butlers Service, Home Theater',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
-                rating: 5.0,
-                review_count: 32,
-                beds: 1,
-                baths: 2,
-                guests: 2,
-                size: 120,
-                location: 'Top Floor'
-            },
-            {
-                title: 'Superior Twin Room',
-                description: 'Elegant room with two twin beds, perfect for friends or colleagues traveling together. Modern design with all necessary amenities.',
-                price: 140,
-                amenities: '2 Twin Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk, Safe',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800',
-                rating: 4.6,
-                review_count: 178,
-                beds: 2,
-                baths: 1,
-                guests: 2,
-                size: 30,
-                location: 'Floor 2-4'
-            },
-            {
-                title: 'Garden View Room',
-                description: 'Peaceful room overlooking our beautiful gardens. Features a private balcony where you can relax and enjoy the serene nature views.',
-                price: 160,
-                amenities: 'Queen Bed, Garden View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
-                rating: 4.7,
-                review_count: 145,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 32,
-                location: 'Ground Floor - Garden Wing'
-            },
-            {
-                title: 'Ocean View Deluxe',
-                description: 'Stunning room with breathtaking ocean views. Wake up to the sound of waves and enjoy spectacular sunsets from your private balcony.',
-                price: 220,
-                amenities: 'King Bed, Ocean View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Bathtub',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
-                rating: 4.8,
-                review_count: 167,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 40,
-                location: 'Ocean Wing - High Floor'
-            },
-            {
-                title: 'Family Suite',
-                description: 'Spacious suite designed for families. Features a master bedroom, second bedroom with bunk beds, living area, and child-friendly amenities.',
-                price: 350,
-                amenities: 'King Bed + Bunk Beds, Living Room, Kitchenette, Free WiFi, TV, Mini Bar, Air Conditioning, Bathtub, Kids Area',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
-                rating: 4.9,
-                review_count: 78,
-                beds: 2,
-                baths: 2,
-                guests: 5,
-                size: 75,
-                location: 'Family Wing'
-            },
-            {
-                title: 'Junior Suite',
-                description: 'Elegant suite with an open-plan design, combining bedroom and living space. Perfect for short stays with a touch of luxury.',
-                price: 200,
-                amenities: 'Queen Bed, Living Area, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800',
-                rating: 4.6,
-                review_count: 134,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 45,
-                location: 'Floor 4-7'
-            },
-            {
-                title: 'Luxury Penthouse',
-                description: 'Exclusive penthouse suite on the top floor with 360-degree views, private terrace, and premium concierge service. The pinnacle of luxury accommodation.',
-                price: 500,
-                amenities: 'King Bed, Private Terrace, Living Room, Dining Area, Free WiFi, Premium Mini Bar, Butlers Service, Jacuzzi, Home Cinema',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800',
-                rating: 5.0,
-                review_count: 24,
-                beds: 1,
-                baths: 2,
-                guests: 2,
-                size: 95,
-                location: 'Penthouse Floor'
-            }
-        ];
-        
-        for (const room of rooms) {
-            await pool.query(
-                `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                [room.title, room.description, room.price, room.amenities, room.status, room.image_url, 
-                 room.rating, room.review_count, room.beds, room.baths, room.guests, room.size, room.location]
-            );
-        }
-        
-        res.json({ message: 'Successfully seeded 10 rooms' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Seed discover and dining items (public - for initial setup only)
-app.post('/api/seed-content', async (req, res) => {
-    try {
-        const force = req.body.force === true;
-        
-        // Delete existing discover and food items if force
-        if (force) {
-            await pool.query('DELETE FROM dining_orders');
-            await pool.query('DELETE FROM food_items');
-            await pool.query('DELETE FROM discover_items');
-        }
-        
-        // Seed Discover Items
-        const discoverItems = [
-            {
-                title: 'Luxury Spa Experience',
-                short_description: 'Indulge in world-class spa treatments',
-                full_description: 'Rejuvenate your body and mind at our award-winning luxury spa. Featuring thermal pools, sauna, steam room, and a full range of therapeutic treatments including Swedish massage, deep tissue therapy, and signature hot stone treatments. Our expert therapists use premium organic products to ensure the most relaxing experience.',
-                description: 'Rejuvenate your body and mind at our award-winning luxury spa. Featuring thermal pools, sauna, steam room, and a full range of therapeutic treatments.',
-                image_url: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800',
-                category: 'Facility',
-                is_visible: true
-            },
-            {
-                title: 'Private Beach Access',
-                short_description: 'Exclusive private beach with premium amenities',
-                full_description: 'Enjoy pristine white sand beaches with exclusive cabanas, sun loungers, and beach butler service. Our private beach offers crystal-clear waters, water sports equipment, and the perfect setting for sunset walks. Complimentary refreshments served throughout the day.',
-                description: 'Enjoy pristine white sand beaches with exclusive cabanas, sun loungers, and beach butler service.',
-                image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800',
-                category: 'Experience',
-                is_visible: true
-            },
-            {
-                title: 'Rooftop Sunset Lounge',
-                short_description: 'Panoramic views with handcrafted cocktails',
-                full_description: 'Experience breathtaking sunset views from our rooftop lounge. Featuring infinity pool, comfortable seating areas, and a full bar serving handcrafted cocktails and premium wines. Live acoustic music on select evenings. The perfect spot for romantic dinners or social gatherings.',
-                description: 'Experience breathtaking sunset views from our rooftop lounge with handcrafted cocktails.',
-                image_url: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=800',
-                category: 'Experience',
-                is_visible: true
-            },
-            {
-                title: 'Guided City Tour',
-                short_description: 'Discover local culture and heritage',
-                full_description: 'Explore the citys rich cultural heritage with our expert-guided tours. Visit historic landmarks, local markets, and hidden gems. Tours available in multiple languages. Customizable itineraries include transportation, entrance fees, and knowledgeable local guides.',
-                description: 'Explore the citys rich cultural heritage with our expert-guided tours.',
-                image_url: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800',
-                category: 'Tour',
-                is_visible: true
-            },
-            {
-                title: 'Infinity Pool Experience',
-                short_description: 'Stunning infinity pool with poolside service',
-                full_description: 'Relax in our stunning infinity pool overlooking the ocean. Poolside service includes fresh towels, SPF sunscreen, and a full menu of refreshments. Private cabanas available for booking. Fitness classes including water aerobics held daily.',
-                description: 'Relax in our stunning infinity pool overlooking the ocean with poolside service.',
-                image_url: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
-                category: 'Facility',
-                is_visible: true
-            },
-            {
-                title: 'Weekend Live Music Nights',
-                short_description: 'Entertainment with local and international artists',
-                full_description: 'Every weekend features live performances from talented local and international artists. From jazz ensembles to acoustic sets, enjoy exceptional music in our elegant lounge. Premium beverage packages and signature appetizers available.',
-                description: 'Every weekend features live performances from talented local and international artists.',
-                image_url: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800',
-                category: 'Event',
-                is_visible: true
-            },
-            {
-                title: 'Fitness & Wellness Center',
-                short_description: 'State-of-the-art gym and wellness programs',
-                full_description: 'Maintain your fitness routine at our fully-equipped fitness center. Features latest cardio and strength equipment, personal training services, yoga studio, and group fitness classes. Nutrition consultations and wellness programs available.',
-                description: 'Maintain your fitness routine at our fully-equipped fitness center.',
-                image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
-                category: 'Facility',
-                is_visible: true
-            },
-            {
-                title: 'Private Yacht Experience',
-                short_description: 'Luxury yacht charter for exclusive adventures',
-                full_description: 'Embark on an unforgettable journey aboard our private yacht. Perfect for sunset cruises, island hopping, or fishing adventures. Includes professional crew, gourmet catering, and premium beverages. Customizable itineraries for special occasions.',
-                description: 'Embark on an unforgettable journey aboard our private yacht.',
-                image_url: 'https://images.unsplash.com/photo-1548574505-5e239809ee19?w=800',
-                category: 'Experience',
-                is_visible: true
-            }
-        ];
-        
-        // Check and add discover items (skip if exists and not forcing)
-        const existingDiscover = await pool.query('SELECT COUNT(*) as count FROM discover_items');
-        if (force || parseInt(existingDiscover.rows[0].count) === 0) {
-            for (let i = 0; i < discoverItems.length; i++) {
-                const item = discoverItems[i];
-                // Try to use full column names, fallback to description if they don't exist
-                try {
-                    await pool.query(
-                        `INSERT INTO discover_items (title, short_description, full_description, image_url, category, display_order, is_visible) 
-                         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                        [item.title, item.short_description, item.full_description, item.image_url, item.category, i + 1, item.is_visible]
-                    );
-                } catch (colError) {
-                    // Fallback if columns don't exist
-                    await pool.query(
-                        `INSERT INTO discover_items (title, description, image_url, display_order, is_visible) 
-                         VALUES ($1, $2, $3, $4, $5)`,
-                        [item.title, item.description, item.image_url, i + 1, item.is_visible]
-                    );
-                }
-            }
-        }
-        
-        // Seed Food Items
-        const foodItems = [
-            // Breakfast
-            {
-                name: 'English Breakfast Platter',
-                description: 'Full English breakfast with eggs, bacon, sausage, beans, mushrooms, tomatoes, and toast',
-                price: 18.99,
-                category: 'Breakfast',
-                image_url: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=800',
-                status: 'available',
-                prep_time: '15 min'
-            },
-            {
-                name: 'Continental Breakfast',
-                description: 'Fresh pastries, fruits, yogurt, cereals, and premium coffee selection',
-                price: 14.99,
-                category: 'Breakfast',
-                image_url: 'https://images.unsplash.com/photo-1495147466023-ac5c588e2e94?w=800',
-                status: 'available',
-                prep_time: '10 min'
-            },
-            // Lunch
-            {
-                name: 'Grilled Salmon Steak',
-                description: 'Fresh Atlantic salmon with herb butter, roasted vegetables, and lemon dill sauce',
-                price: 28.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800',
-                status: 'available',
-                prep_time: '20 min'
-            },
-            {
-                name: 'Ribeye Steak Deluxe',
-                description: '12oz prime ribeye with truffle mash, grilled asparagus, and red wine reduction',
-                price: 42.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800',
-                status: 'available',
-                prep_time: '25 min'
-            },
-            {
-                name: 'Chicken Alfredo Pasta',
-                description: 'Creamy fettuccine Alfredo with grilled chicken breast and parmesan',
-                price: 22.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=800',
-                status: 'available',
-                prep_time: '18 min'
-            },
-            {
-                name: 'Margherita Pizza',
-                description: 'Fresh mozzarella, tomatoes, basil, and extra virgin olive oil on thin crust',
-                price: 18.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=800',
-                status: 'available',
-                prep_time: '15 min'
-            },
-            {
-                name: 'Seafood Platter',
-                description: 'Fresh lobster, shrimp, crab, and seasonal fish with dipping sauces',
-                price: 65.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1553247407-23251ce81f59?w=800',
-                status: 'available',
-                prep_time: '30 min'
-            },
-            {
-                name: 'Club Sandwich',
-                description: 'Triple-decker with turkey, bacon, lettuce, tomato, and mayo with fries',
-                price: 16.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800',
-                status: 'available',
-                prep_time: '12 min'
-            },
-            {
-                name: 'Caesar Salad',
-                description: 'Romaine lettuce, croutons, parmesan, and classic Caesar dressing',
-                price: 12.99,
-                category: 'Lunch',
-                image_url: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=800',
-                status: 'available',
-                prep_time: '8 min'
-            },
-            // Desserts
-            {
-                name: 'Fresh Fruit Bowl',
-                description: 'Seasonal fresh fruits with honey and yogurt drizzle',
-                price: 9.99,
-                category: 'Desserts',
-                image_url: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=800',
-                status: 'available',
-                prep_time: '5 min'
-            },
-            {
-                name: 'Chocolate Lava Cake',
-                description: 'Warm chocolate cake with molten center, vanilla ice cream, and berry compote',
-                price: 12.99,
-                category: 'Desserts',
-                image_url: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=800',
-                status: 'available',
-                prep_time: '15 min'
-            },
-            {
-                name: 'Cheesecake',
-                description: 'New York style cheesecake with strawberry topping and whipped cream',
-                price: 10.99,
-                category: 'Desserts',
-                image_url: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800',
-                status: 'available',
-                prep_time: '5 min'
-            },
-            // Drinks
-            {
-                name: 'Fresh Orange Juice',
-                description: 'Freshly squeezed orange juice, served cold',
-                price: 5.99,
-                category: 'Drinks',
-                image_url: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=800',
-                status: 'available',
-                prep_time: '3 min'
-            },
-            {
-                name: 'Cappuccino',
-                description: 'Premium espresso with steamed milk foam, dusted with cocoa',
-                price: 4.99,
-                category: 'Drinks',
-                image_url: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=800',
-                status: 'available',
-                prep_time: '3 min'
-            },
-            {
-                name: 'Signature Cocktail',
-                description: 'House signature cocktail with premium spirits and fresh ingredients',
-                price: 14.99,
-                category: 'Drinks',
-                image_url: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800',
-                status: 'available',
-                prep_time: '5 min'
-            }
-        ];
-        
-        // Check and add food items
-        try {
-            const existingFood = await pool.query('SELECT COUNT(*) as count FROM food_items');
-            if (force || parseInt(existingFood.rows[0].count) === 0) {
-                for (let i = 0; i < foodItems.length; i++) {
-                    const item = foodItems[i];
-                    await pool.query(
-                        `INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order) 
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                        [item.name, item.description, item.price, item.category, item.image_url, item.status, item.prep_time, i + 1]
-                    );
-                }
-            }
-        } catch (foodError) {
-            console.log('Food items table not available yet:', foodError.message);
-        }
-        
-        res.json({ message: 'Successfully seeded content' });
-    } catch (error) {
+        console.error('Error fetching rooms:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -962,19 +260,24 @@ app.post('/api/seed-content', async (req, res) => {
 // Get single room
 app.get('/api/rooms/:id', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM rooms WHERE id = $1', [req.params.id]);
-        if (result.rows.length === 0) {
+        const { id } = req.params;
+        const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [id]);
+        
+        if (roomResult.rows.length === 0) {
             return res.status(404).json({ error: 'Room not found' });
         }
         
-        const room = result.rows[0];
+        const imagesResult = await pool.query(
+            'SELECT image_url FROM room_images WHERE room_id = $1',
+            [id]
+        );
         
-        // Get images for this room
-        const imagesResult = await pool.query('SELECT image_url FROM room_images WHERE room_id = $1', [room.id]);
-        room.images = imagesResult.rows.map(img => img.image_url);
+        const room = roomResult.rows[0];
+        room.images = imagesResult.rows.map(row => row.image_url);
         
         res.json(room);
     } catch (error) {
+        console.error('Error fetching room:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -982,67 +285,102 @@ app.get('/api/rooms/:id', async (req, res) => {
 // Get room images
 app.get('/api/rooms/:id/images', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM room_images WHERE room_id = $1', [req.params.id]);
+        const { id } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM room_images WHERE room_id = $1 ORDER BY created_at',
+            [id]
+        );
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching images:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Import availability service
-const { isRoomAvailable, calculateTotalPrice } = require('./services/availabilityService');
+// Get available rooms
+app.get('/api/rooms/available', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT r.*, 
+                   COALESCE(array_agg(ri.image_url) FILTER (WHERE ri.image_url IS NOT NULL), ARRAY[]::text[]) as images
+            FROM rooms r
+            LEFT JOIN room_images ri ON r.id = ri.room_id
+            WHERE r.status = 'available'
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching available rooms:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
-// Import email service
-const { sendBookingConfirmation, sendCancellationEmail, sendCheckInEmail } = require('./services/emailService');
-
-// Create booking
+// Create booking (public)
 app.post('/api/bookings', async (req, res) => {
     try {
-        const { room_id, full_name, phone, email, check_in_date, check_out_date, message } = req.body;
-
-        // Check if room is available using the availability service
-        const available = await isRoomAvailable(room_id, check_in_date, check_out_date);
-        if (!available) {
-            return res.status(400).json({ error: 'Room not available for selected dates' });
-        }
-
-        // Check date is not in the past
-        const today = new Date().toISOString().split('T')[0];
-        if (check_in_date < today) {
-            return res.status(400).json({ error: 'Check-in date cannot be in the past' });
-        }
-
-        // Get user_id if user is logged in
-        const userId = req.session.user ? req.session.user.id : null;
-
-        // Calculate total price
-        const totalPrice = await calculateTotalPrice(room_id, check_in_date, check_out_date);
-
-        // Get room info for booking_time (default to noon)
-        const bookingTime = '12:00';
-
-        const result = await pool.query(
-            'INSERT INTO bookings (user_id, room_id, full_name, phone, email, booking_date, booking_time, message, check_in_date, check_out_date, booking_status, total_price, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *',
-            [userId, room_id, full_name, phone, email, check_in_date, bookingTime, message, check_in_date, check_out_date, 'reserved', totalPrice, 'pending']
-        );
-
-        const newBooking = result.rows[0];
+        const { room_id, full_name, phone, email, booking_date, booking_time, check_in, check_out, guests, total_price, message } = req.body;
         
-        // Send confirmation email (non-blocking)
-        if (email) {
-            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [room_id]);
-            sendBookingConfirmation(newBooking, roomResult.rows[0]).catch(err => 
-                console.error('Failed to send confirmation email:', err)
-            );
+        if (!room_id || !full_name || !booking_date) {
+            return res.status(400).json({ error: 'Room, name and date are required' });
         }
-
-        res.status(201).json({ message: 'Booking submitted successfully', booking: newBooking });
+        
+        // Check if room is available
+        const roomCheck = await pool.query('SELECT status FROM rooms WHERE id = $1', [room_id]);
+        if (roomCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Room not found' });
+        }
+        if (roomCheck.rows[0].status !== 'available') {
+            return res.status(400).json({ error: 'Room is not available' });
+        }
+        
+        const result = await pool.query(`
+            INSERT INTO bookings (room_id, full_name, phone, email, booking_date, booking_time, check_in, check_out, guests, total_price, message, status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
+            RETURNING *
+        `, [room_id, full_name, phone, email, booking_date, booking_time, check_in, check_out, guests, total_price, message]);
+        
+        res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error creating booking:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Admin middleware - simple session check for adminId
+// Get all bookings
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT b.*, r.title as room_title
+            FROM bookings b
+            LEFT JOIN rooms r ON b.room_id = r.id
+            ORDER BY b.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get settings
+app.get('/api/settings', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM settings');
+        const settings = {};
+        result.rows.forEach(row => {
+            settings[row.key] = row.value;
+        });
+        res.json(settings);
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ===================== ADMIN ENDPOINTS =====================
+
+// Admin middleware
 function requireAdmin(req, res, next) {
     if (!req.session.adminId) {
         return res.status(401).json({ error: 'Unauthorized - Admin access required' });
@@ -1050,113 +388,7 @@ function requireAdmin(req, res, next) {
     next();
 }
 
-// Simple signup - first user becomes main_admin
-app.post('/api/signup', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        
-        if (!name || !email || !password) {
-            return res.status(400).json({ error: 'Name, email and password required' });
-        }
-        
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Check if email exists
-        const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
-        
-        // Check if any users exist - first user is main_admin
-        const userCount = await pool.query('SELECT COUNT(*) FROM users');
-        const isFirstUser = parseInt(userCount.rows[0].count) === 0;
-        const role = isFirstUser ? 'main_admin' : 'user';
-        
-        const result = await pool.query(
-            "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-            [name, email, hashedPassword, role]
-        );
-        
-        const newUser = result.rows[0];
-        req.session.user = newUser;
-        req.session.save((err) => {
-            if (err) {
-                console.error('Session save error:', err);
-            }
-        });
-        
-        res.json({ 
-            message: isFirstUser ? 'Admin account created!' : 'Account created!',
-            user: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Image upload endpoint (admin only)
-app.post('/api/upload', requireAdmin, (req, res) => {
-    upload.single('image')(req, res, (err) => {
-        if (err) {
-            console.error('Upload error:', err);
-            return res.status(400).json({ error: err.message });
-        }
-        
-        if (!req.file) {
-            return res.status(400).json({ error: 'No image file provided' });
-        }
-        
-        // Return the URL path to the uploaded file
-        const imageUrl = '/uploads/' + req.file.filename;
-        res.json({ success: true, imageUrl });
-    });
-});
-
-// Simple login - accepts email or username
-app.post('/api/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        // Try to find by email or username
-        const result = await pool.query(
-            'SELECT * FROM users WHERE email = $1 OR username = $1', 
-            [email]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        
-        const user = result.rows[0];
-        const isValid = await bcrypt.compare(password, user.password);
-        
-        if (!isValid) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-        
-        req.session.user = user;
-        req.session.save((err) => {
-            if (err) {
-                console.error('Session save error:', err);
-            }
-        });
-        res.json({ 
-            message: 'Login successful', 
-            user: { 
-                id: user.id, 
-                name: user.name, 
-                email: user.email,
-                role: user.role
-            } 
-        });
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Admin login - username and password only (uses admins table)
+// Admin login
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -1219,118 +451,34 @@ app.get('/api/admin/check-auth', (req, res) => {
     }
 });
 
-// Check auth
-app.get('/api/check-auth', (req, res) => {
-    if (req.session.user) {
-        res.json({ authenticated: true, user: req.session.user });
-    } else {
-        res.json({ authenticated: false });
-    }
-});
-
-// Check admin auth
-app.get('/api/admin/check', (req, res) => {
-    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin')) {
-        res.json({ authenticated: true, user: req.session.user });
-    } else {
-        res.json({ authenticated: false });
-    }
-});
-
-// Admin logout
-app.post('/api/admin/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ message: 'Logout successful' });
-});
-
-// General logout (for any user)
-app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ message: 'Logout successful' });
-});
-
-// Complete admin reset - clears and creates fresh admin with your email
-app.post('/api/admin/setup-fresh', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password required' });
+// Image upload endpoint (admin only)
+app.post('/api/upload', requireAdmin, (req, res) => {
+    upload.single('image')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
         }
-        
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        // Delete all existing users
-        await pool.query('DELETE FROM users');
-        
-        // Create fresh admin user with your email
-        await pool.query(
-            "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
-            ['Giddel Otabil', email, hashedPassword, 'main_admin']
-        );
-        
-        res.json({ message: 'Admin created successfully', email: email });
-    } catch (error) {
-        console.error('Setup error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Check admin auth
-app.get('/api/admin/check', (req, res) => {
-    if (req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin')) {
-        res.json({ authenticated: true, user: req.session.user });
-    } else {
-        res.json({ authenticated: false });
-    }
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        res.json({ 
+            imageUrl: `/uploads/${req.file.filename}`,
+            filename: req.file.filename
+        });
+    });
 });
 
 // Get all bookings (admin)
 app.get('/api/admin/bookings', requireAdmin, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT b.*, r.title as room_title 
-            FROM bookings b 
-            LEFT JOIN rooms r ON b.room_id = r.id 
+            SELECT b.*, r.title as room_title
+            FROM bookings b
+            LEFT JOIN rooms r ON b.room_id = r.id
             ORDER BY b.created_at DESC
         `);
         res.json(result.rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get bookings for calendar view (admin)
-app.get('/api/admin/bookings/calendar', requireAdmin, async (req, res) => {
-    try {
-        const { start, end } = req.query;
-        
-        let query = `
-            SELECT 
-                b.id,
-                b.room_id,
-                r.title as room_title,
-                b.full_name as customer_name,
-                b.check_in_date,
-                b.check_out_date,
-                b.booking_status
-            FROM bookings b
-            LEFT JOIN rooms r ON b.room_id = r.id
-            WHERE b.booking_status != 'cancelled'
-        `;
-        
-        const params = [];
-        
-        if (start && end) {
-            query += ` AND b.check_out_date >= $1 AND b.check_in_date <= $2`;
-            params.push(start, end);
-        }
-        
-        query += ` ORDER BY b.check_in_date`;
-        
-        const result = await pool.query(query, params);
-        res.json(result.rows);
-    } catch (error) {
+        console.error('Error fetching bookings:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1338,131 +486,21 @@ app.get('/api/admin/bookings/calendar', requireAdmin, async (req, res) => {
 // Update booking status (admin)
 app.put('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
     try {
+        const { id } = req.params;
         const { status } = req.body;
-        await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, req.params.id]);
-        res.json({ message: 'Booking status updated' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Check-in guest (admin)
-app.patch('/api/admin/bookings/:id/checkin', requireAdmin, async (req, res) => {
-    try {
-        // Get booking details before updating
-        const bookingResult = await pool.query('SELECT * FROM bookings WHERE id = $1', [req.params.id]);
         
-        if (bookingResult.rows.length === 0) {
+        const result = await pool.query(
+            'UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+        
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Booking not found' });
         }
         
-        await pool.query(
-            "UPDATE bookings SET booking_status = 'checked_in', status = 'confirmed' WHERE id = $1",
-            [req.params.id]
-        );
-        
-        // Send check-in email (non-blocking)
-        const bookingData = bookingResult.rows[0];
-        if (bookingData.email) {
-            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [bookingData.room_id]);
-            sendCheckInEmail(bookingData, roomResult.rows[0]).catch(err => 
-                console.error('Failed to send check-in email:', err)
-            );
-        }
-        
-        res.json({ message: 'Guest checked in successfully' });
+        res.json(result.rows[0]);
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Check-out guest (admin)
-app.patch('/api/admin/bookings/:id/checkout', requireAdmin, async (req, res) => {
-    try {
-        await pool.query(
-            "UPDATE bookings SET booking_status = 'checked_out', status = 'completed' WHERE id = $1",
-            [req.params.id]
-        );
-        res.json({ message: 'Guest checked out successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Cancel booking (admin and user)
-app.patch('/api/bookings/:id/cancel', async (req, res) => {
-    try {
-        const bookingId = req.params.id;
-        
-        // Check if user owns the booking or is admin
-        const booking = await pool.query('SELECT * FROM bookings WHERE id = $1', [bookingId]);
-        
-        if (booking.rows.length === 0) {
-            return res.status(404).json({ error: 'Booking not found' });
-        }
-        
-        const isAdmin = req.session.user && (req.session.user.role === 'admin' || req.session.user.role === 'main_admin');
-        const isOwner = req.session.user && booking.rows[0].user_id === req.session.user.id;
-        
-        if (!isAdmin && !isOwner) {
-            return res.status(401).json({ error: 'Unauthorized to cancel this booking' });
-        }
-        
-        // Check business rule: prevent cancellation within 24 hours of check-in
-        const checkInDate = new Date(booking.rows[0].check_in_date);
-        const now = new Date();
-        const hoursUntilCheckIn = (checkInDate - now) / (1000 * 60 * 60);
-        
-        if (hoursUntilCheckIn < 24 && hoursUntilCheckIn > 0) {
-            return res.status(400).json({ error: 'Cannot cancel within 24 hours of check-in. Please contact the hotel directly.' });
-        }
-        
-        // Update booking status to cancelled
-        await pool.query(
-            "UPDATE bookings SET booking_status = 'cancelled', status = 'cancelled' WHERE id = $1",
-            [bookingId]
-        );
-        
-        // Send cancellation email (non-blocking)
-        const bookingData = booking.rows[0];
-        if (bookingData.email) {
-            const roomResult = await pool.query('SELECT * FROM rooms WHERE id = $1', [bookingData.room_id]);
-            sendCancellationEmail(bookingData, roomResult.rows[0]).catch(err => 
-                console.error('Failed to send cancellation email:', err)
-            );
-        }
-        
-        res.json({ message: 'Booking cancelled successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get available rooms
-app.get('/api/rooms/available', async (req, res) => {
-    try {
-        const { checkIn, checkOut } = req.query;
-        
-        if (!checkIn || !checkOut) {
-            return res.status(400).json({ error: 'Check-in and check-out dates are required' });
-        }
-        
-        const query = `
-            SELECT * FROM rooms r
-            WHERE r.status = 'available'
-            AND NOT EXISTS (
-                SELECT 1 FROM bookings b
-                WHERE b.room_id = r.id
-                  AND b.booking_status != 'cancelled'
-                  AND b.booking_status != 'checked_out'
-                  AND b.check_in_date < $2
-                  AND b.check_out_date > $1
-            )
-        `;
-        
-        const result = await pool.query(query, [checkIn, checkOut]);
-        res.json(result.rows);
-    } catch (error) {
+        console.error('Error updating booking:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1470,9 +508,17 @@ app.get('/api/rooms/available', async (req, res) => {
 // Get all rooms (admin)
 app.get('/api/admin/rooms', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM rooms ORDER BY created_at DESC');
+        const result = await pool.query(`
+            SELECT r.*, 
+                   COALESCE(array_agg(ri.image_url) FILTER (WHERE ri.image_url IS NOT NULL), ARRAY[]::text[]) as images
+            FROM rooms r
+            LEFT JOIN room_images ri ON r.id = ri.room_id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        `);
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching rooms:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1480,16 +526,21 @@ app.get('/api/admin/rooms', requireAdmin, async (req, res) => {
 // Create room (admin)
 app.post('/api/admin/rooms', requireAdmin, async (req, res) => {
     try {
-        const { title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location } = req.body;
-        const result = await pool.query(
-            `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
-            [title, description, price, amenities, status || 'available', image_url, 
-             rating || 0, review_count || 0, beds || 1, 
-             baths || 1, guests || 2, size || 25, location]
-        );
-        res.status(201).json({ message: 'Room created successfully', room: result.rows[0] });
+        const { title, description, price, amenities, status, image_url, beds, baths, guests, size, location } = req.body;
+        
+        if (!title || !price) {
+            return res.status(400).json({ error: 'Title and price are required' });
+        }
+        
+        const result = await pool.query(`
+            INSERT INTO rooms (title, description, price, amenities, status, image_url, beds, baths, guests, size, location)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING *
+        `, [title, description, price, amenities, status || 'available', image_url, beds || 1, baths || 1, guests || 2, size || 25, location]);
+        
+        res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error creating room:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1497,15 +548,23 @@ app.post('/api/admin/rooms', requireAdmin, async (req, res) => {
 // Update room (admin)
 app.put('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
     try {
-        const { title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location } = req.body;
-        await pool.query(
-            `UPDATE rooms SET title = $1, description = $2, price = $3, amenities = $4, status = $5, image_url = $6, 
-             rating = $7, review_count = $8, beds = $9, baths = $10, guests = $11, size = $12, location = $13 WHERE id = $14`,
-            [title, description, price, amenities, status, image_url, 
-             rating || 0, review_count || 0, beds || 1, baths || 1, guests || 2, size || 25, location, req.params.id]
-        );
-        res.json({ message: 'Room updated successfully' });
+        const { id } = req.params;
+        const { title, description, price, amenities, status, image_url, beds, baths, guests, size, location } = req.body;
+        
+        const result = await pool.query(`
+            UPDATE rooms 
+            SET title = $1, description = $2, price = $3, amenities = $4, status = $5, image_url = $6, beds = $7, baths = $8, guests = $9, size = $10, location = $11
+            WHERE id = $12
+            RETURNING *
+        `, [title, description, price, amenities, status, image_url, beds, baths, guests, size, location, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Room not found' });
+        }
+        
+        res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating room:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1513,9 +572,14 @@ app.put('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
 // Delete room (admin)
 app.delete('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
     try {
-        await pool.query('DELETE FROM rooms WHERE id = $1', [req.params.id]);
+        const { id } = req.params;
+        
+        await pool.query('DELETE FROM room_images WHERE room_id = $1', [id]);
+        await pool.query('DELETE FROM rooms WHERE id = $1', [id]);
+        
         res.json({ message: 'Room deleted successfully' });
     } catch (error) {
+        console.error('Error deleting room:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1523,136 +587,56 @@ app.delete('/api/admin/rooms/:id', requireAdmin, async (req, res) => {
 // Upload room image (admin)
 app.post('/api/admin/rooms/:id/images', requireAdmin, upload.single('image'), async (req, res) => {
     try {
+        const { id } = req.params;
+        
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
-        const imageUrl = '/uploads/' + req.file.filename;
-        await pool.query('INSERT INTO room_images (room_id, image_url) VALUES ($1, $2)', [req.params.id, imageUrl]);
-        res.json({ message: 'Image uploaded successfully', image_url: imageUrl });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get settings (public)
-app.get('/api/settings', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM settings WHERE id = 1');
-        res.json(result.rows[0] || { hotel_name: 'Grand Hotel' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get dining items (public)
-app.get('/api/dining', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM dining_items ORDER BY display_order');
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get food items (public)
-app.get('/api/food', async (req, res) => {
-    try {
-        const { category } = req.query;
-        let query = 'SELECT * FROM food_items';
-        const params = [];
         
-        if (category) {
-            query += ' WHERE category = $1 AND status = $2';
-            params.push(category, 'available');
-        } else {
-            query += ' WHERE status = $1';
-            params.push('available');
-        }
+        const imageUrl = `/uploads/${req.file.filename}`;
         
-        query += ' ORDER BY display_order';
-        
-        const result = await pool.query(query, params);
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Create dining order (for logged-in guests with active booking)
-app.post('/api/food/orders', requireUser, async (req, res) => {
-    try {
-        const userId = req.session.user.id;
-        const { food_item_id, quantity } = req.body;
-        
-        if (!food_item_id || !quantity) {
-            return res.status(400).json({ error: 'Food item and quantity are required' });
-        }
-        
-        // Get the food item
-        const foodResult = await pool.query('SELECT * FROM food_items WHERE id = $1', [food_item_id]);
-        if (foodResult.rows.length === 0) {
-            return res.status(404).json({ error: 'Food item not found' });
-        }
-        
-        const foodItem = foodResult.rows[0];
-        
-        // Check if user has an active booking
-        const bookingResult = await pool.query(
-            `SELECT * FROM bookings WHERE user_id = $1 AND booking_status IN ('reserved', 'checked_in') AND check_out_date >= CURRENT_DATE`,
-            [userId]
+        await pool.query(
+            'INSERT INTO room_images (room_id, image_url) VALUES ($1, $2)',
+            [id, imageUrl]
         );
         
-        if (bookingResult.rows.length === 0) {
-            return res.status(403).json({ error: 'No active booking found. Dining services are only available for in-house guests.' });
-        }
+        res.json({ imageUrl, message: 'Image uploaded successfully' });
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete room image (admin)
+app.delete('/api/admin/rooms/:roomId/images/:imageId', requireAdmin, async (req, res) => {
+    try {
+        const { roomId, imageId } = req.params;
         
-        const booking = bookingResult.rows[0];
-        const totalPrice = parseFloat(foodItem.price) * quantity;
+        await pool.query('DELETE FROM room_images WHERE id = $1 AND room_id = $2', [imageId, roomId]);
         
-        // Create the order
-        const orderResult = await pool.query(
-            `INSERT INTO dining_orders (booking_id, food_item_id, quantity, total_price, status) 
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [booking.id, food_item_id, quantity, totalPrice, 'pending']
-        );
+        res.json({ message: 'Image deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get dashboard stats
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+    try {
+        const roomsCount = await pool.query('SELECT COUNT(*) as count FROM rooms');
+        const bookingsCount = await pool.query('SELECT COUNT(*) as count FROM bookings');
+        const pendingBookings = await pool.query("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'");
+        const revenueResult = await pool.query("SELECT COALESCE(SUM(total_price), 0) as total FROM bookings WHERE status = 'approved'");
         
-        res.status(201).json({ 
-            message: 'Order placed successfully', 
-            order: orderResult.rows[0],
-            food_item: foodItem
+        res.json({
+            totalRooms: parseInt(roomsCount.rows[0].count),
+            totalBookings: parseInt(bookingsCount.rows[0].count),
+            pendingBookings: parseInt(pendingBookings.rows[0].count),
+            totalRevenue: parseFloat(revenueResult.rows[0].total)
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get user's dining orders
-app.get('/api/food/orders/my', requireUser, async (req, res) => {
-    try {
-        const userId = req.session.user.id;
-        
-        const result = await pool.query(
-            `SELECT do.*, fi.name, fi.description, fi.price, fi.image_url, fi.category, b.check_in_date, b.check_out_date
-             FROM dining_orders do
-             JOIN food_items fi ON do.food_item_id = fi.id
-             JOIN bookings b ON do.booking_id = b.id
-             WHERE b.user_id = $1
-             ORDER BY do.ordered_at DESC`,
-            [userId]
-        );
-        
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get discover items (public)
-app.get('/api/discover', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
-        res.json(result.rows);
-    } catch (error) {
+        console.error('Error fetching stats:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1660,127 +644,19 @@ app.get('/api/discover', async (req, res) => {
 // Update settings (admin)
 app.put('/api/admin/settings', requireAdmin, async (req, res) => {
     try {
-        const { hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, hero_title, hero_text, hero_image, about_title, about_text, about_image, checkin_time, checkout_time, front_desk_hours, copyright_year, company_name, rooms_hero_title, rooms_hero_text, rooms_hero_image, discover_hero_title, discover_hero_text, discover_hero_image, dining_hero_title, dining_hero_text, dining_hero_image, contact_hero_title, contact_hero_text, contact_hero_image } = req.body;
+        const settings = req.body;
         
-        await pool.query(`
-            UPDATE settings SET 
-                hotel_name = $1, hotel_tagline = $2, hotel_phone = $3, 
-                hotel_email = $4, hotel_address = $5, hero_title = $6, hero_text = $7, hero_image = $8,
-                about_title = $9, about_text = $10, about_image = $11, checkin_time = $12, 
-                checkout_time = $13, front_desk_hours = $14, copyright_year = $15, company_name = $16,
-                rooms_hero_title = $17, rooms_hero_text = $18, rooms_hero_image = $19,
-                discover_hero_title = $20, discover_hero_text = $21, discover_hero_image = $22,
-                dining_hero_title = $23, dining_hero_text = $24, dining_hero_image = $25,
-                contact_hero_title = $26, contact_hero_text = $27, contact_hero_image = $28,
-                updated_at = CURRENT_TIMESTAMP 
-            WHERE id = 1`,
-            [hotel_name, hotel_tagline, hotel_phone, hotel_email, hotel_address, 
-             hero_title, hero_text, hero_image, about_title, about_text, about_image, 
-             checkin_time, checkout_time, front_desk_hours, copyright_year, company_name,
-             rooms_hero_title, rooms_hero_text, rooms_hero_image,
-             discover_hero_title, discover_hero_text, discover_hero_image,
-             dining_hero_title, dining_hero_text, dining_hero_image,
-             contact_hero_title, contact_hero_text, contact_hero_image]
-        );
+        for (const [key, value] of Object.entries(settings)) {
+            await pool.query(`
+                INSERT INTO settings (key, value, updated_at)
+                VALUES ($1, $2, CURRENT_TIMESTAMP)
+                ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP
+            `, [key, value]);
+        }
+        
         res.json({ message: 'Settings updated successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ========== NEW ADMIN API ENDPOINTS ==========
-
-// Get overview sections (admin)
-app.get('/api/admin/overview-sections', requireAdmin, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM overview_sections ORDER BY display_order');
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update overview section
-app.put('/api/admin/overview-sections/:key', requireAdmin, async (req, res) => {
-    try {
-        const { key } = req.params;
-        const { title, description, image_url, is_visible } = req.body;
-        
-        await pool.query(`
-            UPDATE overview_sections 
-            SET title = $1, description = $2, image_url = $3, is_visible = $4, updated_at = CURRENT_TIMESTAMP
-            WHERE section_key = $5
-        `, [title, description, image_url, is_visible, key]);
-        
-        res.json({ message: 'Section updated successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get discover items (admin)
-app.get('/api/admin/discover', requireAdmin, async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Add discover item
-app.post('/api/admin/discover', requireAdmin, async (req, res) => {
-    try {
-        const { title, description, image_url, is_visible } = req.body;
-        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM discover_items');
-        const newOrder = (maxOrder.rows[0].max || 0) + 1;
-        
-        const result = await pool.query(`
-            INSERT INTO discover_items (title, description, image_url, display_order, is_visible)
-            VALUES ($1, $2, $3, $4, $5) RETURNING *
-        `, [title, description, image_url, newOrder, is_visible !== false]);
-        
-        res.json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update discover item
-app.put('/api/admin/discover/:id', requireAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { title, description, image_url, display_order, is_visible } = req.body;
-        
-        await pool.query(`
-            UPDATE discover_items 
-            SET title = $1, description = $2, image_url = $3, display_order = $4, is_visible = $5, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $6
-        `, [title, description, image_url, display_order, is_visible, id]);
-        
-        res.json({ message: 'Item updated successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Delete discover item
-app.delete('/api/admin/discover/:id', requireAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
-        await pool.query('DELETE FROM discover_items WHERE id = $1', [id]);
-        res.json({ message: 'Item deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get discover items (public)
-app.get('/api/discover', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM discover_items ORDER BY display_order');
-        res.json(result.rows);
-    } catch (error) {
+        console.error('Error updating settings:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1788,9 +664,10 @@ app.get('/api/discover', async (req, res) => {
 // Get dining items (admin)
 app.get('/api/admin/dining', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM dining_items ORDER BY display_order');
+        const result = await pool.query('SELECT * FROM dining ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching dining:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1798,17 +675,17 @@ app.get('/api/admin/dining', requireAdmin, async (req, res) => {
 // Add dining item
 app.post('/api/admin/dining', requireAdmin, async (req, res) => {
     try {
-        const { title, description, image_url, opening_hours, price_range, is_visible } = req.body;
-        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM dining_items');
-        const newOrder = (maxOrder.rows[0].max || 0) + 1;
+        const { title, description, image_url, price, category, available } = req.body;
         
         const result = await pool.query(`
-            INSERT INTO dining_items (title, description, image_url, opening_hours, price_range, display_order, is_visible)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
-        `, [title, description, image_url, opening_hours, price_range, newOrder, is_visible !== false]);
+            INSERT INTO dining (title, description, image_url, price, category, available)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [title, description, image_url, price, category, available !== false]);
         
-        res.json(result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error adding dining:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1817,16 +694,17 @@ app.post('/api/admin/dining', requireAdmin, async (req, res) => {
 app.put('/api/admin/dining/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, image_url, opening_hours, price_range, display_order, is_visible } = req.body;
+        const { title, description, image_url, price, category, available } = req.body;
         
-        await pool.query(`
-            UPDATE dining_items 
-            SET title = $1, description = $2, image_url = $3, opening_hours = $4, price_range = $5, display_order = $6, is_visible = $7, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $8
-        `, [title, description, image_url, opening_hours, price_range, display_order, is_visible, id]);
+        const result = await pool.query(`
+            UPDATE dining SET title = $1, description = $2, image_url = $3, price = $4, category = $5, available = $6
+            WHERE id = $7
+            RETURNING *
+        `, [title, description, image_url, price, category, available, id]);
         
-        res.json({ message: 'Item updated successfully' });
+        res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating dining:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1835,9 +713,70 @@ app.put('/api/admin/dining/:id', requireAdmin, async (req, res) => {
 app.delete('/api/admin/dining/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        await pool.query('DELETE FROM dining_items WHERE id = $1', [id]);
-        res.json({ message: 'Item deleted successfully' });
+        await pool.query('DELETE FROM dining WHERE id = $1', [id]);
+        res.json({ message: 'Dining item deleted' });
     } catch (error) {
+        console.error('Error deleting dining:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get discover items (admin)
+app.get('/api/admin/discover', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM discover ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching discover:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add discover item
+app.post('/api/admin/discover', requireAdmin, async (req, res) => {
+    try {
+        const { title, description, image_url, category } = req.body;
+        
+        const result = await pool.query(`
+            INSERT INTO discover (title, description, image_url, category)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `, [title, description, image_url, category]);
+        
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error adding discover:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update discover item
+app.put('/api/admin/discover/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, image_url, category } = req.body;
+        
+        const result = await pool.query(`
+            UPDATE discover SET title = $1, description = $2, image_url = $3, category = $4
+            WHERE id = $5
+            RETURNING *
+        `, [title, description, image_url, category, id]);
+        
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error updating discover:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete discover item
+app.delete('/api/admin/discover/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM discover WHERE id = $1', [id]);
+        res.json({ message: 'Discover item deleted' });
+    } catch (error) {
+        console.error('Error deleting discover:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1845,9 +784,10 @@ app.delete('/api/admin/dining/:id', requireAdmin, async (req, res) => {
 // Get food items (admin)
 app.get('/api/admin/food', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM food_items ORDER BY display_order');
+        const result = await pool.query('SELECT * FROM food ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching food:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1855,17 +795,17 @@ app.get('/api/admin/food', requireAdmin, async (req, res) => {
 // Add food item
 app.post('/api/admin/food', requireAdmin, async (req, res) => {
     try {
-        const { name, description, price, category, image_url, status, prep_time } = req.body;
-        const maxOrder = await pool.query('SELECT MAX(display_order) as max FROM food_items');
-        const newOrder = (maxOrder.rows[0].max || 0) + 1;
+        const { name, description, price, category, image_url, available } = req.body;
         
         const result = await pool.query(`
-            INSERT INTO food_items (name, description, price, category, image_url, status, prep_time, display_order)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
-        `, [name, description, price, category, image_url, status || 'available', prep_time, newOrder]);
+            INSERT INTO food (name, description, price, category, image_url, available)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [name, description, price, category, image_url, available !== false]);
         
-        res.json(result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
+        console.error('Error adding food:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1874,16 +814,17 @@ app.post('/api/admin/food', requireAdmin, async (req, res) => {
 app.put('/api/admin/food/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, price, category, image_url, status, prep_time, display_order } = req.body;
+        const { name, description, price, category, image_url, available } = req.body;
         
-        await pool.query(`
-            UPDATE food_items 
-            SET name = $1, description = $2, price = $3, category = $4, image_url = $5, status = $6, prep_time = $7, display_order = $8, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $9
-        `, [name, description, price, category, image_url, status, prep_time, display_order, id]);
+        const result = await pool.query(`
+            UPDATE food SET name = $1, description = $2, price = $3, category = $4, image_url = $5, available = $6
+            WHERE id = $7
+            RETURNING *
+        `, [name, description, price, category, image_url, available, id]);
         
-        res.json({ message: 'Item updated successfully' });
+        res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating food:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1892,9 +833,10 @@ app.put('/api/admin/food/:id', requireAdmin, async (req, res) => {
 app.delete('/api/admin/food/:id', requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        await pool.query('DELETE FROM food_items WHERE id = $1', [id]);
-        res.json({ message: 'Item deleted successfully' });
+        await pool.query('DELETE FROM food WHERE id = $1', [id]);
+        res.json({ message: 'Food item deleted' });
     } catch (error) {
+        console.error('Error deleting food:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1902,17 +844,10 @@ app.delete('/api/admin/food/:id', requireAdmin, async (req, res) => {
 // Get dining orders (admin)
 app.get('/api/admin/dining-orders', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query(
-            `SELECT do.*, fi.name as food_name, fi.category as food_category, fi.price as unit_price, 
-                    b.full_name as guest_name, b.room_id, r.title as room_title
-             FROM dining_orders do
-             JOIN food_items fi ON do.food_item_id = fi.id
-             JOIN bookings b ON do.booking_id = b.id
-             LEFT JOIN rooms r ON b.room_id = r.id
-             ORDER BY do.ordered_at DESC`
-        );
+        const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching orders:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1923,13 +858,18 @@ app.put('/api/admin/dining-orders/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
         
-        await pool.query(
-            `UPDATE dining_orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+        const result = await pool.query(
+            'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
             [status, id]
         );
         
-        res.json({ message: 'Order status updated successfully' });
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        
+        res.json(result.rows[0]);
     } catch (error) {
+        console.error('Error updating order:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1937,9 +877,14 @@ app.put('/api/admin/dining-orders/:id', requireAdmin, async (req, res) => {
 // Get contact settings (admin)
 app.get('/api/admin/contact', requireAdmin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM contact_settings WHERE id = 1');
-        res.json(result.rows[0] || {});
+        const result = await pool.query("SELECT * FROM settings WHERE key LIKE 'contact%'");
+        const contact = {};
+        result.rows.forEach(row => {
+            contact[row.key] = row.value;
+        });
+        res.json(contact);
     } catch (error) {
+        console.error('Error fetching contact settings:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -1947,344 +892,94 @@ app.get('/api/admin/contact', requireAdmin, async (req, res) => {
 // Update contact settings
 app.put('/api/admin/contact', requireAdmin, async (req, res) => {
     try {
-        const { phone, email, address, map_link, live_chat_enabled, contact_form_email, facebook_link, instagram_link, twitter_link, whatsapp } = req.body;
+        const { contact_email, contact_phone, contact_address, contact_facebook, contact_instagram, contact_twitter } = req.body;
         
-        await pool.query(`
-            UPDATE contact_settings 
-            SET phone = $1, email = $2, address = $3, map_link = $4, live_chat_enabled = $5, 
-                contact_form_email = $6, facebook_link = $7, instagram_link = $8, twitter_link = $9, 
-                whatsapp = $10, updated_at = CURRENT_TIMESTAMP
-            WHERE id = 1
-        `, [phone, email, address, map_link, live_chat_enabled, contact_form_email, facebook_link, instagram_link, twitter_link, whatsapp]);
+        const settings = {
+            contact_email,
+            contact_phone,
+            contact_address,
+            contact_facebook,
+            contact_instagram,
+            contact_twitter
+        };
         
-        res.json({ message: 'Contact settings updated successfully' });
+        for (const [key, value] of Object.entries(settings)) {
+            if (value !== undefined) {
+                await pool.query(`
+                    INSERT INTO settings (key, value, updated_at)
+                    VALUES ($1, $2, CURRENT_TIMESTAMP)
+                    ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP
+                `, [key, value]);
+            }
+        }
+        
+        res.json({ message: 'Contact settings updated' });
     } catch (error) {
+        console.error('Error updating contact:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Get media library (admin)
-app.get('/api/admin/media', requireAdmin, async (req, res) => {
+// ===================== PUBLIC DINING/DISCOVER ENDPOINTS =====================
+
+// Get dining items (public)
+app.get('/api/dining', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM media_library ORDER BY created_at DESC');
+        const result = await pool.query('SELECT * FROM dining WHERE available = true ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching dining:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// Upload media (admin)
-app.post('/api/admin/media', requireAdmin, upload.single('file'), async (req, res) => {
+// Get food items (public)
+app.get('/api/food', async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-        
-        const filePath = '/uploads/' + req.file.filename;
-        
-        const result = await pool.query(`
-            INSERT INTO media_library (filename, original_name, file_path, file_size, mime_type)
-            VALUES ($1, $2, $3, $4, $5) RETURNING *
-        `, [req.file.filename, req.file.originalname, filePath, req.file.size, req.file.mimetype]);
-        
-        res.json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Delete media
-app.delete('/api/admin/media/:id', requireAdmin, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const media = await pool.query('SELECT * FROM media_library WHERE id = $1', [id]);
-        
-        if (media.rows.length > 0) {
-            const filePath = path.join(__dirname, 'uploads', media.rows[0].filename);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-            await pool.query('DELETE FROM media_library WHERE id = $1', [id]);
-        }
-        
-        res.json({ message: 'Media deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get dashboard stats
-app.get('/api/admin/stats', requireAdmin, async (req, res) => {
-    try {
-        const rooms = await pool.query('SELECT COUNT(*) as total FROM rooms');
-        const bookings = await pool.query('SELECT COUNT(*) as total FROM bookings');
-        const media = await pool.query('SELECT COUNT(*) as total FROM media_library');
-        const sections = await pool.query('SELECT COUNT(*) as total FROM overview_sections');
-        
-        res.json({
-            totalRooms: parseInt(rooms.rows[0].total),
-            totalBookings: parseInt(bookings.rows[0].total),
-            totalMedia: parseInt(media.rows[0].total),
-            totalSections: parseInt(sections.rows[0].total)
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Seed rooms (for initial setup) - Admin only
-app.post('/api/admin/seed-rooms', requireAdmin, async (req, res) => {
-    try {
-        // Check if rooms already exist
-        const existingRooms = await pool.query('SELECT COUNT(*) as count FROM rooms');
-        if (parseInt(existingRooms.rows[0].count) > 0) {
-            return res.json({ message: 'Rooms already exist, skipping seed' });
-        }
-        
-        const rooms = [
-            {
-                title: 'Deluxe King Room',
-                description: 'Spacious room with a comfortable king-size bed, modern amenities, and elegant decor. Perfect for couples or business travelers seeking luxury accommodation.',
-                price: 180,
-                amenities: 'King Bed, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Coffee Maker',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
-                rating: 4.8,
-                review_count: 124,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 35,
-                location: 'Floor 2-5'
-            },
-            {
-                title: 'Executive Suite',
-                description: 'Luxurious suite featuring a separate living area, bedroom with king bed, and premium amenities. Ideal for executives and those who appreciate extra space.',
-                price: 280,
-                amenities: 'King Bed, Living Room, Free WiFi, TV, Mini Bar, Safe, Air Conditioning, Room Service, Bathtub, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800',
-                rating: 4.9,
-                review_count: 89,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 55,
-                location: 'Floor 6-8'
-            },
-            {
-                title: 'Standard Double Room',
-                description: 'Comfortable and affordable room with two double beds, perfect for families or groups. Features all essential amenities for a pleasant stay.',
-                price: 120,
-                amenities: '2 Double Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
-                rating: 4.5,
-                review_count: 256,
-                beds: 2,
-                baths: 1,
-                guests: 4,
-                size: 28,
-                location: 'Floor 1-3'
-            },
-            {
-                title: 'Presidential Suite',
-                description: 'The ultimate in luxury accommodation. This expansive suite features multiple rooms, panoramic views, private balcony, and exclusive amenities fit for royalty.',
-                price: 750,
-                amenities: 'King Bed, Living Room, Dining Room, Private Balcony, Jacuzzi, Free WiFi, Premium Mini Bar, Butlers Service, Home Theater',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
-                rating: 5.0,
-                review_count: 32,
-                beds: 1,
-                baths: 2,
-                guests: 2,
-                size: 120,
-                location: 'Top Floor'
-            },
-            {
-                title: 'Superior Twin Room',
-                description: 'Elegant room with two twin beds, perfect for friends or colleagues traveling together. Modern design with all necessary amenities.',
-                price: 140,
-                amenities: '2 Twin Beds, Free WiFi, TV, Coffee Maker, Air Conditioning, Work Desk, Safe',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800',
-                rating: 4.6,
-                review_count: 178,
-                beds: 2,
-                baths: 1,
-                guests: 2,
-                size: 30,
-                location: 'Floor 2-4'
-            },
-            {
-                title: 'Garden View Room',
-                description: 'Peaceful room overlooking our beautiful gardens. Features a private balcony where you can relax and enjoy the serene nature views.',
-                price: 160,
-                amenities: 'Queen Bed, Garden View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
-                rating: 4.7,
-                review_count: 145,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 32,
-                location: 'Ground Floor - Garden Wing'
-            },
-            {
-                title: 'Ocean View Deluxe',
-                description: 'Stunning room with breathtaking ocean views. Wake up to the sound of waves and enjoy spectacular sunsets from your private balcony.',
-                price: 220,
-                amenities: 'King Bed, Ocean View, Private Balcony, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Bathtub',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
-                rating: 4.8,
-                review_count: 167,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 40,
-                location: 'Ocean Wing - High Floor'
-            },
-            {
-                title: 'Family Suite',
-                description: 'Spacious suite designed for families. Features a master bedroom, second bedroom with bunk beds, living area, and child-friendly amenities.',
-                price: 350,
-                amenities: 'King Bed + Bunk Beds, Living Room, Kitchenette, Free WiFi, TV, Mini Bar, Air Conditioning, Bathtub, Kids Area',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
-                rating: 4.9,
-                review_count: 78,
-                beds: 2,
-                baths: 2,
-                guests: 5,
-                size: 75,
-                location: 'Family Wing'
-            },
-            {
-                title: 'Junior Suite',
-                description: 'Elegant suite with an open-plan design, combining bedroom and living space. Perfect for short stays with a touch of luxury.',
-                price: 200,
-                amenities: 'Queen Bed, Living Area, Free WiFi, TV, Mini Bar, Coffee Maker, Air Conditioning, Work Desk',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800',
-                rating: 4.6,
-                review_count: 134,
-                beds: 1,
-                baths: 1,
-                guests: 2,
-                size: 45,
-                location: 'Floor 4-7'
-            },
-            {
-                title: 'Luxury Penthouse',
-                description: 'Exclusive penthouse suite on the top floor with 360-degree views, private terrace, and premium concierge service. The pinnacle of luxury accommodation.',
-                price: 500,
-                amenities: 'King Bed, Private Terrace, Living Room, Dining Area, Free WiFi, Premium Mini Bar, Butlers Service, Jacuzzi, Home Cinema',
-                status: 'available',
-                image_url: 'https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800',
-                rating: 5.0,
-                review_count: 24,
-                beds: 1,
-                baths: 2,
-                guests: 2,
-                size: 95,
-                location: 'Penthouse Floor'
-            }
-        ];
-        
-        for (const room of rooms) {
-            await pool.query(
-                `INSERT INTO rooms (title, description, price, amenities, status, image_url, rating, review_count, beds, baths, guests, size, location) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                [room.title, room.description, room.price, room.amenities, room.status, room.image_url, 
-                 room.rating, room.review_count, room.beds, room.baths, room.guests, room.size, room.location]
-            );
-        }
-        
-        res.json({ message: 'Successfully seeded 10 rooms' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// User middleware - requires authenticated user (not admin)
-function requireUser(req, res, next) {
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    next();
-}
-
-// Get current user profile
-app.get('/api/user/profile', requireUser, async (req, res) => {
-    try {
-        const user = req.session.user;
-        res.json({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            created_at: user.created_at
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update user profile
-app.put('/api/user/profile', requireUser, async (req, res) => {
-    try {
-        const { name, email } = req.body;
-        const userId = req.session.user.id;
-        
-        const result = await pool.query(
-            'UPDATE users SET name = $1, email = $2 WHERE id = $3 RETURNING id, name, email, role',
-            [name, email, userId]
-        );
-        
-        // Update session
-        req.session.user = { ...req.session.user, name, email };
-        
-        res.json({ message: 'Profile updated', user: result.rows[0] });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Get user bookings
-app.get('/api/user/bookings', requireUser, async (req, res) => {
-    try {
-        const userId = req.session.user.id;
-        const result = await pool.query(`
-            SELECT b.*, r.title as room_title, r.image_url as room_image
-            FROM bookings b 
-            LEFT JOIN rooms r ON b.room_id = r.id 
-            WHERE b.user_id = $1
-            ORDER BY b.created_at DESC
-        `, [userId]);
+        const result = await pool.query('SELECT * FROM food WHERE available = true ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (error) {
+        console.error('Error fetching food:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
-// User logout
-app.post('/api/user/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ message: 'Logout successful' });
+// Get discover items (public)
+app.get('/api/discover', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM discover ORDER BY created_at DESC');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching discover:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// API root - backend status
-app.get('/', (req, res) => {
-    res.json({
-        message: "Hotel Booking Backend API Running",
-        version: "1.0.0",
-        endpoints: {
-            rooms: "/api/rooms",
-            availableRooms: "/api/rooms/available",
-            adminRooms: "/api/admin/rooms"
+// Create food order (public)
+app.post('/api/orders', async (req, res) => {
+    try {
+        const { customer_name, customer_phone, items, total_amount } = req.body;
+        
+        if (!customer_name || !items || !total_amount) {
+            return res.status(400).json({ error: 'Name, items and total are required' });
         }
-    });
+        
+        const orderNumber = 'ORD-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        
+        const result = await pool.query(`
+            INSERT INTO orders (order_number, customer_name, customer_phone, items, total_amount, status)
+            VALUES ($1, $2, $3, $4, $5, 'pending')
+            RETURNING *
+        `, [orderNumber, customer_name, customer_phone, JSON.stringify(items), total_amount]);
+        
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Start server even if database fails
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
