@@ -206,15 +206,142 @@ app.post('/api/bookings', async (req, res) => {
 // Get all bookings
 app.get('/api/bookings', async (req, res) => {
     try {
+        const { room_id, status, date_from, date_to } = req.query;
+        let query = `
+            SELECT b.*, r.title as room_name
+            FROM bookings b
+            LEFT JOIN rooms r ON b.room_id = r.id
+            WHERE 1=1
+        `;
+        const params = [];
+        let paramIndex = 1;
+        
+        if (room_id) {
+            query += ` AND b.room_id = ${paramIndex}`;
+            params.push(room_id);
+            paramIndex++;
+        }
+        
+        if (status) {
+            query += ` AND b.status = ${paramIndex}`;
+            params.push(status);
+            paramIndex++;
+        }
+        
+        if (date_from) {
+            query += ` AND b.check_in >= ${paramIndex}`;
+            params.push(date_from);
+            paramIndex++;
+        }
+        
+        if (date_to) {
+            query += ` AND b.check_out <= ${paramIndex}`;
+            params.push(date_to);
+            paramIndex++;
+        }
+        
+        query += ` ORDER BY b.created_at DESC`;
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get single booking
+app.get('/api/bookings/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
         const result = await pool.query(`
             SELECT b.*, r.title as room_name
             FROM bookings b
             LEFT JOIN rooms r ON b.room_id = r.id
-            ORDER BY b.created_at DESC
-        `);
-        res.json(result.rows);
+            WHERE b.id = $1
+        `, [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+        
+        res.json(result.rows[0]);
     } catch (error) {
-        console.error('Error fetching bookings:', error);
+        console.error('Error fetching booking:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update booking
+app.put('/api/bookings/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { guest_name, guest_email, guest_phone, check_in, check_out, status } = req.body;
+        
+        // If changing dates, check availability
+        if (check_in || check_out) {
+            const current = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
+            const newCheckIn = check_in || current.rows[0].check_in;
+            const newCheckOut = check_out || current.rows[0].check_out;
+            const roomId = current.rows[0].room_id;
+            
+            const availabilityResult = await pool.query(`
+                SELECT * FROM bookings
+                WHERE room_id = $1
+                  AND status = 'confirmed'
+                  AND $2 < check_out
+                  AND $3 > check_in
+                  AND id != $4
+            `, [roomId, newCheckIn, newCheckOut, id]);
+            
+            if (availabilityResult.rows.length > 0) {
+                return res.status(400).json({
+                    message: "Room not available for selected dates",
+                    conflicting_bookings: availabilityResult.rows
+                });
+            }
+        }
+        
+        const result = await pool.query(`
+            UPDATE bookings 
+            SET guest_name = COALESCE($1, guest_name),
+                guest_email = COALESCE($2, guest_email),
+                guest_phone = COALESCE($3, guest_phone),
+                check_in = COALESCE($4, check_in),
+                check_out = COALESCE($5, check_out),
+                status = COALESCE($6, status)
+            WHERE id = $7
+            RETURNING *
+        `, [guest_name, guest_email, guest_phone, check_in, check_out, status, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+        
+        res.json({
+            message: 'Booking updated',
+            booking: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error updating booking:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete/cancel booking
+app.delete('/api/bookings/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await pool.query('DELETE FROM bookings WHERE id = $1 RETURNING *', [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Booking not found' });
+        }
+        
+        res.json({ message: 'Booking cancelled successfully' });
+    } catch (error) {
+        console.error('Error cancelling booking:', error);
         res.status(500).json({ error: error.message });
     }
 });
