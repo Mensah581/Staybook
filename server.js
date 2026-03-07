@@ -2,6 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
 const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -392,6 +393,40 @@ async function initializeDatabase() {
                     ON DELETE CASCADE
             )
         `);
+        
+        // Create users table (for RBAC)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                role VARCHAR(20) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        console.log('Database tables created successfully');
+        
+        // Create sample user accounts (passwords hashed with bcrypt)
+        const sampleUsers = [
+            { username: 'kwesi', password: 'kwesi123', role: 'admin' },
+            { username: 'ama', password: 'ama123', role: 'manager' },
+            { username: 'kofi', password: 'kofi123', role: 'frontdesk' }
+        ];
+        
+        for (const user of sampleUsers) {
+            try {
+                const hashedPassword = await bcrypt.hash(user.password, 10);
+                await pool.query(
+                    "INSERT INTO users (username, password, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING",
+                    [user.username, hashedPassword, user.role]
+                );
+            } catch (err) {
+                console.log('User creation skipped:', err.message);
+            }
+        }
+        
+        console.log('Sample users created: kwesi(admin), ama(manager), kofi(frontdesk)');
         
         console.log('Database tables created successfully');
     } catch (error) {
