@@ -160,6 +160,26 @@ async function initializeDatabase() {
             )
         `);
         
+        // Create bookings table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS bookings (
+                id SERIAL PRIMARY KEY,
+                room_id INTEGER NOT NULL,
+                guest_name VARCHAR(100) NOT NULL,
+                guest_email VARCHAR(100) NOT NULL,
+                guest_phone VARCHAR(20),
+                check_in DATE NOT NULL,
+                check_out DATE NOT NULL,
+                status VARCHAR(20) DEFAULT 'confirmed',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                
+                CONSTRAINT fk_room
+                    FOREIGN KEY(room_id) 
+                    REFERENCES rooms(id)
+                    ON DELETE CASCADE
+            )
+        `);
+        
         console.log('Database tables created successfully');
     } catch (error) {
         console.error('Database initialization error:', error.message);
