@@ -157,17 +157,66 @@ app.delete('/api/rooms/:id', async (req, res) => {
 
 // ===================== BOOKINGS (PLACEHOLDER) =====================
 
-// Bookings placeholder
-app.get('/api/bookings', (req, res) => {
-    res.json({
-        message: "Bookings system coming next"
-    });
+// Create booking (with availability check)
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const { room_id, guest_name, guest_email, guest_phone, check_in, check_out } = req.body;
+        
+        // Validate required fields
+        if (!room_id || !guest_name || !guest_email || !check_in || !check_out) {
+            return res.status(400).json({ 
+                error: 'room_id, guest_name, guest_email, check_in, and check_out are required' 
+            });
+        }
+        
+        // Step 1: Check room availability
+        const availabilityResult = await pool.query(`
+            SELECT * FROM bookings
+            WHERE room_id = $1
+              AND status = 'confirmed'
+              AND $2 < check_out
+              AND $3 > check_in
+        `, [room_id, check_in, check_out]);
+        
+        // Step 2: If not available, reject
+        if (availabilityResult.rows.length > 0) {
+            return res.status(400).json({
+                message: "Room not available for selected dates",
+                conflicting_bookings: availabilityResult.rows
+            });
+        }
+        
+        // Step 3: If available, insert booking
+        const result = await pool.query(`
+            INSERT INTO bookings (room_id, guest_name, guest_email, guest_phone, check_in, check_out, status)
+            VALUES ($1, $2, $3, $4, $5, $6, 'confirmed')
+            RETURNING *
+        `, [room_id, guest_name, guest_email, guest_phone, check_in, check_out]);
+        
+        res.status(201).json({
+            message: 'Booking successful',
+            booking: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-app.post('/api/bookings', (req, res) => {
-    res.json({
-        message: "Bookings system coming next"
-    });
+// Get all bookings
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT b.*, r.title as room_name
+            FROM bookings b
+            LEFT JOIN rooms r ON b.room_id = r.id
+            ORDER BY b.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching bookings:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // ===================== DATABASE INITIALIZATION =====================
