@@ -25,7 +25,7 @@ const pool = new Pool({
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+// app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
 // Session configuration (simple - no cookie complexity)
@@ -2276,7 +2276,15 @@ app.post('/api/user/logout', (req, res) => {
     res.json({ message: 'Logout successful' });
 });
 
-// Serve index.html for root
+// API root - backend status
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.json({
+        message: "Hotel Booking Backend API Running",
+        version: "1.0.0",
+        endpoints: {
+            rooms: "/api/rooms",
+            availableRooms: "/api/rooms/available",
+            adminRooms: "/api/admin/rooms"
+        }
+    });
 });
