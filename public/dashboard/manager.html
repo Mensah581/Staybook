@@ -429,15 +429,22 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const bookings = await response.json();
                 
                 // Get days in month
                 const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
                 
                 // Get rooms
-                const roomsRes = await fetch('/api/rooms', {
+                const roomsRes = await fetch('/api/admin/rooms', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (!roomsRes.ok) {
+                    throw new Error(`HTTP ${roomsRes.status}: ${roomsRes.statusText}`);
+                }
                 const rooms = await roomsRes.json();
                 
                 // Build header
@@ -501,7 +508,8 @@
                     container.innerHTML = '<div class="loading">No rooms available</div>';
                 }
             } catch (error) {
-                container.innerHTML = '<div class="loading">Error loading calendar</div>';
+                console.error('Calendar error:', error);
+                container.innerHTML = `<div class="error">Error loading calendar: ${error.message}</div>`;
             }
         }
         
