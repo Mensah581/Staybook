@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hotel Booking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .welcome h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .welcome p {
+            color: #666;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stat-card.occupancy { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.revenue-today { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.revenue-month { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .stat-card.avg-rate { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* Secondary Stats */
+        .secondary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .secondary-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .secondary-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .secondary-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        /* Calendar Styles */
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .calendar-nav button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .calendar-nav button:hover { background: #5a67d8; }
+        
+        .calendar-title { font-size: 20px; font-weight: 600; }
+        
+        .calendar-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            gap: 5px;
+            padding: 10px 150px 10px 100px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            overflow: hidden;
+        }
+        
+        .calendar-header span {
+            flex: 1;
+            text-align: center;
+            min-width: 25px;
+        }
+        
+        .calendar-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .room-label {
+            width: 90px;
+            padding: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .room-bookings {
+            flex: 1;
+            display: flex;
+            gap: 2px;
+            height: 32px;
+            position: relative;
+        }
+        
+        .booking-bar {
+            position: absolute;
+            height: 28px;
+            top: 2px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        
+        .booking-bar.pending { background: #ecc94b; color: #333; }
+        .booking-bar.confirmed { background: #667eea; }
+        .booking-bar.checked_in { background: #4299e1; }
+        .booking-bar.checked_out { background: #a0aec0; }
+        
+        .day-cell {
+            flex: 1;
+            min-width: 25px;
+            height: 100%;
+            border-right: 1px solid #f0f0f0;
+        }
+        
+        .day-cell.weekend { background: #fafafa; }
+        
+        .tab-content { display: none; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .btn { padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #5a67d8; }
+        .btn:disabled { background: #a0aec0; cursor: not-allowed; }
+        .alert { padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .alert.success { background: #d4edda; color: #155724; }
+        .alert.error { background: #f8d7da; color: #721c24; }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef; }
+        th { background: #f8f9fa; font-weight: 600; color: #333; }
+        .status-badge { padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+        .status-badge.sent { background: #d4edda; color: #155724; }
+        .status-badge.failed { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Admin Dashboard</h1>
+            <span id="username"></span>
+            <span class="role-badge">ADMIN</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="tab" onclick="showTab('calendar')">Calendar</button>
+            <button class="tab" onclick="showTab('rooms')">Rooms</button>
+            <button class="tab" onclick="showTab('bookings')">Bookings</button>
+            <button class="tab" onclick="showTab('staff')">Staff</button>
+            <button class="tab" onclick="showTab('reports')">Reports</button>
+            <button class="tab" onclick="showTab('settings')">Settings</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content" style="display: block;">
+            <div id="dashboard-content">
+                <div class="loading">Loading dashboard...</div>
+            </div>
+        </div>
+        
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <div class="calendar-controls">
+                <div class="calendar-nav">
+                    <button onclick="changeMonth(-1)">← Prev</button>
+                    <span class="calendar-title" id="calendarTitle">March 2026</span>
+                    <button onclick="changeMonth(1)">Next →</button>
+                </div>
+            </div>
+            <div id="calendar-content">
+                <div class="loading">Loading calendar...</div>
+            </div>
+        </div>
+        
+        <!-- Other Tabs -->
+        <div id="rooms" class="tab-content">
+            <h2 class="section-title">Room Management</h2>
+            <p style="color: #666; padding: 20px;">Room management features coming soon...</p>
+        </div>
+        
+        <div id="bookings" class="tab-content">
+            <h2 class="section-title">Booking Management</h2>
+            <p style="color: #666; padding: 20px;">Booking management features coming soon...</p>
+        </div>
+        
+        <div id="staff" class="tab-content">
+            <h2 class="section-title">Staff Management</h2>
+            <p style="color: #666; padding: 20px;">Staff management features coming soon...</p>
+        </div>
+        
+        <div id="reports" class="tab-content">
+            <h2 class="section-title">Reports</h2>
+            <p style="color: #666; padding: 20px;">Reports features coming soon...</p>
+        </div>
+        
+        <div id="settings" class="tab-content">
+            <div class="settings-container">
+                <h2 class="section-title">Email Settings</h2>
+                
+                <div id="settings-alert"></div>
+                
+                <form id="emailSettingsForm">
+                    <div class="form-group">
+                        <label>Hotel Name</label>
+                        <input type="text" id="hotelName" placeholder="My Hotel">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Service</label>
+                        <select id="emailService">
+                            <option value="">Select email service...</option>
+                            <option value="sendgrid">SendGrid</option>
+                            <option value="mailgun">Mailgun</option>
+                            <option value="aws_ses">AWS SES</option>
+                            <option value="custom">Custom API</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="apiKey" placeholder="Enter your API key">
+                        <small style="color: #666;">Leave blank to keep current key</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Sender Email</label>
+                        <input type="email" id="senderEmail" placeholder="noreply@hotel.com">
+                    </div>
+                    <div class="form-group" id="domainGroup" style="display: none;">
+                        <label>Mailgun Domain</label>
+                        <input type="text" id="mailgunDomain" placeholder="mg.hotel.com">
+                    </div>
+                    <div class="form-group" id="apiUrlGroup" style="display: none;">
+                        <label>Custom API URL</label>
+                        <input type="url" id="customApiUrl" placeholder="https://api.example.com/send">
+                    </div>
+                    <button type="submit" class="btn" id="saveSettingsBtn">Save Settings</button>
+                </form>
+                
+                <h2 class="section-title" style="margin-top: 40px;">Email Logs</h2>
+                <div id="emailLogs">
+                    <div class="loading">Loading email logs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check auth
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+        
+        let currentMonth = new Date().getMonth() + 1;
+        let currentYear = new Date().getFullYear();
+        
+        if (!token || role !== 'admin') {
+            window.location.href = '/login.html';
+        }
+        
+        document.getElementById('username').textContent = username || 'Admin';
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).style.display = 'block';
+            
+            if (tabId === 'dashboard') {
+                loadDashboard();
+            } else if (tabId === 'calendar') {
+                loadCalendar();
+            } else if (tabId === 'settings') {
+                loadEmailSettings();
+            }
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            } else if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear--;
+            }
+            loadCalendar();
+        }
+        
+        async function loadDashboard() {
+            const container = document.getElementById('dashboard-content');
+            
+            try {
+                // Fetch both stats in parallel
+                const [statsRes, businessRes] = await Promise.all([
+                    fetch('/api/dashboard/stats', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/api/dashboard/business', { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                
+                const stats = await statsRes.json();
+                const business = await businessRes.json();
+                
+                container.innerHTML = `
+                    <h2 class="section-title">Business Performance</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card occupancy">
+                            <div class="stat-number">${business.occupancy_rate}%</div>
+                            <div class="stat-label">Occupancy Rate</div>
+                        </div>
+                        <div class="stat-card revenue-today">
+                            <div class="stat-number">$${business.revenue_today.toLocaleString()}</div>
+                            <div class="stat-label">Revenue Today</div>
+                        </div>
+                        <div class="stat-card revenue-month">
+                            <div class="stat-number">$${business.revenue_this_month.toLocaleString()}</div>
+                            <div class="stat-label">Revenue This Month</div>
+                        </div>
+                        <div class="stat-card avg-rate">
+                            <div class="stat-number">$${business.average_room_rate}</div>
+                            <div class="stat-label">Average Room Rate</div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="section-title">Quick Overview</h2>
+                    <div class="secondary-stats">
+                        <div class="secondary-card">
+                            <div class="secondary-number">${business.total_rooms}</div>
+                            <div class="secondary-label">Total Rooms</div>
+                        </div>
+                        <div class="secondary-card">
+                            <div class="secondary-number">${business.occupied_rooms}</div>
+                            <div class="secondary-label">Occupied</div>
+                        </div>
+                        <div class="secondary-card">
+                            <div class="secondary-number">${business.available_rooms}</div>
+                            <div class="secondary-label">Available</div>
+                        </div>
+                        <div class="secondary-card">
+                            <div class="secondary-number">${stats.total_bookings}</div>
+                            <div class="secondary-label">Total Bookings</div>
+                        </div>
+                        <div class="secondary-card">
+                            <div class="secondary-number">${stats.today_checkins}</div>
+                            <div class="secondary-label">Today's Check-ins</div>
+                        </div>
+                        <div class="secondary-card">
+                            <div class="secondary-number">${stats.today_checkouts}</div>
+                            <div class="secondary-label">Today's Check-outs</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = '<div class="loading">Error loading dashboard</div>';
+            }
+        }
+        
+        async function loadCalendar() {
+            const container = document.getElementById('calendar-content');
+            const titleEl = document.getElementById('calendarTitle');
+            
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            titleEl.textContent = `${monthNames[currentMonth - 1]} ${currentYear}`;
+            
+            try {
+                const response = await fetch(`/api/bookings/calendar?month=${currentMonth}&year=${currentYear}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const bookings = await response.json();
+                
+                // Get days in month
+                const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+                
+                // Get rooms
+                const roomsRes = await fetch('/api/rooms', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const rooms = await roomsRes.json();
+                
+                // Build header
+                let headerHtml = '<span style="width:100px;"></span>';
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(currentYear, currentMonth - 1, day);
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                    headerHtml += `<span class="${isWeekend ? 'weekend' : ''}">${day}</span>`;
+                }
+                
+                // Group bookings by room
+                const bookingsByRoom = {};
+                bookings.forEach(b => {
+                    if (!bookingsByRoom[b.room_id]) {
+                        bookingsByRoom[b.room_id] = [];
+                    }
+                    bookingsByRoom[b.room_id].push(b);
+                });
+                
+                // Build room rows
+                let rowsHtml = '';
+                rooms.forEach(room => {
+                    const roomBookings = bookingsByRoom[room.id] || [];
+                    
+                    // Calculate booking positions
+                    let barsHtml = '';
+                    roomBookings.forEach(booking => {
+                        const checkIn = new Date(booking.check_in);
+                        const checkOut = new Date(booking.check_out);
+                        
+                        const startDay = Math.max(1, checkIn.getDate());
+                        const endDay = Math.min(daysInMonth, checkOut.getDate());
+                        
+                        if (endDay >= startDay) {
+                            const left = ((startDay - 1) / daysInMonth) * 100;
+                            const width = ((endDay - startDay + 1) / daysInMonth) * 100;
+                            barsHtml += `<div class="booking-bar ${booking.status}" 
+                                style="left: ${left}%; width: ${width}%;"
+                                title="${booking.guest_name} (${booking.check_in} to ${booking.check_out})">
+                                ${booking.guest_name}
+                            </div>`;
+                        }
+                    });
+                    
+                    rowsHtml += `
+                        <div class="calendar-row">
+                            <div class="room-label">Room ${room.id}</div>
+                            <div class="room-bookings">
+                                ${barsHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = `
+                    <div class="calendar-header">${headerHtml}</div>
+                    <div class="calendar-grid">${rowsHtml}</div>
+                `;
+                
+                if (rooms.length === 0) {
+                    container.innerHTML = '<div class="loading">No rooms available</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="loading">Error loading calendar</div>';
+            }
+        }
+        
+        
+        async function loadEmailSettings() {
+            try {
+                // Load current settings
+                const settingsRes = await fetch('/api/settings/email', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const settings = await settingsRes.json();
+                
+                if (settings) {
+                    document.getElementById('hotelName').value = settings.hotel_name || '';
+                    document.getElementById('emailService').value = settings.email_service || '';
+                    document.getElementById('senderEmail').value = settings.sender_email || '';
+                    document.getElementById('mailgunDomain').value = settings.domain || '';
+                    document.getElementById('customApiUrl').value = settings.api_url || '';
+                }
+                
+                // Show/hide fields based on email service
+                toggleEmailFields();
+                
+                // Load email logs
+                loadEmailLogs();
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+        
+        function toggleEmailFields() {
+            const service = document.getElementById('emailService').value;
+            document.getElementById('domainGroup').style.display = service === 'mailgun' ? 'block' : 'none';
+            document.getElementById('apiUrlGroup').style.display = service === 'custom' ? 'block' : 'none';
+        }
+        
+        document.getElementById('emailService').addEventListener('change', toggleEmailFields);
+        
+        // Save email settings
+        document.getElementById('emailSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+            
+            const data = {
+                hotel_name: document.getElementById('hotelName').value,
+                email_service: document.getElementById('emailService').value,
+                api_key: document.getElementById('apiKey').value,
+                sender_email: document.getElementById('senderEmail').value,
+                domain: document.getElementById('mailgunDomain').value,
+                api_url: document.getElementById('customApiUrl').value
+            };
+            
+            // Only include API key if entered
+            if (!data.api_key) {
+                delete data.api_key;
+            }
+            
+            try {
+                const response = await fetch('/api/settings/email', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Settings saved successfully!', 'success');
+                    document.getElementById('apiKey').value = '';
+                } else {
+                    showAlert(result.error || 'Error saving settings', 'error');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Save Settings';
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('settings-alert');
+            alert.innerHTML = `<div class="alert ${type}">${message}</div>`;
+            setTimeout(() => { alert.innerHTML = ''; }, 3000);
+        }
+        
+        async function loadEmailLogs() {
+            const container = document.getElementById('emailLogs');
+            
+            try {
+                const response = await fetch('/api/settings/email/logs?limit=50', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.logs && data.logs.length > 0) {
+                    container.innerHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Recipient</th>
+                                    <th>Event</th>
+                                    <th>Status</th>
+                                    <th>Error</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.logs.map(log => `
+                                    <tr>
+                                        <td>${new Date(log.created_at).toLocaleString()}</td>
+                                        <td>${log.recipient}</td>
+                                        <td>${log.event}</td>
+                                        <td><span class="status-badge ${log.status}">${log.status}</span></td>
+                                        <td>${log.error_message || '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = '<p style="color: #666;">No email logs yet.</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p style="color: #c33;">Error loading email logs</p>';
+            }
+        }
+        
+        // Load dashboard on page load
+        loadDashboard();
+    </script>
+</body>
+</html>

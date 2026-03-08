@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Rooms - Staybook</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f9f9f9; }
+        
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; width: 100%; top: 0; z-index: 100; }
+        .nav { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: bold; color: #667eea; text-decoration: none; }
+        .nav-links { display: flex; gap: 20px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: #667eea; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 100px 20px 40px; }
+        h1 { text-align: center; font-size: 36px; margin-bottom: 40px; }
+        
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+        
+        .room-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .room-card:hover { transform: translateY(-5px); }
+        
+        .room-image { width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; }
+        
+        .room-content { padding: 20px; }
+        .room-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .room-price { color: #667eea; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .room-price span { font-size: 14px; font-weight: normal; color: #666; }
+        .room-desc { color: #666; margin-bottom: 15px; font-size: 14px; }
+        .room-status { display: inline-block; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; margin-bottom: 15px; }
+        .room-status.available { background: #d4edda; color: #155724; }
+        .room-status.unavailable { background: #f8d7da; color: #721c24; }
+        
+        .btn { display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: 600; transition: background 0.3s; width: 100%; text-align: center; }
+        .btn:hover { background: #5568d3; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .error { text-align: center; padding: 40px; color: #c33; }
+        
+        footer { background: #333; color: white; padding: 20px; text-align: center; margin-top: 60px; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="nav">
+            <a href="/" class="logo">Staybook</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/rooms.html">Rooms</a></li>
+                <li><a href="/login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Our Rooms & Apartments</h1>
+        <div id="rooms-list" class="rooms-grid">
+            <div class="loading">Loading rooms...</div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2026 Staybook. All rights reserved.</p>
+    </footer>
+
+    <script>
+        async function loadRooms() {
+            const container = document.getElementById('rooms-list');
+            
+            try {
+                const response = await fetch('/api/rooms');
+                const rooms = await response.json();
+                
+                if (rooms.length === 0) {
+                    container.innerHTML = '<div class="error">No rooms available at the moment. Please check back later.</div>';
+                    return;
+                }
+                
+                container.innerHTML = rooms.map(room => `
+                    <div class="room-card">
+                        <div class="room-image">🏨</div>
+                        <div class="room-content">
+                            <div class="room-title">${room.title}</div>
+                            <div class="room-price">$${room.price} <span>/ night</span></div>
+                            <div class="room-desc">${room.description}</div>
+                            <span class="room-status ${room.status}">${room.status === 'available' ? 'Available' : 'Not Available'}</span>
+                            <a href="/room.html?id=${room.id}" class="btn">View Details</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error loading rooms. Please try again later.</div>';
+            }
+        }
+        
+        loadRooms();
+    </script>
+</body>
+</html>

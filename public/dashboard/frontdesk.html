@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Front Desk Dashboard - Hotel Booking System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .header { background: #ed8936; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab { padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .tab.active { background: #ed8936; color: white; }
+        .content { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .welcome { text-align: center; padding: 60px 20px; }
+        .welcome h2 { color: #333; margin-bottom: 10px; }
+        .welcome p { color: #666; }
+        .role-badge { display: inline-block; background: #ed8936; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-left: 10px; }
+        
+        /* Room Board Grid */
+        .room-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        
+        .room-card {
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+        }
+        
+        .room-card:hover { transform: translateY(-3px); }
+        
+        .room-card.available { background: #d4edda; border-color: #28a745; }
+        .room-card.occupied { background: #f8d7da; border-color: #dc3545; }
+        .room-card.cleaning { background: #fff3cd; border-color: #ffc107; }
+        .room-card.maintenance { background: #e2e3e5; border-color: #6c757d; }
+        
+        .room-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .room-number { font-size: 24px; font-weight: bold; }
+        .room-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 15px; text-transform: uppercase; }
+        
+        .room-card.available .room-status { background: #28a745; color: white; }
+        .room-card.occupied .room-status { background: #dc3545; color: white; }
+        .room-card.cleaning .room-status { background: #ffc107; color: #333; }
+        .room-card.maintenance .room-status { background: #6c757d; color: white; }
+        
+        .room-title { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .room-price { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .room-guest { font-size: 13px; color: #333; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); }
+        .room-checkout { font-size: 12px; color: #666; margin-top: 4px; }
+        
+        /* Action Buttons */
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .action-btn:hover { opacity: 0.9; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-checkout { background: #dc3545; color: white; }
+        .btn-mark-clean { background: #28a745; color: white; }
+        .btn-new-booking { background: #007bff; color: white; }
+        
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .error { text-align: center; padding: 40px; color: #c33; }
+        
+        /* Status Legend */
+        .legend { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
+        .legend-color.green { background: #28a745; }
+        .legend-color.red { background: #dc3545; }
+        .legend-color.yellow { background: #ffc107; }
+        .legend-color.gray { background: #6c757d; }
+        
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 36px; font-weight: bold; color: #ed8936; }
+        .stat-label { font-size: 14px; color: #666; }
+        
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        .toast.success { background: #28a745; }
+        .toast.error { background: #dc3545; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal h3 { margin-bottom: 15px; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-confirm { background: #007bff; color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        
+        /* Housekeeping Section */
+        .housekeeping-section { margin-bottom: 30px; }
+        .housekeeping-title { 
+            font-size: 18px; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ed8936;
+        }
+        
+        .room-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .room-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .room-item.cleaning { background: #fff3cd; }
+        .room-item.maintenance { background: #e2e3e5; }
+        .room-item.available { background: #d4edda; }
+        .room-item.occupied { background: #f8d7da; }
+        
+        .room-info { display: flex; align-items: center; gap: 15px; }
+        .room-id { font-weight: bold; font-size: 18px; }
+        .room-name { color: #666; }
+        
+        .room-actions { display: flex; gap: 10px; }
+        
+        .small-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-start-clean { background: #ffc107; color: #333; }
+        .btn-finish-clean { background: #28a745; color: white; }
+        .btn-maintenance { background: #6c757d; color: white; }
+        .btn-available { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+    
+    <!-- Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal">
+            <h3>New Booking - Room <span id="modalRoomId"></span></h3>
+            <form id="bookingForm">
+                <input type="hidden" id="bookingRoomId">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Full Name *</label>
+                    <input type="text" id="guestName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Phone *</label>
+                    <input type="tel" id="guestPhone" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Email *</label>
+                    <input type="email" id="guestEmail" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Check-in Date *</label>
+                    <input type="date" id="checkinDate" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Check-in Time *</label>
+                    <input type="time" id="checkinTime" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                </div>
+                <div class="modal-btns">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-confirm">Book Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="header">
+        <div>
+            <h1>Front Desk Dashboard</h1>
+            <span id="username"></span>
+            <span class="role-badge">FRONT DESK</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">Room Board</button>
+            <button class="tab" onclick="showTab('housekeeping')">Housekeeping</button>
+            <button class="tab" onclick="showTab('checkin')">Check-in</button>
+            <button class="tab" onclick="showTab('checkout')">Check-out</button>
+        </div>
+        
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color green"></div> Available</div>
+                <div class="legend-item"><div class="legend-color red"></div> Occupied</div>
+                <div class="legend-item"><div class="legend-color yellow"></div> Cleaning</div>
+                <div class="legend-item"><div class="legend-color gray"></div> Maintenance</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-available">0</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-occupied">0</div>
+                    <div class="stat-label">Occupied</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-cleaning">0</div>
+                    <div class="stat-label">Cleaning</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="stat-maintenance">0</div>
+                    <div class="stat-label">Maintenance</div>
+                </div>
+            </div>
+            
+            <div id="room-board" class="room-board">
+                <div class="loading">Loading room board...</div>
+            </div>
+        </div>
+        
+        <!-- Housekeeping Tab -->
+        <div id="housekeeping" class="tab-content">
+            <div id="housekeeping-content">
+                <div class="loading">Loading housekeeping status...</div>
+            </div>
+        </div>
+        
+        <!-- Check-in Tab -->
+        <div id="checkin" class="tab-content">
+            <h2>Today's Check-ins</h2>
+            <div id="checkin-list">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Check-out Tab -->
+        <div id="checkout" class="tab-content">
+            <h2>Today's Check-outs</h2>
+            <div id="checkout-list">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+        
+        if (!token || role !== 'frontdesk') {
+            window.location.href = '/login.html';
+        }
+        
+        document.getElementById('username').textContent = username || 'Front Desk';
+        
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if (tabId === 'dashboard') {
+                loadRoomBoard();
+            } else if (tabId === 'housekeeping') {
+                loadHousekeeping();
+            }
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+        
+        function openBookingModal(roomId) {
+            document.getElementById('modalRoomId').textContent = roomId;
+            document.getElementById('bookingRoomId').value = roomId;
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkinDate').value = today;
+            document.getElementById('checkinTime').value = '14:00';
+            
+            document.getElementById('bookingModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            document.getElementById('bookingForm').reset();
+        }
+        
+        async function checkOutGuest(bookingId, roomId) {
+            if (!confirm('Are you sure you want to check out this guest?')) return;
+            
+            try {
+                const response = await fetch(`/api/bookings/${bookingId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'checked_out' })
+                });
+                
+                if (response.ok) {
+                    showToast('Guest checked out successfully!');
+                    loadRoomBoard();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Error checking out guest', 'error');
+                }
+            } catch (error) {
+                showToast('Error checking out guest', 'error');
+            }
+        }
+        
+        async function markRoomClean(roomId) {
+            if (!confirm('Mark this room as available?')) return;
+            
+            try {
+                const response = await fetch(`/api/rooms/${roomId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'available' })
+                });
+                
+                if (response.ok) {
+                    showToast('Room marked as available!');
+                    loadRoomBoard();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Error updating room', 'error');
+                }
+            } catch (error) {
+                showToast('Error updating room', 'error');
+            }
+        }
+        
+        async function setRoomStatus(roomId, status) {
+            try {
+                const response = await fetch(`/api/rooms/${roomId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+                
+                if (response.ok) {
+                    showToast(`Room status updated to ${status}!`);
+                    loadHousekeeping();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Error updating room', 'error');
+                }
+            } catch (error) {
+                showToast('Error updating room', 'error');
+            }
+        }
+        
+        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const roomId = document.getElementById('bookingRoomId').value;
+            const bookingData = {
+                room_id: parseInt(roomId),
+                full_name: document.getElementById('guestName').value,
+                phone: document.getElementById('guestPhone').value,
+                email: document.getElementById('guestEmail').value,
+                booking_date: document.getElementById('checkinDate').value,
+                booking_time: document.getElementById('checkinTime').value,
+                status: 'checked_in'
+            };
+            
+            try {
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                if (response.ok) {
+                    showToast('Booking created successfully!');
+                    closeModal();
+                    loadRoomBoard();
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Error creating booking', 'error');
+                }
+            } catch (error) {
+                showToast('Error creating booking', 'error');
+            }
+        });
+        
+        async function loadRoomBoard() {
+            const container = document.getElementById('room-board');
+            
+            try {
+                const response = await fetch('/api/rooms/board', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div class="error">Error loading rooms</div>';
+                    return;
+                }
+                
+                const rooms = await response.json();
+                
+                const stats = { available: 0, occupied: 0, cleaning: 0, maintenance: 0 };
+                rooms.forEach(r => {
+                    if (r.status === 'available') stats.available++;
+                    else if (r.status === 'occupied') stats.occupied++;
+                    else if (r.status === 'cleaning') stats.cleaning++;
+                    else if (r.status === 'maintenance') stats.maintenance++;
+                });
+                
+                document.getElementById('stat-available').textContent = stats.available;
+                document.getElementById('stat-occupied').textContent = stats.occupied;
+                document.getElementById('stat-cleaning').textContent = stats.cleaning;
+                document.getElementById('stat-maintenance').textContent = stats.maintenance;
+                
+                if (rooms.length === 0) {
+                    container.innerHTML = '<div class="error">No rooms available</div>';
+                    return;
+                }
+                
+                container.innerHTML = rooms.map(room => {
+                    let actionButton = '';
+                    if (room.status === 'occupied') {
+                        actionButton = `<button class="action-btn btn-checkout" onclick="checkOutGuest(${room.booking_id}, ${room.room_id})">Check Out Guest</button>`;
+                    } else if (room.status === 'cleaning') {
+                        actionButton = `<button class="action-btn btn-mark-clean" onclick="markRoomClean(${room.room_id})">Mark Clean</button>`;
+                    } else if (room.status === 'available') {
+                        actionButton = `<button class="action-btn btn-new-booking" onclick="openBookingModal(${room.room_id})">New Booking</button>`;
+                    }
+                    
+                    return `
+                        <div class="room-card ${room.status}">
+                            <div class="room-card-header">
+                                <span class="room-number">Room ${room.room_id}</span>
+                                <span class="room-status">${room.status}</span>
+                            </div>
+                            <div class="room-title">${room.title}</div>
+                            <div class="room-price">$${room.price}/night</div>
+                            ${room.current_guest ? `
+                                <div class="room-guest">
+                                    <strong>Guest:</strong> ${room.current_guest}
+                                    ${room.check_out ? `<div class="room-checkout">Checkout: ${new Date(room.check_out).toLocaleDateString()}</div>` : ''}
+                                </div>
+                            ` : ''}
+                            ${actionButton}
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error loading rooms</div>';
+            }
+        }
+        
+        async function loadHousekeeping() {
+            const container = document.getElementById('housekeeping-content');
+            
+            try {
+                const response = await fetch('/api/housekeeping/status', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                let html = '';
+                
+                // Rooms to Clean
+                if (data.rooms_to_clean.length > 0) {
+                    html += `
+                        <div class="housekeeping-section">
+                            <div class="housekeeping-title">🧹 Rooms to Clean (${data.rooms_to_clean.length})</div>
+                            <div class="room-list">
+                                ${data.rooms_to_clean.map(room => `
+                                    <div class="room-item cleaning">
+                                        <div class="room-info">
+                                            <span class="room-id">Room ${room.id}</span>
+                                            <span class="room-name">${room.title}</span>
+                                        </div>
+                                        <div class="room-actions">
+                                            <button class="small-btn btn-finish-clean" onclick="setRoomStatus(${room.id}, 'available')">Mark Ready</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Maintenance Rooms
+                if (data.maintenance_rooms.length > 0) {
+                    html += `
+                        <div class="housekeeping-section">
+                            <div class="housekeeping-title">🔧 Maintenance Rooms (${data.maintenance_rooms.length})</div>
+                            <div class="room-list">
+                                ${data.maintenance_rooms.map(room => `
+                                    <div class="room-item maintenance">
+                                        <div class="room-info">
+                                            <span class="room-id">Room ${room.id}</span>
+                                            <span class="room-name">${room.title}</span>
+                                        </div>
+                                        <div class="room-actions">
+                                            <button class="small-btn btn-available" onclick="setRoomStatus(${room.id}, 'available')">Mark Available</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Available Rooms
+                if (data.available_rooms.length > 0) {
+                    html += `
+                        <div class="housekeeping-section">
+                            <div class="housekeeping-title">✅ Available Rooms (${data.available_rooms.length})</div>
+                            <div class="room-list">
+                                ${data.available_rooms.map(room => `
+                                    <div class="room-item available">
+                                        <div class="room-info">
+                                            <span class="room-id">Room ${room.id}</span>
+                                            <span class="room-name">${room.title}</span>
+                                        </div>
+                                        <div class="room-actions">
+                                            <button class="small-btn btn-maintenance" onclick="setRoomStatus(${room.id}, 'maintenance')">Maintenance</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Occupied Rooms
+                if (data.occupied_rooms.length > 0) {
+                    html += `
+                        <div class="housekeeping-section">
+                            <div class="housekeeping-title">🔴 Occupied Rooms (${data.occupied_rooms.length})</div>
+                            <div class="room-list">
+                                ${data.occupied_rooms.map(room => `
+                                    <div class="room-item occupied">
+                                        <div class="room-info">
+                                            <span class="room-id">Room ${room.id}</span>
+                                            <span class="room-name">${room.title}</span>
+                                        </div>
+                                        <div class="room-actions">
+                                            <button class="small-btn btn-start-clean" onclick="setRoomStatus(${room.id}, 'cleaning')">Needs Cleaning</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (html === '') {
+                    html = '<div class="loading">No rooms found</div>';
+                }
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">Error loading housekeeping status</div>';
+            }
+        }
+        
+        loadRoomBoard();
+    </script>
+</body>
+</html>
