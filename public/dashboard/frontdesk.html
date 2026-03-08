@@ -4,50 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Front Desk Dashboard - Hotel Booking System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/dashboard.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .header { background: #ed8936; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 24px; }
-        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        .container { max-width: 1400px; margin: 20px auto; padding: 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab { padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
-        .tab.active { background: #ed8936; color: white; }
-        .content { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .welcome { text-align: center; padding: 60px 20px; }
-        .welcome h2 { color: #333; margin-bottom: 10px; }
-        .welcome p { color: #666; }
-        .role-badge { display: inline-block; background: #ed8936; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-left: 10px; }
-        
-        /* Room Board Grid */
-        .room-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        
-        .room-card {
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            transition: transform 0.2s;
+        :root {
+            --role-color: #ed8936;
+            --role-color-light: #fed7aa;
         }
-        
-        .room-card:hover { transform: translateY(-3px); }
-        
-        .room-card.available { background: #d4edda; border-color: #28a745; }
-        .room-card.occupied { background: #f8d7da; border-color: #dc3545; }
-        .room-card.cleaning { background: #fff3cd; border-color: #ffc107; }
-        .room-card.maintenance { background: #e2e3e5; border-color: #6c757d; }
-        
-        .room-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .room-number { font-size: 24px; font-weight: bold; }
-        .room-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 15px; text-transform: uppercase; }
-        
-        .room-card.available .room-status { background: #28a745; color: white; }
-        .room-card.occupied .room-status { background: #dc3545; color: white; }
-        .room-card.cleaning .room-status { background: #ffc107; color: #333; }
-        .room-card.maintenance .room-status { background: #6c757d; color: white; }
-        
-        .room-title { font-size: 14px; color: #666; margin-bottom: 8px; }
-        .room-price { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .header { background: linear-gradient(135deg, var(--role-color) 0%, #dd6b20 100%); }
+        .tab.active { background: var(--role-color); }
+        .role-badge { background: var(--role-color); }
+    </style>
         .room-guest { font-size: 13px; color: #333; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); }
         .room-checkout { font-size: 12px; color: #666; margin-top: 4px; }
         
@@ -223,17 +192,22 @@
         </div>
     </div>
     
-    <div class="header">
-        <div>
-            <h1>Front Desk Dashboard</h1>
-            <span id="username"></span>
-            <span class="role-badge">FRONT DESK</span>
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>🏨 Front Desk Dashboard</h1>
         </div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">FD</div>
+                <span class="user-name" id="username"></span>
+                <span class="role-badge">FRONT DESK</span>
+            </div>
+            <button class="btn btn-ghost" onclick="logout()">Logout</button>
+        </div>
     </div>
     
-    <div class="container">
-        <div class="tabs">
+    <div class="dashboard-container">
+        <div class="tabs-container">
             <button class="tab active" onclick="showTab('dashboard')">Room Board</button>
             <button class="tab" onclick="showTab('housekeeping')">Housekeeping</button>
             <button class="tab" onclick="showTab('checkin')">Check-in</button>

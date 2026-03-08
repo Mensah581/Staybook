@@ -1083,6 +1083,36 @@ initializeDatabase().catch(err => console.error('Database init failed:', err));
 const { startCheckinReminderJob } = require('./cronJobs/checkinReminderJob');
 startCheckinReminderJob(pool);
 
+// Fallback route to serve static HTML files
+app.get('*', (req, res) => {
+    const requestedPath = req.path;
+    
+    // Try to find the file in public folder
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Remove leading slash and look in public folder
+    let filePath = path.join(__dirname, 'public', requestedPath);
+    
+    // If it's a directory, look for index.html
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+        filePath = path.join(filePath, 'index.html');
+    }
+    
+    // Check if file exists and serve it
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        res.sendFile(filePath);
+    } else {
+        // Try with .html extension
+        const htmlPath = filePath + '.html';
+        if (fs.existsSync(htmlPath)) {
+            res.sendFile(htmlPath);
+        } else {
+            res.status(404).send('Not Found');
+        }
+    }
+});
+
 // ===================== START SERVER =====================
 
 app.listen(PORT, () => {
